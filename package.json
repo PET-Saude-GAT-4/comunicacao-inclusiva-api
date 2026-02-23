@@ -5,9 +5,16 @@
   "license": "MIT",
   "type": "module",
   "scripts": {
+    "docker:dev": "docker compose --profile dev up -d",
+    "docker:dev-stop": "docker compose --profile dev stop",
+    "docker:dev-build": "docker compose --profile dev build",
+    "docker:dev-down": "docker compose --profile dev down",
+    "docker:prod": "docker compose --profile prod up -d --build",
+    "prisma:migrate:dev": "docker exec -it api_dev npx prisma migrate dev",
+    "prisma:migrate:prod": "dotenv -e .env.prod -- prisma migrate deploy",
     "build": "tsc && tsc-alias",
     "start": "node dist/server.js",
-    "dev": "tsc --noEmit && tsx watch src/server.ts",
+    "dev": "tsc --noEmit && CHOKIDAR_USEPOLLING=true tsx watch src/server.ts",
     "lint": "eslint 'src/**/*.ts'"
   },
   "dependencies": {
