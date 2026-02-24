@@ -33,11 +33,11 @@ model StoredFile {
   fileType     FileType
   purpose      String?
   isPrivate    Boolean       @default(true)
-  uploaderId Int?
-  uploader User? @relation("FileUpload", fields: [uploaderId], references: [id])
+  uploaderId   Int?
+  uploader     User?         @relation("FileUpload", fields: [uploaderId], references: [id], onDelete: SetNull, onUpdate: Cascade)
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
-  user         User? @relation("ProfilePicture")
+  user         User?         @relation("ProfilePicture")
   pictogram    Pictogram?
   librasPhrase LibrasPhrase?
 }
@@ -78,7 +78,7 @@ model User {
   quickEmergencyBoard QuickEmergencyBoard?
   userPhrases         UserPhrase[]
   authoredBoards      Board[]
-  storedFiles StoredFile[] @relation("FileUpload")
+  storedFiles         StoredFile[]         @relation("FileUpload")
 }
 
 model Pictogram {
