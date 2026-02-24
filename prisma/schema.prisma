@@ -33,9 +33,11 @@ model StoredFile {
   fileType     FileType
   purpose      String?
   isPrivate    Boolean       @default(true)
+  uploaderId Int?
+  uploader User? @relation("FileUpload", fields: [uploaderId], references: [id])
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
-  user         User?
+  user         User? @relation("ProfilePicture")
   pictogram    Pictogram?
   librasPhrase LibrasPhrase?
 }
@@ -69,13 +71,14 @@ model User {
   roleId              Int
   role                Role                 @relation(fields: [roleId], references: [id], onDelete: Restrict, onUpdate: Cascade)
   profilePictureId    Int?                 @unique
-  profilePicture      StoredFile?          @relation(fields: [profilePictureId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  profilePicture      StoredFile?          @relation("ProfilePicture", fields: [profilePictureId], references: [id], onDelete: SetNull, onUpdate: Cascade)
   createdAt           DateTime             @default(now())
   updatedAt           DateTime             @updatedAt
   userBoards          UserBoard[]
   quickEmergencyBoard QuickEmergencyBoard?
   userPhrases         UserPhrase[]
   authoredBoards      Board[]
+  storedFiles StoredFile[] @relation("FileUpload")
 }
 
 model Pictogram {
