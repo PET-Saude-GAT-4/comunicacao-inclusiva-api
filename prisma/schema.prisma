@@ -1,0 +1,248 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum FileType {
+  image
+  audio
+  video
+  document
+  archive
+  other
+}
+
+enum Role {
+  admin
+  user
+}
+
+model StoredFile {
+  id           Int           @id @default(autoincrement())
+  uuid         String        @unique @default(uuid())
+  location     String        @unique
+  filename     String
+  originalName String
+  fileSize     BigInt?
+  mimeType     String
+  fileType     FileType
+  purpose      String?
+  isPrivate    Boolean       @default(true)
+  uploaderId   Int?
+  uploader     User?         @relation("FileUpload", fields: [uploaderId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  user         User?         @relation("ProfilePicture")
+  pictogram    Pictogram?
+  librasPhrase LibrasPhrase?
+}
+
+model Person {
+  id        Int      @id @default(autoincrement())
+  uuid      String   @unique @default(uuid())
+  cpf       String   @unique @db.VarChar(11)
+  firstName String
+  lastName  String?
+  cardId    String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model JobTitle {
+  id    Int    @id @default(autoincrement())
+  name  String @unique
+  users User[]
+}
+
+model User {
+  id                  Int                  @id @default(autoincrement())
+  uuid                String               @unique @default(uuid())
+  username            String               @unique
+  email               String               @unique
+  phone               String               @unique
+  passwordHash        String
+  role                Role
+  jobTitleId          Int
+  jobTitle            JobTitle             @relation(fields: [jobTitleId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  profilePictureId    Int?                 @unique
+  profilePicture      StoredFile?          @relation("ProfilePicture", fields: [profilePictureId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+  userBoards          UserBoard[]
+  quickEmergencyBoard QuickEmergencyBoard?
+  userPhrases         UserPhrase[]
+  authoredBoards      Board[]
+  storedFiles         StoredFile[]         @relation("FileUpload")
+}
+
+model Pictogram {
+  id                        Int                        @id @default(autoincrement())
+  uuid                      String                     @unique @default(uuid())
+  description               String
+  imageId                   Int                        @unique
+  image                     StoredFile                 @relation(fields: [imageId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  createdAt                 DateTime                   @default(now())
+  updatedAt                 DateTime                   @updatedAt
+  pictogramBoards           PictogramBoard[]
+  pictogramPictogramPhrases PictogramPictogramPhrase[]
+  pictogramEmergencyBoards  PictogramEmergencyBoard[]
+  representativeCategories  Category[]
+  representativeBoards      Board[]
+}
+
+model Category {
+  id                         Int                         @id @default(autoincrement())
+  uuid                       String                      @unique @default(uuid())
+  name                       String                      @unique
+  representativePictogramId  Int
+  representativePictogram    Pictogram                   @relation(fields: [representativePictogramId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  createdAt                  DateTime                    @default(now())
+  updatedAt                  DateTime                    @updatedAt
+  categorizedEmergencyBoards CategorizedEmergencyBoard[]
+}
+
+model Board {
+  id                        Int              @id @default(autoincrement())
+  uuid                      String           @unique @default(uuid())
+  title                     String
+  isPrivate                 Boolean          @default(true)
+  authorId                  Int?
+  author                    User?            @relation(fields: [authorId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  representativePictogramId Int
+  representativePictogram   Pictogram        @relation(fields: [representativePictogramId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  createdAt                 DateTime         @default(now())
+  updatedAt                 DateTime         @updatedAt
+  boardPictograms           PictogramBoard[]
+  userBoards                UserBoard[]
+}
+
+model PictogramBoard {
+  pictogramId  Int
+  pictogram    Pictogram @relation(fields: [pictogramId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  boardId      Int
+  board        Board     @relation(fields: [boardId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  displayOrder Int
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@id([pictogramId, boardId])
+  @@unique([boardId, displayOrder])
+}
+
+model UserBoard {
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  boardId   Int
+  board     Board    @relation(fields: [boardId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@id([userId, boardId])
+}
+
+model EmergencyBoard {
+  id                         Int                        @id @default(autoincrement())
+  uuid                       String                     @unique @default(uuid())
+  createdAt                  DateTime                   @default(now())
+  updatedAt                  DateTime                   @updatedAt
+  pictogramEmergencyBoards   PictogramEmergencyBoard[]
+  quickEmergencyBoards       QuickEmergencyBoard?
+  categorizedEmergencyBoards CategorizedEmergencyBoard?
+}
+
+model PictogramEmergencyBoard {
+  pictogramId      Int
+  pictogram        Pictogram      @relation(fields: [pictogramId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  emergencyBoardId Int
+  emergencyBoard   EmergencyBoard @relation(fields: [emergencyBoardId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  displayOrder     Int
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+
+  @@id([pictogramId, emergencyBoardId])
+  @@unique([emergencyBoardId, displayOrder])
+}
+
+model QuickEmergencyBoard {
+  emergencyBoardId Int            @id
+  emergencyBoard   EmergencyBoard @relation(fields: [emergencyBoardId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  userId           Int            @unique
+  user             User           @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+}
+
+model CategorizedEmergencyBoard {
+  emergencyBoardId Int            @id
+  emergencyBoard   EmergencyBoard @relation(fields: [emergencyBoardId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  categoryId       Int
+  category         Category       @relation(fields: [categoryId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+}
+
+model Phrase {
+  id              Int              @id @default(autoincrement())
+  uuid            String           @unique @default(uuid())
+  description     String           @unique
+  previousPhrases Phrase[]         @relation("PhraseSequence")
+  nextPhrases     Phrase[]         @relation("PhraseSequence")
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  pictogramPhrase PictogramPhrase?
+  librasPhrase    LibrasPhrase?
+  userPhrases     UserPhrase[]
+}
+
+model PictogramPhrase {
+  phraseId                  Int                        @id
+  phrase                    Phrase                     @relation(fields: [phraseId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  createdAt                 DateTime                   @default(now())
+  updatedAt                 DateTime                   @updatedAt
+  pictogramPictogramPhrases PictogramPictogramPhrase[]
+}
+
+model PictogramPictogramPhrase {
+  pictogramId       Int
+  pictogram         Pictogram       @relation(fields: [pictogramId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  pictogramPhraseId Int
+  pictogramPhrase   PictogramPhrase @relation(fields: [pictogramPhraseId], references: [phraseId], onDelete: Cascade, onUpdate: Cascade)
+  displayOrder      Int
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+
+  @@id([pictogramId, pictogramPhraseId])
+  @@unique([pictogramPhraseId, displayOrder])
+}
+
+model LibrasPhrase {
+  phraseId         Int        @id
+  phrase           Phrase     @relation(fields: [phraseId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  representationId Int        @unique
+  representation   StoredFile @relation(fields: [representationId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  createdAt        DateTime   @default(now())
+  updatedAt        DateTime   @updatedAt
+}
+
+model UserPhrase {
+  userId      Int
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  phraseId    Int
+  phrase      Phrase   @relation(fields: [phraseId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  isFavourite Boolean  @default(false)
+  lastUsedAt  DateTime @default(now())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@id([userId, phraseId])
+}
