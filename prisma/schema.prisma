@@ -58,9 +58,10 @@ model Person {
   updatedAt DateTime @updatedAt
 }
 
-model JobTitle {
+model Specialty{
   id    Int    @id @default(autoincrement())
   name  String @unique
+  description String
   users User[]
 }
 
@@ -72,8 +73,8 @@ model User {
   phone               String               @unique
   passwordHash        String
   role                Role
-  jobTitleId          Int
-  jobTitle            JobTitle             @relation(fields: [jobTitleId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  specialtyId         Int
+  specialty           Specialty             @relation(fields: [specialtyId], references: [id], onDelete: Restrict, onUpdate: Cascade)
   profilePictureId    Int?                 @unique
   profilePicture      StoredFile?          @relation("ProfilePicture", fields: [profilePictureId], references: [id], onDelete: SetNull, onUpdate: Cascade)
   createdAt           DateTime             @default(now())
