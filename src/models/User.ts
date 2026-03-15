@@ -1,4 +1,3 @@
-import { Role } from "./Role.js";
 
 export class User {
   constructor(
@@ -10,7 +9,7 @@ export class User {
     private _email: string,
     private _passwordHash: string,
 
-    private _role: Role,
+    private _roleId: number,
   ) {}
 
   public get email(): string {
@@ -20,8 +19,8 @@ export class User {
     return this._passwordHash;
   }
 
-  public get role(): Role {
-    return this._role;
+  public get roleId(): number {
+    return this._roleId;
   }
 
   public set email(email: string) {
@@ -32,7 +31,7 @@ export class User {
     this._passwordHash = passwordHash;
   }
 
-  public set role(role: Role) {
-    this._role = role;
+  public set roleId(roleId: number) {
+    this._roleId = roleId;
   }
 }

@@ -1,11 +1,15 @@
-import type { User } from "@/models/User.js";
+import type {
+  UserInput,
+  UserOutput,
+  UserUpdateInput,
+} from "@/models/types/User.type.js";
 import { prisma } from "@/prisma.js";
 
 import type { IUserRepository } from "./IUserRepository.js";
 
 class UserRepository implements IUserRepository {
   // Repo specific methods
-  async findById(id: number) {
+  async findById(id: number): Promise<UserOutput> {
     try {
       const user = await prisma.user.findUniqueOrThrow({
         where: {
@@ -13,16 +17,31 @@ class UserRepository implements IUserRepository {
         },
       });
 
-      return user;
+      return {
+        id: user.id,
+        uuid: user.uuid,
+        email: user.email,
+        roleId: user.roleId,
+        createdAt: user.createdAt,
+        updatedAt: user.updatedAt,
+      };
     } catch (error) {
       console.error(`Error finding user by id: ${error}`);
       throw error;
     }
   }
-  async findAll() {
+
+  async findAll(): Promise<UserOutput[]> {
     try {
       const users = await prisma.user.findMany();
-      return users;
+      return users.map((user) => ({
+        id: user.id,
+        uuid: user.uuid,
+        email: user.email,
+        roleId: user.roleId,
+        createdAt: user.createdAt,
+        updatedAt: user.updatedAt,
+      }));
     } catch (error) {
       console.error(`Error finding all users: ${error}`);
       throw error;
@@ -33,66 +52,105 @@ class UserRepository implements IUserRepository {
     try {
       const userCount: number = await prisma.user.count({ where: { id } });
 
-      if (userCount > 0) {
-        return true;
-      } else {
-        return false;
-      }
+      return userCount > 0;
     } catch (error) {
       console.error(`Error checking if user exists by id: ${error}`);
       throw error;
     }
   }
 
-  async delete(id: number): Promise<User> {
+  async delete(id: number): Promise<UserOutput> {
     try {
       const user = await prisma.user.delete({
         where: {
           id,
         },
       });
-      return user;
+      return {
+        id: user.id,
+        uuid: user.uuid,
+        email: user.email,
+        roleId: user.roleId,
+        createdAt: user.createdAt,
+        updatedAt: user.updatedAt,
+      };
     } catch (error) {
-      console.log(`Error deleting user: ${error}`);
+      console.error(`Error deleting user: ${error}`);
       throw error;
     }
   }
 
   // Custom methods
-  async create(email: string, passwordHash: string): Promise<User> {
+  async create(data: UserInput): Promise<UserOutput> {
     try {
       const user = await prisma.user.create({
         data: {
-          email: email,
-          passwordHash: passwordHash,
+          email: data.email,
+          passwordHash: data.passwordHash,
+          role: { connect: { id: data.roleId } },
         },
       });
-      return user;
+      return {
+        id: user.id,
+        uuid: user.uuid,
+        email: user.email,
+        roleId: user.roleId,
+        createdAt: user.createdAt,
+        updatedAt: user.updatedAt,
+      };
     } catch (error) {
       console.error(`Error creating user: ${error}`);
       throw error;
     }
   }
 
-  async update(id: number, data: Partial<User>): Promise<User> {
+  async update(id: number, data: UserUpdateInput): Promise<UserOutput> {
     try {
+      const query: Partial<UserUpdateInput> = {};
+
+      if (
+        data.email == undefined &&
+        data.passwordHash == undefined &&
+        data.roleId == undefined
+      ) {
+        throw new Error("No valid fields to update");
+      }
+
+      if (data.email != undefined) {
+        query.email = data.email;
+      }
+
+      if (data.passwordHash != undefined) {
+        query.passwordHash = data.passwordHash;
+      }
+
+      if (data.roleId != undefined) {
+        query.roleId = data.roleId;
+      }
+
       const user = await prisma.user.update({
         where: {
           id,
         },
         data: {
-          email: data.email,
-          passwordHash: data.passwordHash,
+          ...query,
         },
       });
-      return user;
+      return {
+        id: user.id,
+        uuid: user.uuid,
+        email: user.email,
+        roleId: user.roleId,
+        createdAt: user.createdAt,
+        updatedAt: user.updatedAt,
+      };
     } catch (error) {
       console.error(`Error updating user: ${error}`);
       throw error;
     }
   }
 
-  async findByEmail(email: string): Promise<User> {
+  async findByEmail(email: string): Promise<UserOutput> {
     try {
       const user = await prisma.user.findUniqueOrThrow({
         where: {
@@ -100,14 +158,21 @@ class UserRepository implements IUserRepository {
         },
       });
 
-      return user;
+      return {
+        id: user.id,
+        uuid: user.uuid,
+        email: user.email,
+        roleId: user.roleId,
+        createdAt: user.createdAt,
+        updatedAt: user.updatedAt,
+      };
     } catch (error) {
       console.error(`Error finding user by email: ${error}`);
       throw error;
     }
   }
 
-  async findByUuid(uuid: string): Promise<User> {
+  async findByUuid(uuid: string): Promise<UserOutput> {
     try {
       const user = await prisma.user.findUniqueOrThrow({
         where: {
@@ -115,7 +180,14 @@ class UserRepository implements IUserRepository {
         },
       });
 
-      return user;
+      return {
+        id: user.id,
+        uuid: user.uuid,
+        email: user.email,
+        roleId: user.roleId,
+        createdAt: user.createdAt,
+        updatedAt: user.updatedAt,
+      };
     } catch (error) {
       console.error(`Error finding user by uuid: ${error}`);
       throw error;
@@ -126,11 +198,7 @@ class UserRepository implements IUserRepository {
     try {
       const userCount: number = await prisma.user.count({ where: { email } });
 
-      if (userCount > 0) {
-        return true;
-      } else {
-        return false;
-      }
+      return userCount > 0;
     } catch (error) {
       console.error(`Error checking if user exists by email: ${error}`);
       throw error;
@@ -141,47 +209,9 @@ class UserRepository implements IUserRepository {
     try {
       const userCount: number = await prisma.user.count({ where: { uuid } });
 
-      if (userCount > 0) {
-        return true;
-      } else {
-        return false;
-      }
+      return userCount > 0;
     } catch (error) {
       console.error(`Error checking if user exists by UUID: ${error}`);
-      throw error;
-    }
-  }
-
-  async roleConnect(id: number, roleId: number): Promise<User> {
-    try {
-      const user = await prisma.user.update({
-        where: {
-          id,
-        },
-        data: {
-          role: { connect: { id: roleId } },
-        },
-      });
-      return user;
-    } catch (error) {
-      console.error(`Error updating user role: ${error}`);
-      throw error;
-    }
-  }
-
-  async roleDisconnect(id: number): Promise<User> {
-    try {
-      const user = await prisma.user.update({
-        where: {
-          id,
-        },
-        data: {
-          role: { disconnect: true },
-        },
-      });
-      return user;
-    } catch (error) {
-      console.error(`Error disconnecting user role: ${error}`);
       throw error;
     }
   }
