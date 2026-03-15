@@ -1,3 +1,5 @@
+import type { NextFunction, Request, Response } from "express";
+
 import type { IRoleService } from "@/services/role/IRoleService.js";
 import RoleService from "@/services/role/RoleService.js";
 
@@ -12,6 +14,76 @@ class RoleController implements IRoleController {
 
   constructor(props?: Props) {
     this._roleService = props?.roleService ?? new RoleService();
+  }
+
+  async create(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const { name } = req.body;
+
+      if (!name) {
+        res.status(400).json({ error: "Name is required" });
+        return;
+      }
+
+      await this._roleService.create(name);
+      res.status(201).send();
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async findById(
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ): Promise<void> {
+    try {
+      const id = Number(req.params.id);
+      const role = await this._roleService.findById(id);
+      res.status(200).send({ role: role });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async findAll(
+    _req: Request,
+    res: Response,
+    next: NextFunction,
+  ): Promise<void> {
+    try {
+      const roles = await this._roleService.findAll();
+      res.status(200).send({ roles: roles });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async update(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const id = Number(req.params.id);
+      const { name } = req.body;
+
+      if (!name) {
+        res.status(400).json({ error: "Name is required" });
+        return;
+      }
+
+      await this._roleService.update(id, name);
+      res.status(204).send();
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async delete(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const id = Number(req.params.id);
+      await this._roleService.delete(id);
+      res.status(204).send();
+    } catch (error) {
+      next(error);
+    }
   }
 }
 

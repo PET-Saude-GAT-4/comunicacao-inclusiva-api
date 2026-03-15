@@ -1,3 +1,15 @@
-interface IRoleController {}
+import type { NextFunction, Request, Response } from "express";
+
+interface IRoleController {
+  create(req: Request, res: Response, next: NextFunction): Promise<void>;
+
+  findById(req: Request, res: Response, next: NextFunction): Promise<void>;
+
+  findAll(req: Request, res: Response, next: NextFunction): Promise<void>;
+
+  update(req: Request, res: Response, next: NextFunction): Promise<void>;
+
+  delete(req: Request, res: Response, next: NextFunction): Promise<void>;
+}
 
 export type { IRoleController };
