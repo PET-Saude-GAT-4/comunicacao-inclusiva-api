@@ -2,9 +2,7 @@ interface IRepository<T> {
   findById(id: number): Promise<T>;
   findAll(): Promise<T[]>;
   existsById(id: number): Promise<boolean>;
-  create(value: Partial<T>): Promise<T>;
-  update(id:number): Promise<T>;
-  delete(id: number): Promise<void>;
+  delete(id: number): Promise<T>;
 }
 
 export type { IRepository };
