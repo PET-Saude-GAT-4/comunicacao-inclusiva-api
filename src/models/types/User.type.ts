@@ -6,7 +6,7 @@ export type UserInput = {
 
 export type UserUpdateInput = {
     email?: string;
-    passwordHash?: string;
+    password?: string;
     roleId?: number;
 };
 

@@ -1,18 +1,21 @@
-import type { User } from "@/models/User.js";
+import type {
+  UserOutput,
+  UserUpdateInput,
+} from "@/models/types/User.type.js";
 
 interface IUserService {
-  create(email: string, password: string): Promise<User>;
+  create(email: string, password: string, roleId: number): Promise<UserOutput>;
 
-  findById(id: number): Promise<User>;
+  findById(id: number): Promise<UserOutput>;
 
-  findAll(): Promise<User[]>;
+  findAll(): Promise<UserOutput[]>;
 
   update(
     id: number,
-    data: Partial<{ email: string; password: string }>,
-  ): Promise<User>;
+    data: UserUpdateInput,
+  ): Promise<UserOutput>;
 
-  delete(id: number): Promise<User>;
+  delete(id: number): Promise<UserOutput>;
 }
 
 export type { IUserService };

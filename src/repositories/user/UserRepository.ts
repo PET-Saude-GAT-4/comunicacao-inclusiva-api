@@ -106,34 +106,12 @@ class UserRepository implements IUserRepository {
 
   async update(id: number, data: UserUpdateInput): Promise<UserOutput> {
     try {
-      const query: Partial<UserUpdateInput> = {};
-
-      if (
-        data.email == undefined &&
-        data.passwordHash == undefined &&
-        data.roleId == undefined
-      ) {
-        throw new Error("No valid fields to update");
-      }
-
-      if (data.email != undefined) {
-        query.email = data.email;
-      }
-
-      if (data.passwordHash != undefined) {
-        query.passwordHash = data.passwordHash;
-      }
-
-      if (data.roleId != undefined) {
-        query.roleId = data.roleId;
-      }
-
       const user = await prisma.user.update({
         where: {
           id,
         },
         data: {
-          ...query,
+          ...data,
         },
       });
       return {
