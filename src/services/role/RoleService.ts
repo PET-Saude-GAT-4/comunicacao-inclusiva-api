@@ -13,6 +13,10 @@ class RoleService implements IRoleService {
   constructor(props?: Props) {
     this._roleRepository = props?.roleRepository ?? new RoleRepository();
   }
+
+  async create(value: any): Promise<any> {
+    throw new Error("Method not implemented.");
+  }
 }
 
 export default RoleService;

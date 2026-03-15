@@ -13,6 +13,10 @@ class UserController implements IUserController {
   constructor(props?: Props) {
     this._userService = props?.userService ?? new UserService();
   }
+
+  async create(request: any, response: any): Promise<any> {
+    throw new Error("Method not implemented.");
+  }
 }
 
 export default UserController;

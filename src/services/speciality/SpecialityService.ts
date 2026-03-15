@@ -14,6 +14,10 @@ class SpecialityService implements ISpecialityService {
     this._specialityRepository =
       props?.specialityRepository ?? new SpecialityRepository();
   }
+
+  async create(value: any): Promise<any> {
+    throw new Error("Method not implemented.");
+  }
 }
 
 export default SpecialityService;

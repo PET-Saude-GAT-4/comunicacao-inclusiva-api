@@ -11,7 +11,6 @@ const professionController: IProfessionController = new ProfessionController();
 
 const router = express.Router();
 
-// Example:
-// router.post("/", (req: Request, res: Response, next: NextFunction) => professionController.create(req, res, next));
+router.post("/", professionController.create.bind(professionController));
 
 export default router;

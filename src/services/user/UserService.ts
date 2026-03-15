@@ -13,6 +13,10 @@ class UserService implements IUserService {
   constructor(props?: Props) {
     this._userRepository = props?.userRepository ?? new UserRepository();
   }
+
+  async create(value: any): Promise<any> {
+    throw new Error("Method not implemented.");
+  }
 }
 
 export default UserService;

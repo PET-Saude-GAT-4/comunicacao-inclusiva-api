@@ -2,6 +2,7 @@
 export class Specialty {
   constructor(
     readonly id: number,
+    readonly code: string,
 
     private _name: string,
     private _description: string,
@@ -20,6 +21,6 @@ export class Specialty {
   }
 
   public set description(description: string) {
-    this._name = description;
+    this._description = description;
   }
 }

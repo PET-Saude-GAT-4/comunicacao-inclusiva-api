@@ -14,6 +14,10 @@ class SpecialityController implements ISpecialityController {
     this._specialityService =
       props?.specialityService ?? new SpecialityService();
   }
+
+  async create(request: any, response: any): Promise<any> {
+    throw new Error("Method not implemented.");
+  }
 }
 
 export default SpecialityController;
