@@ -9,6 +9,10 @@ class SpecialityRepository implements ISpecialityRepository {
   async findAll(): Promise<Specialty[]> {
     throw new Error("Method not implemented.");
   }
+
+  async delete(id: number): Promise<void> {
+    throw new Error("Method not implemented.");
+  }
 }
 
 export default SpecialityRepository;

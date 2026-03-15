@@ -23,6 +23,18 @@ class ProfessionRepository implements IProfessionRepository{
 
     return professions;
   }
+  
+  async delete(id: number): Promise<void> {
+    await prisma.profession.delete({
+      where: { id }
+    });
+  }
+
+  async findById(id: number): Promise<Profession | null> {
+    const data = await prisma.profession.findUnique({where: {id}});
+
+    return data ? new Profession(data.id, data.code, data.name) : null;
+  }
 
   async findByName(name: string): Promise<Profession | null> {
     const data = await prisma.profession.findUnique({where: {name}});
@@ -34,6 +46,7 @@ class ProfessionRepository implements IProfessionRepository{
 
     return data ? new Profession(data.id, data.code, data.name) : null;
   }
- }
+
+}
 
 export default ProfessionRepository;

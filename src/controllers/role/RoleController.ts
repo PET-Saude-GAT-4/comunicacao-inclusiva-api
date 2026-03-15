@@ -23,6 +23,10 @@ class RoleController implements IRoleController {
   async findAll(request: Request, response: Response): Promise<Response | void> {
     throw new Error("Method not implemented.");
   }
+
+  async delete(request: Request, response: Response): Promise<Response | void> {
+    throw new Error("Method not implemented.");
+  }
 }
 
 export default RoleController;

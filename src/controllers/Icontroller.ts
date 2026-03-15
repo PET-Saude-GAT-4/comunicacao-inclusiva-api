@@ -5,7 +5,7 @@ interface Icontroller<T>{
     findAll(request: Request, response: Response): Promise<Response | void>;
     create(request: Request, response: Response): Promise<Response | void>;
     update?(request: Request, response: Response): Promise<Response | void>;
-    delete?(request: Request, response: Response): Promise<Response | void>;
+    delete(request: Request, response: Response): Promise<Response | void>;
 }
 
 export type {Icontroller};

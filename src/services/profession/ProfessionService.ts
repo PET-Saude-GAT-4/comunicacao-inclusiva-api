@@ -45,6 +45,10 @@ class ProfessionService implements IProfessionService {
     }
     return professions;
   }
+
+  async delete(id: number): Promise<void> {
+    await this._professionRepository.delete(id);
+  }
 }
 
 

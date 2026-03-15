@@ -9,6 +9,10 @@ class RoleRepository implements IRoleRepository {
   async findAll(): Promise<Role[]> {
     throw new Error("Method not implemented.");
   }
+
+  async delete(id: number): Promise<void> {
+    throw new Error("Method not implemented.");
+  }
 }
 
 export default RoleRepository;

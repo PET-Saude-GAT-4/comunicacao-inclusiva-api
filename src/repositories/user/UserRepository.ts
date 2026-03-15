@@ -9,6 +9,10 @@ class UserRepository implements IUserRepository {
   async findAll(): Promise<User[]> {
     throw new Error("Method not implemented.");
   }
+
+  async delete(id: number): Promise<void> {
+    throw new Error("Method not implemented.");
+  }
 }
 
 export default UserRepository;

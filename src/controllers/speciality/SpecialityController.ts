@@ -24,6 +24,10 @@ class SpecialityController implements ISpecialityController {
   async findAll(request: Request, response: Response): Promise<Response | void> {
     throw new Error("Method not implemented.");
   }
+
+  async delete(request: Request, response: Response): Promise<Response | void> {
+    throw new Error("Method not implemented.");
+  }
 }
 
 export default SpecialityController;

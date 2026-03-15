@@ -27,6 +27,13 @@ class ProfessionController implements IProfessionController {
     const professions: Profession[] = await this._professionService.findAll!();
     return response.status(200).json(professions);
   }
+
+  async delete(request: Request, response: Response): Promise<Response | void> {
+    const { id } = request.params;
+    await this._professionService.delete(Number(id));
+
+    return response.status(204).send();
+  }
 }
 
 export default ProfessionController;
