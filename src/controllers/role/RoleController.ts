@@ -3,6 +3,8 @@ import RoleService from "@/services/role/RoleService.js";
 
 import type { IRoleController } from "./IRoleController.js";
 
+import type { Request, Response } from 'express';
+
 type Props = {
   roleService?: IRoleService;
 };
@@ -14,7 +16,11 @@ class RoleController implements IRoleController {
     this._roleService = props?.roleService ?? new RoleService();
   }
 
-  async create(request: any, response: any): Promise<any> {
+  async create(request: Request, response: Response): Promise<Response | void> {
+    throw new Error("Method not implemented.");
+  }
+
+  async findAll(request: Request, response: Response): Promise<Response | void> {
     throw new Error("Method not implemented.");
   }
 }

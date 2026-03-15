@@ -12,5 +12,7 @@ const professionController: IProfessionController = new ProfessionController();
 const router = express.Router();
 
 router.post("/", professionController.create.bind(professionController));
+router.get("/findAll", professionController.findAll.bind(professionController));
+
 
 export default router;

@@ -37,6 +37,14 @@ class ProfessionService implements IProfessionService {
 
     return await this._professionRepository.create(profession);
   }
+
+  async findAll(): Promise<Profession[]> {
+    const professions: Profession[] = await this._professionRepository.findAll();
+    if(!professions){
+      throw new Error("Nenhuma Profissão encontrada!")
+    }
+    return professions;
+  }
 }
 
 

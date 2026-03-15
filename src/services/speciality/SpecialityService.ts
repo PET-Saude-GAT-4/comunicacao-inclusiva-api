@@ -3,6 +3,8 @@ import SpecialityRepository from "@/repositories/speciality/SpecialityRepository
 
 import type { ISpecialityService } from "./ISpecialityService.js";
 
+import type { Specialty } from "@/models/Specialty.js";
+
 type Props = {
   specialityRepository?: ISpecialityRepository;
 };
@@ -15,7 +17,11 @@ class SpecialityService implements ISpecialityService {
       props?.specialityRepository ?? new SpecialityRepository();
   }
 
-  async create(value: any): Promise<any> {
+  async create(value: Partial<Specialty>): Promise<Specialty> {
+    throw new Error("Method not implemented.");
+  }
+
+  async findAll(): Promise<Specialty[]> {
     throw new Error("Method not implemented.");
   }
 }

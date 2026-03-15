@@ -3,6 +3,8 @@ import UserService from "@/services/user/UserService.js";
 
 import type { IUserController } from "./IUserController.js";
 
+import type { Request, Response } from 'express';
+
 type Props = {
   userService?: IUserService;
 };
@@ -14,7 +16,11 @@ class UserController implements IUserController {
     this._userService = props?.userService ?? new UserService();
   }
 
-  async create(request: any, response: any): Promise<any> {
+  async create(request: Request, response: Response): Promise<Response | void> {
+    throw new Error("Method not implemented.");
+  }
+
+  async findAll(request: Request, response: Response): Promise<Response | void> {
     throw new Error("Method not implemented.");
   }
 }

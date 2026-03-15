@@ -14,6 +14,16 @@ class ProfessionRepository implements IProfessionRepository{
     return new Profession(data.id, data.code, data.name);
   }
 
+  async findAll(): Promise<Profession[]> {
+    const data = await prisma.profession.findMany();
+
+    const professions: Profession[] = data.map((profession) =>{
+      return new Profession(profession.id, profession.name, profession.code);
+    })
+
+    return professions;
+  }
+
   async findByName(name: string): Promise<Profession | null> {
     const data = await prisma.profession.findUnique({where: {name}});
 
