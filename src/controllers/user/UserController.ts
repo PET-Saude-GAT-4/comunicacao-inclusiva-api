@@ -18,14 +18,14 @@ class UserController implements IUserController {
 
   async create(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const { email, password } = req.body;
+      const { email, password, roleId } = req.body;
 
-      if (!email || !password) {
-        res.status(400).json({ error: "Email and password are required" });
+      if (!email || !password  || !roleId) {
+        res.status(400).json({ error: "Email, password, and role ID are required" });
         return;
       }
 
-      await this._userService.create(email, password);
+      await this._userService.create(email, password, roleId);
       res.status(201).send();
     } catch (error) {
       next(error);
@@ -62,9 +62,9 @@ class UserController implements IUserController {
   async update(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const id = Number(req.params.id);
-      const { email, password } = req.body;
+      const { email, password, roleId } = req.body;
 
-      await this._userService.update(id, { email, password });
+      await this._userService.update(id, { email, password, roleId });
       res.status(204).send();
     } catch (error) {
       next(error);

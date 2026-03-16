@@ -1,5 +1,6 @@
 import type { NextFunction, Request, Response } from "express";
 
+import type { RoleInput } from "@/models/types/Role.type.js";
 import type { IRoleService } from "@/services/role/IRoleService.js";
 import RoleService from "@/services/role/RoleService.js";
 
@@ -64,12 +65,14 @@ class RoleController implements IRoleController {
       const id = Number(req.params.id);
       const { name } = req.body;
 
-      if (!name) {
+      const roleInput: RoleInput = { name };
+
+      if (!roleInput.name) {
         res.status(400).json({ error: "Name is required" });
         return;
       }
 
-      await this._roleService.update(id, name);
+      await this._roleService.update(id, roleInput);
       res.status(204).send();
     } catch (error) {
       next(error);
