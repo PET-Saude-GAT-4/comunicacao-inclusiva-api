@@ -10,6 +10,14 @@ class RoleRepository implements IRoleRepository {
     throw new Error("Method not implemented.");
   }
 
+  async findById(id: number): Promise<Role | null> {
+    throw new Error("Method not implemented.");
+  }
+
+  async update(id: number, value: Partial<Role>): Promise<Role> {
+    throw new Error("Method not implemented.");
+  }
+
   async delete(id: number): Promise<void> {
     throw new Error("Method not implemented.");
   }

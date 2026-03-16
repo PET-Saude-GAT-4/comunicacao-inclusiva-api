@@ -1,4 +1,5 @@
 import type { Profession } from "@/models/Profession.js";
+
 import type { IRepository } from "../IRepository.js";
 
 interface IProfessionRepository extends IRepository<Profession> {

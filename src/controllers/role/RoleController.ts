@@ -1,9 +1,9 @@
+import type { Request, Response } from 'express';
+
 import type { IRoleService } from "@/services/role/IRoleService.js";
 import RoleService from "@/services/role/RoleService.js";
 
 import type { IRoleController } from "./IRoleController.js";
-
-import type { Request, Response } from 'express';
 
 type Props = {
   roleService?: IRoleService;

@@ -1,6 +1,8 @@
+import type { Prisma } from "@/generated/prisma/client.js";
 import { Profession } from "@/models/Profession.js";
-import type { IProfessionRepository } from "./IProfessionRepository.js";
 import { prisma } from "@/prisma.js";
+
+import type { IProfessionRepository } from "./IProfessionRepository.js";
 
 class ProfessionRepository implements IProfessionRepository{
   async create(profession: Profession): Promise<Profession>{
@@ -14,11 +16,31 @@ class ProfessionRepository implements IProfessionRepository{
     return new Profession(data.id, data.code, data.name);
   }
 
+  async update(id: number, profession: Partial<Profession>): Promise<Profession> {
+
+    const data: Prisma.ProfessionUpdateInput = {};
+
+    if (profession.name !== undefined) {
+      data.name = profession.name;
+    }
+
+    if (profession.code !== undefined) {
+      data.code = profession.code;
+    }
+
+    const result = await prisma.profession.update({
+      where: { id },
+      data
+    });
+
+    return new Profession(result.id, result.code, result.name);
+  }
+
   async findAll(): Promise<Profession[]> {
     const data = await prisma.profession.findMany();
 
     const professions: Profession[] = data.map((profession) =>{
-      return new Profession(profession.id, profession.name, profession.code);
+      return new Profession(profession.id, profession.code, profession.name);
     })
 
     return professions;
