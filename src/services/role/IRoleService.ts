@@ -1,4 +1,3 @@
-import type { Role } from "@/models/Role.js";
 import type { RoleInput, RoleOutput } from "@/models/types/Role.type.js";
 
 interface IRoleService {

@@ -1,5 +1,4 @@
 import type { RoleInput, RoleOutput } from "@/models/types/Role.type.js";
-import { prisma } from "@/prisma.js";
 import type { IRoleRepository } from "@/repositories/role/IRoleRepository.js";
 import RoleRepository from "@/repositories/role/RoleRepository.js";
 
@@ -17,20 +16,9 @@ class RoleService implements IRoleService {
   }
 
   async create(name: string): Promise<RoleOutput> {
-    try {
-      const role = await prisma.role.create({
-        data: { name },
-      }); // TODO: implement the create method in RoleRepository
-      return {
-        name: role.name,
-        createdAt: role.createdAt,
-        updatedAt: role.updatedAt,
-        id: role.id,
-      };
-    } catch (error) {
-      console.error(`Error creating role: ${error}`);
-      throw error;
-    }
+    const RoleInput: RoleInput = {name};
+
+    return this._roleRepository.create(RoleInput);
   }
 
   async findById(id: number): Promise<RoleOutput> {
@@ -42,7 +30,7 @@ class RoleService implements IRoleService {
   }
 
   async update(id: number, data: RoleInput): Promise<RoleOutput> {
-    if(data.name == undefined) {
+    if (data.name == undefined) {
       throw new Error("No valid fields to update");
     }
 
