@@ -9,15 +9,16 @@ async function main() {
     throw new Error("ADMIN_PASSWORD environment variable is required");
   }
 
-  const roles = await Promise.all(
-    ["super_admin", "admin", "viewer"].map((name) =>
-      prisma.role.upsert({
-        where: { name },
-        update: {},
-        create: { name },
-      }),
-    ),
-  );
+  const roles = [];
+  for (const role of ["super_admin", "admin", "viewer"]) {
+    const r = await prisma.role.upsert({
+      where: { name: role },
+      update: {},
+      create: { name: role },
+    });
+
+    roles.push(r);
+  }
 
   const superAdminRole = roles.find((role) => role.name === "super_admin")!;
 
