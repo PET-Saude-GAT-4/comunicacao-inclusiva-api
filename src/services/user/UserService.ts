@@ -1,6 +1,8 @@
 import bcrypt from "bcryptjs";
 
 import type { UserOutput, UserUpdateInput } from "@/models/types/User.type.js";
+import type { IRoleRepository } from "@/repositories/role/IRoleRepository.js";
+import RoleRepository from "@/repositories/role/RoleRepository.js";
 import type { IUserRepository } from "@/repositories/user/IUserRepository.js";
 import UserRepository from "@/repositories/user/UserRepository.js";
 
@@ -8,13 +10,16 @@ import type { IUserService } from "./IUserService.js";
 
 type Props = {
   userRepository?: IUserRepository;
+  roleRepository?: IRoleRepository;
 };
 
 class UserService implements IUserService {
   private _userRepository: IUserRepository;
+  private _roleRepository: IRoleRepository;
 
   constructor(props?: Props) {
     this._userRepository = props?.userRepository ?? new UserRepository();
+    this._roleRepository = props?.roleRepository ?? new RoleRepository();
   }
 
   async hashPassword(password: string): Promise<string> {
@@ -28,7 +33,7 @@ class UserService implements IUserService {
   ): Promise<UserOutput> {
     const existsByUserEmail = await this._userRepository.existsByEmail(email);
 
-    const existsByRoleId = await this._userRepository.existsById(roleId);
+    const existsByRoleId = await this._roleRepository.existsById(roleId);
 
     if (!existsByRoleId) {
       throw new Error("Role not found");
