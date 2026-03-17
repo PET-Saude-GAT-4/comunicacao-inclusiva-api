@@ -12,6 +12,7 @@
     "docker:prod": "docker compose --profile prod up -d --build",
     "prisma:migrate:dev": "docker exec -it api_dev npx prisma migrate dev",
     "prisma:migrate:prod": "dotenv -e .env.prod -- prisma migrate deploy",
+    "prisma:seed": "docker exec -it api_dev npx prisma db seed",
     "build": "tsc && tsc-alias",
     "start": "node dist/server.js",
     "dev": "tsc --noEmit && CHOKIDAR_USEPOLLING=true tsx watch src/server.ts",
