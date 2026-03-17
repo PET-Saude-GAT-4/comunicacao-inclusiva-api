@@ -172,6 +172,24 @@ class UserRepository implements IUserRepository {
     }
   }
 
+  async findPasswordHashByEmail(email: string): Promise<string> {
+    try {
+      const user = await prisma.user.findUniqueOrThrow({
+        where: {
+          email,
+        },
+        select: {
+          passwordHash: true,
+        },
+      });
+
+      return user.passwordHash;
+    } catch (error) {
+      console.error(`Error finding password hash by email: ${error}`);
+      throw error;
+    }
+  }
+
   async existsByEmail(email: string): Promise<boolean> {
     try {
       const userCount: number = await prisma.user.count({ where: { email } });

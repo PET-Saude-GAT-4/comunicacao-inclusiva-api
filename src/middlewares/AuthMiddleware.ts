@@ -38,12 +38,12 @@ class AuthMiddleware implements IAuthMiddleware {
       return !required;
     }
 
-    const { id, email, userRole } = decoded;
+    const { id, email, role } = decoded;
 
     req.user = {
-      id,
-      email,
-      role: userRole,
+      id: id,
+      email: email,
+      role: role,
     };
 
     return true;

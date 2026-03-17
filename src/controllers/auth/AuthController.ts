@@ -62,14 +62,16 @@ class AuthController implements IAuthController {
     next: NextFunction,
   ): Promise<void> {
     try {
-      const { email, password } = req.body;
+      const { email, password, roleId } = req.body;
 
       if (!email || !password) {
-        res.status(400).json({ error: "Email and password are required" });
+        res
+          .status(400)
+          .json({ error: "Email, password and roleId are required" });
         return;
       }
 
-      await this._authService.register(email, password);
+      await this._authService.register(email, password, roleId);
       res.status(201).send();
     } catch (error) {
       next(error);
