@@ -1,9 +1,10 @@
+import type { Request, Response } from 'express';
+
+import { Specialty } from "@/models/Specialty.js";
 import type { ISpecialityService } from "@/services/speciality/ISpecialityService.js";
 import SpecialityService from "@/services/speciality/SpecialityService.js";
 
 import type { ISpecialityController } from "./ISpecialityController.js";
-
-import type { Request, Response } from 'express';
 
 type Props = {
   specialityService?: ISpecialityService;
@@ -17,16 +18,41 @@ class SpecialityController implements ISpecialityController {
       props?.specialityService ?? new SpecialityService();
   }
 
-  async create(request: Request, response: Response): Promise<Response | void> {
-    throw new Error("Method not implemented.");
+  async create(req: Request, res: Response): Promise<Response | void> {
+    const specialty: Specialty = await this._specialityService.create(req.body);
+
+    return res.status(201).json(specialty);
+  }
+
+  async update(req: Request, res: Response): Promise<Response | void> {
+    const { id } = req.params;
+
+    const specialty = await this._specialityService.update!(
+      Number(id),
+      req.body
+    );
+
+    return res.status(200).json(specialty);
   }
 
   async findAll(request: Request, response: Response): Promise<Response | void> {
-    throw new Error("Method not implemented.");
+    const specialties: Specialty[] = await this._specialityService.findAll();
+    return response.status(200).json(specialties);
+  }
+
+  async findById(req: Request, res: Response): Promise<Response | void> {
+    const { id } = req.params;
+
+    const specialty = await this._specialityService.findById!(Number(id));
+
+    return res.status(200).json(specialty);
   }
 
   async delete(request: Request, response: Response): Promise<Response | void> {
-    throw new Error("Method not implemented.");
+    const { id } = request.params;
+    await this._specialityService.delete(Number(id));
+
+    return response.status(204).send();
   }
 }
 
