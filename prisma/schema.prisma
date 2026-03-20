@@ -46,7 +46,7 @@ model Specialty {
   code         String     @unique
   name         String
   professionId Int
-  profession   Profession @relation(fields: [professionId], references: [id])
+  profession   Profession @relation(fields: [professionId], references: [id], onDelete: Cascade)
   createdAt    DateTime   @default(now())
   updatedAt    DateTime   @updatedAt
 

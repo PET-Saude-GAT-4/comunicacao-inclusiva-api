@@ -1,6 +1,5 @@
 import type { Request, Response } from "express";
 
-import { Profession } from "@/models/Profession.js";
 import type { ProfessionOutput } from "@/models/types/Profession.type.js";
 import type { IProfessionService } from "@/services/profession/IProfessionService.js";
 import ProfessionService from "@/services/profession/ProfessionService.js";
