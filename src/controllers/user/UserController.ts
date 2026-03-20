@@ -1,9 +1,9 @@
+import type { Request, Response } from "express";
+
 import type { IUserService } from "@/services/user/IUserService.js";
 import UserService from "@/services/user/UserService.js";
 
 import type { IUserController } from "./IUserController.js";
-
-import type { Request, Response } from 'express';
 
 type Props = {
   userService?: IUserService;
@@ -20,7 +20,10 @@ class UserController implements IUserController {
     throw new Error("Method not implemented.");
   }
 
-  async findAll(request: Request, response: Response): Promise<Response | void> {
+  async findAll(
+    request: Request,
+    response: Response,
+  ): Promise<Response | void> {
     throw new Error("Method not implemented.");
   }
 

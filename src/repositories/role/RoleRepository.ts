@@ -1,4 +1,5 @@
 import type { Role } from "@/models/Role.js";
+
 import type { IRoleRepository } from "./IRoleRepository.js";
 
 class RoleRepository implements IRoleRepository {

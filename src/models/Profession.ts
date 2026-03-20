@@ -1,5 +1,5 @@
-export class Profession{
-    constructor(
+export class Profession {
+  constructor(
     readonly id: number,
     readonly code: string,
 
@@ -18,8 +18,7 @@ export class Profession{
     return {
       id: this.id,
       code: this.code,
-      name: this.name
+      name: this.name,
     };
   }
-
 }

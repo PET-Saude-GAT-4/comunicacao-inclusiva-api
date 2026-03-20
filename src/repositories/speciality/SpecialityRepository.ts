@@ -21,14 +21,21 @@ class SpecialityRepository implements ISpecialityRepository {
     const data = await prisma.specialty.findMany();
 
     return data.map((specialty) => {
-      return new Specialty(specialty.id, specialty.code, specialty.name, specialty.professionId);
+      return new Specialty(
+        specialty.id,
+        specialty.code,
+        specialty.name,
+        specialty.professionId,
+      );
     });
   }
 
   async findById(id: number): Promise<Specialty | null> {
     const data = await prisma.specialty.findUnique({ where: { id } });
 
-    return data ? new Specialty(data.id, data.code, data.name, data.professionId) : null;
+    return data
+      ? new Specialty(data.id, data.code, data.name, data.professionId)
+      : null;
   }
 
   async update(id: number, speciality: Partial<Specialty>): Promise<Specialty> {
@@ -51,7 +58,12 @@ class SpecialityRepository implements ISpecialityRepository {
       data,
     });
 
-    return new Specialty(result.id, result.code, result.name, result.professionId);
+    return new Specialty(
+      result.id,
+      result.code,
+      result.name,
+      result.professionId,
+    );
   }
 
   async delete(id: number): Promise<void> {
@@ -63,10 +75,15 @@ class SpecialityRepository implements ISpecialityRepository {
   async findByCode(code: string): Promise<Specialty | null> {
     const data = await prisma.specialty.findUnique({ where: { code } });
 
-    return data ? new Specialty(data.id, data.code, data.name, data.professionId) : null;
+    return data
+      ? new Specialty(data.id, data.code, data.name, data.professionId)
+      : null;
   }
 
-  async findByNameAndProfessionId(name: string, professionId: number): Promise<Specialty | null> {
+  async findByNameAndProfessionId(
+    name: string,
+    professionId: number,
+  ): Promise<Specialty | null> {
     const data = await prisma.specialty.findUnique({
       where: {
         name_professionId: {
@@ -76,7 +93,9 @@ class SpecialityRepository implements ISpecialityRepository {
       },
     });
 
-    return data ? new Specialty(data.id, data.code, data.name, data.professionId) : null;
+    return data
+      ? new Specialty(data.id, data.code, data.name, data.professionId)
+      : null;
   }
 }
 

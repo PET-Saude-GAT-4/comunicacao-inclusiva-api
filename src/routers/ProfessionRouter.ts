@@ -13,9 +13,8 @@ const router = express.Router();
 
 router.post("/", professionController.create.bind(professionController));
 router.get("/findAll", professionController.findAll.bind(professionController));
-router.get("/:id", professionController.findById!.bind(professionController))
-router.put("/:id", professionController.update!.bind(professionController))
+router.get("/:id", professionController.findById!.bind(professionController));
+router.put("/:id", professionController.update!.bind(professionController));
 router.delete("/:id", professionController.delete.bind(professionController));
-
 
 export default router;

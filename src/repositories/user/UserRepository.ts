@@ -1,4 +1,5 @@
 import { User } from "@/models/User.js";
+
 import type { IUserRepository } from "./IUserRepository.js";
 
 class UserRepository implements IUserRepository {

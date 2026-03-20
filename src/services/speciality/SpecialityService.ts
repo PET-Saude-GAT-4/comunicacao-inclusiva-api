@@ -1,10 +1,9 @@
+import type { Specialty } from "@/models/Specialty.js";
 import type { ISpecialityRepository } from "@/repositories/speciality/ISpecialityRepository.js";
 import SpecialityRepository from "@/repositories/speciality/SpecialityRepository.js";
 import { normalize } from "@/utils/normalize.js";
 
 import type { ISpecialityService } from "./ISpecialityService.js";
-
-import type { Specialty } from "@/models/Specialty.js";
 
 type Props = {
   specialityRepository?: ISpecialityRepository;
@@ -19,14 +18,23 @@ class SpecialityService implements ISpecialityService {
   }
 
   async create(speciality: Partial<Specialty>): Promise<Specialty> {
-    if (!speciality.name || !speciality.code || speciality.professionId === undefined) {
+    if (
+      !speciality.name ||
+      !speciality.code ||
+      speciality.professionId === undefined
+    ) {
       throw new Error("Nome, código e profissão são obrigatórios!");
     }
 
     const name: string = normalize(speciality.name);
     speciality.name = name;
 
-    if (await this._specialityRepository.findByNameAndProfessionId(speciality.name, speciality.professionId)) {
+    if (
+      await this._specialityRepository.findByNameAndProfessionId(
+        speciality.name,
+        speciality.professionId,
+      )
+    ) {
       throw new Error("Esse nome já existe para esta profissão");
     }
 
@@ -44,15 +52,28 @@ class SpecialityService implements ISpecialityService {
       throw new Error("Especialidade não encontrada");
     }
 
-    if (speciality.name !== undefined || speciality.professionId !== undefined) {
-      const newName = speciality.name !== undefined ? normalize(speciality.name) : existing.name;
-      const newProfessionId = speciality.professionId !== undefined ? speciality.professionId : existing.professionId;
+    if (
+      speciality.name !== undefined ||
+      speciality.professionId !== undefined
+    ) {
+      const newName =
+        speciality.name !== undefined
+          ? normalize(speciality.name)
+          : existing.name;
+      const newProfessionId =
+        speciality.professionId !== undefined
+          ? speciality.professionId
+          : existing.professionId;
 
       if (speciality.name !== undefined) {
         speciality.name = newName;
       }
 
-      const nameExists = await this._specialityRepository.findByNameAndProfessionId(newName, newProfessionId);
+      const nameExists =
+        await this._specialityRepository.findByNameAndProfessionId(
+          newName,
+          newProfessionId,
+        );
 
       if (nameExists && nameExists.id !== id) {
         throw new Error("Esse nome já existe para esta profissão");
@@ -60,7 +81,9 @@ class SpecialityService implements ISpecialityService {
     }
 
     if (speciality.code !== undefined) {
-      const codeExists = await this._specialityRepository.findByCode(speciality.code);
+      const codeExists = await this._specialityRepository.findByCode(
+        speciality.code,
+      );
 
       if (codeExists && codeExists.id !== id) {
         throw new Error("Esse código já existe");

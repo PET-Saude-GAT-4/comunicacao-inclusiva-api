@@ -1,9 +1,8 @@
+import type { Role } from "@/models/Role.js";
 import type { IRoleRepository } from "@/repositories/role/IRoleRepository.js";
 import RoleRepository from "@/repositories/role/RoleRepository.js";
 
 import type { IRoleService } from "./IRoleService.js";
-
-import type { Role } from "@/models/Role.js";
 
 type Props = {
   roleRepository?: IRoleRepository;

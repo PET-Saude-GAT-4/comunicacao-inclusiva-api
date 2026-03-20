@@ -1,4 +1,4 @@
-import type { Request, Response } from 'express';
+import type { Request, Response } from "express";
 
 import { Specialty } from "@/models/Specialty.js";
 import type { ISpecialityService } from "@/services/speciality/ISpecialityService.js";
@@ -29,13 +29,16 @@ class SpecialityController implements ISpecialityController {
 
     const specialty = await this._specialityService.update!(
       Number(id),
-      req.body
+      req.body,
     );
 
     return res.status(200).json(specialty);
   }
 
-  async findAll(request: Request, response: Response): Promise<Response | void> {
+  async findAll(
+    request: Request,
+    response: Response,
+  ): Promise<Response | void> {
     const specialties: Specialty[] = await this._specialityService.findAll();
     return response.status(200).json(specialties);
   }

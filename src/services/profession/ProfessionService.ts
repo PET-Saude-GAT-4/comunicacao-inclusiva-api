@@ -18,28 +18,29 @@ class ProfessionService implements IProfessionService {
   }
 
   async create(profession: Partial<Profession>): Promise<Profession> {
-
     if (!profession.name || !profession.code) {
       throw new Error("Nome e código da profissão são obrigatórios!");
     }
 
-    const name: string = normalize(profession.name)
+    const name: string = normalize(profession.name);
 
-    profession.name = name
-    
-    if(await this._professionRepository.findByName(profession.name)){
+    profession.name = name;
+
+    if (await this._professionRepository.findByName(profession.name)) {
       throw new Error("Esse nome ja existe");
     }
 
-    if(await this._professionRepository.findByCode(profession.code)){
+    if (await this._professionRepository.findByCode(profession.code)) {
       throw new Error("Esse código ja existe");
     }
 
     return await this._professionRepository.create(profession);
   }
 
-  async update(id: number, profession: Partial<Profession>): Promise<Profession> {
-
+  async update(
+    id: number,
+    profession: Partial<Profession>,
+  ): Promise<Profession> {
     const existing = await this._professionRepository.findById!(id);
 
     if (!existing) {
@@ -49,7 +50,9 @@ class ProfessionService implements IProfessionService {
     if (profession.name) {
       profession.name = normalize(profession.name);
 
-      const nameExists = await this._professionRepository.findByName(profession.name);
+      const nameExists = await this._professionRepository.findByName(
+        profession.name,
+      );
 
       if (nameExists && nameExists.id !== id) {
         throw new Error("Esse nome já existe");
@@ -57,7 +60,9 @@ class ProfessionService implements IProfessionService {
     }
 
     if (profession.code) {
-      const codeExists = await this._professionRepository.findByCode(profession.code);
+      const codeExists = await this._professionRepository.findByCode(
+        profession.code,
+      );
 
       if (codeExists && codeExists.id !== id) {
         throw new Error("Esse código já existe");
@@ -68,9 +73,10 @@ class ProfessionService implements IProfessionService {
   }
 
   async findAll(): Promise<Profession[]> {
-    const professions: Profession[] = await this._professionRepository.findAll();
-    if(!professions){
-      throw new Error("Nenhuma Profissão encontrada!")
+    const professions: Profession[] =
+      await this._professionRepository.findAll();
+    if (!professions) {
+      throw new Error("Nenhuma Profissão encontrada!");
     }
     return professions;
   }
@@ -80,16 +86,14 @@ class ProfessionService implements IProfessionService {
   }
 
   async findById(id: number): Promise<Profession> {
+    const profession = await this._professionRepository.findById!(id);
 
-  const profession = await this._professionRepository.findById!(id);
+    if (!profession) {
+      throw new Error("Profissão não encontrada");
+    }
 
-  if (!profession) {
-    throw new Error("Profissão não encontrada");
+    return profession;
   }
-
-  return profession;
 }
-}
-
 
 export default ProfessionService;

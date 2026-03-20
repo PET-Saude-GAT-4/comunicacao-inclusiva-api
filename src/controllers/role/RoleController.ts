@@ -1,4 +1,4 @@
-import type { Request, Response } from 'express';
+import type { Request, Response } from "express";
 
 import type { IRoleService } from "@/services/role/IRoleService.js";
 import RoleService from "@/services/role/RoleService.js";
@@ -20,7 +20,10 @@ class RoleController implements IRoleController {
     throw new Error("Method not implemented.");
   }
 
-  async findAll(request: Request, response: Response): Promise<Response | void> {
+  async findAll(
+    request: Request,
+    response: Response,
+  ): Promise<Response | void> {
     throw new Error("Method not implemented.");
   }
 

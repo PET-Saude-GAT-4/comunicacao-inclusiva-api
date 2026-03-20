@@ -1,9 +1,8 @@
+import type { User } from "@/models/User.js";
 import type { IUserRepository } from "@/repositories/user/IUserRepository.js";
 import UserRepository from "@/repositories/user/UserRepository.js";
 
 import type { IUserService } from "./IUserService.js";
-
-import type { User } from "@/models/User.js";
 
 type Props = {
   userRepository?: IUserRepository;

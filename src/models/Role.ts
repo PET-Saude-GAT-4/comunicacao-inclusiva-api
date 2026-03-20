@@ -13,8 +13,8 @@ export class Role {
   public get name(): string {
     return this._name;
   }
-  
-  public  get users(): User[] {
+
+  public get users(): User[] {
     return this._users;
   }
 

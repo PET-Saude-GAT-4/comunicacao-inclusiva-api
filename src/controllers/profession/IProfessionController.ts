@@ -4,5 +4,4 @@ import type { Icontroller } from "../Icontroller.js";
 
 interface IProfessionController extends Icontroller<Profession> {}
 
-
 export type { IProfessionController };

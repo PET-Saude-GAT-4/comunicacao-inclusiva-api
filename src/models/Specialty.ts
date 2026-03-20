@@ -14,7 +14,7 @@ export class Specialty {
   public get professionId(): number {
     return this._professionId;
   }
-  
+
   public set name(name: string) {
     this._name = name;
   }
