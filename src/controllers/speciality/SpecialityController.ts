@@ -1,6 +1,5 @@
 import type { Request, Response } from "express";
 
-import { Specialty } from "@/models/Specialty.js";
 import type { ISpecialityService } from "@/services/speciality/ISpecialityService.js";
 import SpecialityService from "@/services/speciality/SpecialityService.js";
 
@@ -19,7 +18,14 @@ class SpecialityController implements ISpecialityController {
   }
 
   async create(req: Request, res: Response): Promise<Response | void> {
-    const specialty: Specialty = await this._specialityService.create(req.body);
+    const { professionId } = req.params;
+    const { name, code } = req.body;
+
+    const specialty = await this._specialityService.create({
+      name,
+      code,
+      professionId: Number(professionId),
+    });
 
     return res.status(201).json(specialty);
   }
@@ -39,7 +45,7 @@ class SpecialityController implements ISpecialityController {
     request: Request,
     response: Response,
   ): Promise<Response | void> {
-    const specialties: Specialty[] = await this._specialityService.findAll();
+    const specialties = await this._specialityService.findAll();
     return response.status(200).json(specialties);
   }
 

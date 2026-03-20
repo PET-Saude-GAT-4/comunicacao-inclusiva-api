@@ -11,10 +11,9 @@ const specialityController: ISpecialityController = new SpecialityController();
 
 const router = express.Router();
 
-router.post("/", specialityController.create.bind(specialityController));
 router.get("/findAll", specialityController.findAll.bind(specialityController));
 router.get("/:id", specialityController.findById!.bind(specialityController));
-router.put("/:id", specialityController.update!.bind(specialityController));
+router.patch("/:id", specialityController.update!.bind(specialityController));
 router.delete("/:id", specialityController.delete.bind(specialityController));
 
 export default router;

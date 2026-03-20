@@ -1,6 +1,7 @@
 import type { Request, Response } from "express";
 
 import { Profession } from "@/models/Profession.js";
+import type { ProfessionOutput } from "@/models/types/Profession.type.js";
 import type { IProfessionService } from "@/services/profession/IProfessionService.js";
 import ProfessionService from "@/services/profession/ProfessionService.js";
 
@@ -19,7 +20,7 @@ class ProfessionController implements IProfessionController {
   }
 
   async create(req: Request, res: Response): Promise<Response | void> {
-    const profession: Profession = await this._professionService.create(
+    const profession: ProfessionOutput = await this._professionService.create(
       req.body,
     );
 
@@ -41,7 +42,7 @@ class ProfessionController implements IProfessionController {
     request: Request,
     response: Response,
   ): Promise<Response | void> {
-    const professions: Profession[] = await this._professionService.findAll!();
+    const professions = await this._professionService.findAll!();
     return response.status(200).json(professions);
   }
 

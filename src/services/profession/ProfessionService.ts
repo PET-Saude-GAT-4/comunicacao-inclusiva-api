@@ -1,4 +1,9 @@
-import { Profession } from "@/models/Profession.js";
+import type { ProfessionUpdateInput } from "@/generated/prisma/models.js";
+import type {
+  ProfessionInput,
+  ProfessionOutput,
+  ProfessionUpdate,
+} from "@/models/types/Profession.type.js";
 import type { IProfessionRepository } from "@/repositories/profession/IProfessionRepository.js";
 import ProfessionRepository from "@/repositories/profession/ProfessionRepository.js";
 import { normalize } from "@/utils/normalize.js";
@@ -6,7 +11,7 @@ import { normalize } from "@/utils/normalize.js";
 import type { IProfessionService } from "./IProfessionService.js";
 
 type Props = {
-  professionRepository?: IProfessionRepository;
+  professionRepository: IProfessionRepository;
 };
 
 class ProfessionService implements IProfessionService {
@@ -17,75 +22,89 @@ class ProfessionService implements IProfessionService {
       props?.professionRepository ?? new ProfessionRepository();
   }
 
-  async create(profession: Partial<Profession>): Promise<Profession> {
-    if (!profession.name || !profession.code) {
+  async create(profession: ProfessionInput): Promise<ProfessionOutput> {
+    const { name, code } = profession;
+
+    if (!name || !code) {
       throw new Error("Nome e código da profissão são obrigatórios!");
     }
 
-    const name: string = normalize(profession.name);
+    const normalizedName = normalize(name);
 
-    profession.name = name;
-
-    if (await this._professionRepository.findByName(profession.name)) {
+    if (await this._professionRepository.findByName(normalizedName)) {
       throw new Error("Esse nome ja existe");
     }
 
-    if (await this._professionRepository.findByCode(profession.code)) {
+    if (await this._professionRepository.findByCode(code)) {
       throw new Error("Esse código ja existe");
     }
 
-    return await this._professionRepository.create(profession);
+    return await this._professionRepository.create({
+      name: normalizedName,
+      code,
+    });
   }
 
   async update(
     id: number,
-    profession: Partial<Profession>,
-  ): Promise<Profession> {
+    profession: ProfessionUpdate,
+  ): Promise<ProfessionOutput> {
     const existing = await this._professionRepository.findById!(id);
 
     if (!existing) {
       throw new Error("Profissão não encontrada");
     }
 
-    if (profession.name) {
-      profession.name = normalize(profession.name);
+    const { name, code } = profession;
+    const updateData: Partial<ProfessionUpdate> = {};
 
-      const nameExists = await this._professionRepository.findByName(
-        profession.name,
-      );
+    if (name) {
+      const newName = normalize(name);
+      const nameExists = await this._professionRepository.findByName(newName);
 
       if (nameExists && nameExists.id !== id) {
         throw new Error("Esse nome já existe");
       }
+
+      updateData.name = newName;
     }
 
-    if (profession.code) {
-      const codeExists = await this._professionRepository.findByCode(
-        profession.code,
-      );
+    if (code) {
+      const codeExists = await this._professionRepository.findByCode(code);
 
       if (codeExists && codeExists.id !== id) {
         throw new Error("Esse código já existe");
       }
+
+      updateData.code = code;
     }
 
-    return await this._professionRepository.update!(id, profession);
+    if (Object.keys(updateData).length === 0) {
+      throw new Error("Nenhum parâmetro passado!");
+    }
+
+    return await this._professionRepository.update(id, updateData);
   }
 
-  async findAll(): Promise<Profession[]> {
-    const professions: Profession[] =
+  async findAll(): Promise<ProfessionOutput[]> {
+    const professions: ProfessionOutput[] =
       await this._professionRepository.findAll();
+
     if (!professions) {
       throw new Error("Nenhuma Profissão encontrada!");
     }
+
     return professions;
   }
 
   async delete(id: number): Promise<void> {
+    if (!(await this._professionRepository.findById(id))) {
+      throw new Error("Nenhuma Profissão encontrada!");
+    }
     await this._professionRepository.delete(id);
   }
 
-  async findById(id: number): Promise<Profession> {
+  async findById(id: number): Promise<ProfessionOutput> {
     const profession = await this._professionRepository.findById!(id);
 
     if (!profession) {

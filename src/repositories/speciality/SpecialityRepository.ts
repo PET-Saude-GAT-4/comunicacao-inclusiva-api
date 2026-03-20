@@ -1,11 +1,15 @@
 import type { Prisma } from "@/generated/prisma/client.js";
-import { Specialty } from "@/models/Specialty.js";
+import type {
+  SpecialtyInput,
+  SpecialtyOutput,
+  SpecialtyUpdate,
+} from "@/models/types/Specialty.type.js";
 import { prisma } from "@/prisma.js";
 
 import type { ISpecialityRepository } from "./ISpecialityRepository.js";
 
 class SpecialityRepository implements ISpecialityRepository {
-  async create(speciality: Specialty): Promise<Specialty> {
+  async create(speciality: SpecialtyInput): Promise<SpecialtyOutput> {
     const data = await prisma.specialty.create({
       data: {
         code: speciality.code,
@@ -14,31 +18,44 @@ class SpecialityRepository implements ISpecialityRepository {
       },
     });
 
-    return new Specialty(data.id, data.code, data.name, data.professionId);
+    return {
+      id: data.id,
+      code: data.code,
+      name: data.name,
+      professionId: data.professionId,
+    };
   }
 
-  async findAll(): Promise<Specialty[]> {
+  async findAll(): Promise<SpecialtyOutput[]> {
     const data = await prisma.specialty.findMany();
 
     return data.map((specialty) => {
-      return new Specialty(
-        specialty.id,
-        specialty.code,
-        specialty.name,
-        specialty.professionId,
-      );
+      return {
+        id: specialty.id,
+        code: specialty.code,
+        name: specialty.name,
+        professionId: specialty.professionId,
+      };
     });
   }
 
-  async findById(id: number): Promise<Specialty | null> {
+  async findById(id: number): Promise<SpecialtyOutput | null> {
     const data = await prisma.specialty.findUnique({ where: { id } });
 
     return data
-      ? new Specialty(data.id, data.code, data.name, data.professionId)
+      ? {
+          id: data.id,
+          code: data.code,
+          name: data.name,
+          professionId: data.professionId,
+        }
       : null;
   }
 
-  async update(id: number, speciality: Partial<Specialty>): Promise<Specialty> {
+  async update(
+    id: number,
+    speciality: SpecialtyUpdate,
+  ): Promise<SpecialtyOutput> {
     const data: Prisma.SpecialtyUpdateInput = {};
 
     if (speciality.name !== undefined) {
@@ -49,21 +66,17 @@ class SpecialityRepository implements ISpecialityRepository {
       data.code = speciality.code;
     }
 
-    if (speciality.professionId !== undefined) {
-      data.profession = { connect: { id: speciality.professionId } };
-    }
-
     const result = await prisma.specialty.update({
       where: { id },
       data,
     });
 
-    return new Specialty(
-      result.id,
-      result.code,
-      result.name,
-      result.professionId,
-    );
+    return {
+      id: result.id,
+      code: result.code,
+      name: result.name,
+      professionId: result.professionId,
+    };
   }
 
   async delete(id: number): Promise<void> {
@@ -72,18 +85,23 @@ class SpecialityRepository implements ISpecialityRepository {
     });
   }
 
-  async findByCode(code: string): Promise<Specialty | null> {
+  async findByCode(code: string): Promise<SpecialtyOutput | null> {
     const data = await prisma.specialty.findUnique({ where: { code } });
 
     return data
-      ? new Specialty(data.id, data.code, data.name, data.professionId)
+      ? {
+          id: data.id,
+          code: data.code,
+          name: data.name,
+          professionId: data.professionId,
+        }
       : null;
   }
 
   async findByNameAndProfessionId(
     name: string,
     professionId: number,
-  ): Promise<Specialty | null> {
+  ): Promise<SpecialtyOutput | null> {
     const data = await prisma.specialty.findUnique({
       where: {
         name_professionId: {
@@ -94,8 +112,18 @@ class SpecialityRepository implements ISpecialityRepository {
     });
 
     return data
-      ? new Specialty(data.id, data.code, data.name, data.professionId)
+      ? {
+          id: data.id,
+          code: data.code,
+          name: data.name,
+          professionId: data.professionId,
+        }
       : null;
+  }
+
+  async existsById(id: number): Promise<boolean> {
+    const count = await prisma.specialty.count({ where: { id } });
+    return count > 0;
   }
 }
 
