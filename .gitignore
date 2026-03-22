@@ -52,4 +52,4 @@ node_modules/
 
 # build
 dist/
-/src/generated/prisma
+/src/generated/
