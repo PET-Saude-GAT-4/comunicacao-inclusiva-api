@@ -51,19 +51,13 @@ class RoleRepository implements IRoleRepository {
     }
   }
 
-  async delete(id: number): Promise<RoleOutput> {
+  async delete(id: number): Promise<void> {
     try {
-      const role = await prisma.role.delete({
+      await prisma.role.delete({
         where: {
           id,
         },
       });
-      return {
-        id: role.id,
-        name: role.name,
-        createdAt: role.createdAt,
-        updatedAt: role.updatedAt,
-      };
     } catch (error) {
       console.error(`Error deleting role: ${error}`);
       throw error;

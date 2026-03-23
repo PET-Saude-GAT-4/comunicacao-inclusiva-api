@@ -9,7 +9,7 @@ interface IRoleService {
 
   update(id: number, data: RoleInput): Promise<RoleOutput>;
 
-  delete(id: number): Promise<RoleOutput>;
+  delete(id: number): Promise<void>;
 }
 
 export type { IRoleService };

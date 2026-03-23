@@ -59,21 +59,13 @@ class UserRepository implements IUserRepository {
     }
   }
 
-  async delete(id: number): Promise<UserOutput> {
+  async delete(id: number): Promise<void> {
     try {
-      const user = await prisma.user.delete({
+      await prisma.user.delete({
         where: {
           id,
         },
       });
-      return {
-        id: user.id,
-        uuid: user.uuid,
-        email: user.email,
-        roleId: user.roleId,
-        createdAt: user.createdAt,
-        updatedAt: user.updatedAt,
-      };
     } catch (error) {
       console.error(`Error deleting user: ${error}`);
       throw error;

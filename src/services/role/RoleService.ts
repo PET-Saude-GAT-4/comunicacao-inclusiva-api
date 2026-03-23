@@ -37,8 +37,8 @@ class RoleService implements IRoleService {
     return this._roleRepository.update(id, data);
   }
 
-  async delete(id: number): Promise<RoleOutput> {
-    return this._roleRepository.delete(id);
+  async delete(id: number): Promise<void> {
+    await this._roleRepository.delete(id);
   }
 }
 

@@ -15,7 +15,7 @@ interface IUserService {
     data: UserUpdateInput,
   ): Promise<UserOutput>;
 
-  delete(id: number): Promise<UserOutput>;
+  delete(id: number): Promise<void>;
 }
 
 export type { IUserService };

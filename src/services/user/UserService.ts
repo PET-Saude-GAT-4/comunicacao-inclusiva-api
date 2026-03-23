@@ -87,8 +87,8 @@ class UserService implements IUserService {
     return this._userRepository.update(id, query);
   }
 
-  async delete(id: number): Promise<UserOutput> {
-    return this._userRepository.delete(id);
+  async delete(id: number): Promise<void> {
+    await this._userRepository.delete(id);
   }
 }
 
