@@ -4,7 +4,7 @@ import type {
   ProfessionUpdate,
 } from "@/models/types/Profession.type.js";
 
-import type { IService } from "../Iservice.js";
+import type { IService } from "../IService.js";
 
 interface IProfessionService extends IService<ProfessionOutput> {
   create(data: ProfessionInput): Promise<ProfessionOutput>;
