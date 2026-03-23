@@ -1,7 +1,15 @@
-import type { Role } from "@/models/Role.js";
+import type { NextFunction, Request, Response } from "express";
 
-import type { Icontroller } from "../Icontroller.js";
+interface IRoleController {
+  create(req: Request, res: Response, next: NextFunction): Promise<void>;
 
-interface IRoleController extends Icontroller<Role> {}
+  findById(req: Request, res: Response, next: NextFunction): Promise<void>;
+
+  findAll(req: Request, res: Response, next: NextFunction): Promise<void>;
+
+  update(req: Request, res: Response, next: NextFunction): Promise<void>;
+
+  delete(req: Request, res: Response, next: NextFunction): Promise<void>;
+}
 
 export type { IRoleController };

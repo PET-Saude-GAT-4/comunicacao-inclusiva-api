@@ -1,7 +1,15 @@
-import type { User } from "@/models/User.js";
+import type { UserOutput, UserUpdateInput } from "@/models/types/User.type.js";
 
-import type { IService } from "../Iservice.js";
+interface IUserService {
+  create(email: string, password: string, roleId: number): Promise<UserOutput>;
 
-interface IUserService extends IService<User> {}
+  findById(id: number): Promise<UserOutput>;
+
+  findAll(): Promise<UserOutput[]>;
+
+  update(id: number, data: UserUpdateInput): Promise<UserOutput>;
+
+  delete(id: number): Promise<void>;
+}
 
 export type { IUserService };

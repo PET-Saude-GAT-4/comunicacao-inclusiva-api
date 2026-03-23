@@ -1,7 +1,15 @@
-import type { Role } from "@/models/Role.js";
+import type { RoleInput, RoleOutput } from "@/models/types/Role.type.js";
 
-import type { IService } from "../Iservice.js";
+interface IRoleService {
+  create(name: string): Promise<RoleOutput>;
 
-interface IRoleService extends IService<Role> {}
+  findById(id: number): Promise<RoleOutput>;
+
+  findAll(): Promise<RoleOutput[]>;
+
+  update(id: number, data: RoleInput): Promise<RoleOutput>;
+
+  delete(id: number): Promise<void>;
+}
 
 export type { IRoleService };

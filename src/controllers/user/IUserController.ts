@@ -1,7 +1,15 @@
-import type { User } from "@/models/User.js";
+import type { NextFunction, Request, Response } from "express";
 
-import type { Icontroller } from "../Icontroller.js";
+interface IUserController {
+  create(req: Request, res: Response, next: NextFunction): Promise<void>;
 
-interface IUserController extends Icontroller<User> {}
+  findById(req: Request, res: Response, next: NextFunction): Promise<void>;
+
+  findAll(req: Request, res: Response, next: NextFunction): Promise<void>;
+
+  update(req: Request, res: Response, next: NextFunction): Promise<void>;
+
+  delete(req: Request, res: Response, next: NextFunction): Promise<void>;
+}
 
 export type { IUserController };

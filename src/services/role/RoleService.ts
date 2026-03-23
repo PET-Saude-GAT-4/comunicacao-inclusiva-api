@@ -1,4 +1,4 @@
-import type { Role } from "@/models/Role.js";
+import type { RoleInput, RoleOutput } from "@/models/types/Role.type.js";
 import type { IRoleRepository } from "@/repositories/role/IRoleRepository.js";
 import RoleRepository from "@/repositories/role/RoleRepository.js";
 
@@ -15,16 +15,35 @@ class RoleService implements IRoleService {
     this._roleRepository = props?.roleRepository ?? new RoleRepository();
   }
 
-  async create(value: Partial<Role>): Promise<Role> {
-    throw new Error("Method not implemented.");
+  async create(name: string): Promise<RoleOutput> {
+    const RoleInput: RoleInput = { name };
+
+    return this._roleRepository.create(RoleInput);
   }
 
-  async findAll(): Promise<Role[]> {
-    throw new Error("Method not implemented.");
+  async findById(id: number): Promise<RoleOutput> {
+    const role = await this._roleRepository.findById(id);
+
+    if (!role) {
+      throw new Error("Role not found.");
+    }
+    return role;
+  }
+
+  async findAll(): Promise<RoleOutput[]> {
+    return this._roleRepository.findAll();
+  }
+
+  async update(id: number, data: RoleInput): Promise<RoleOutput> {
+    if (data.name == undefined) {
+      throw new Error("No valid fields to update");
+    }
+
+    return this._roleRepository.update(id, data);
   }
 
   async delete(id: number): Promise<void> {
-    throw new Error("Method not implemented.");
+    await this._roleRepository.delete(id);
   }
 }
 

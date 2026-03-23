@@ -1,12 +1,21 @@
-import type { User } from "@/models/User.js";
+import type {
+  UserInput,
+  UserOutput,
+  UserUpdateInput,
+} from "@/models/types/User.type.js";
 
 import type { IRepository } from "../IRepository.js";
 
-interface IUserRepository extends IRepository<User> {
-  findByEmail?(email: string): Promise<User>;
-  findByUuid?(uuid: string): Promise<User>;
-  existsByEmail?(email: string): Promise<boolean>;
-  existsByUuid?(uuid: string): Promise<boolean>;
+interface IUserRepository extends IRepository<UserOutput> {
+  findByEmail(email: string): Promise<UserOutput>;
+  findByUuid(uuid: string): Promise<UserOutput>;
+  findPasswordHashByEmail(email: string): Promise<string>;
+
+  existsByEmail(email: string): Promise<boolean>;
+  existsByUuid(uuid: string): Promise<boolean>;
+
+  create(data: UserInput): Promise<UserOutput>;
+  update(id: number, data: UserUpdateInput): Promise<UserOutput>;
 }
 
 export type { IUserRepository };
