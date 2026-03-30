@@ -1,8 +1,8 @@
 import type {
-  SpecialtyInput,
-  SpecialtyOutput,
-  SpecialtyUpdate,
-} from "@/models/types/Specialty.type.js";
+  SpecialityInput,
+  SpecialityOutput,
+  SpecialityUpdate,
+} from "@/models/types/Speciality.type.js";
 import type { IProfessionRepository } from "@/repositories/profession/IProfessionRepository.js";
 import ProfessionRepository from "@/repositories/profession/ProfessionRepository.js";
 import type { ISpecialityRepository } from "@/repositories/speciality/ISpecialityRepository.js";
@@ -27,7 +27,7 @@ class SpecialityService implements ISpecialityService {
       props?.professionRepository ?? new ProfessionRepository();
   }
 
-  async create(speciality: SpecialtyInput): Promise<SpecialtyOutput> {
+  async create(speciality: SpecialityInput): Promise<SpecialityOutput> {
     if (
       !speciality.name ||
       !speciality.code ||
@@ -63,8 +63,8 @@ class SpecialityService implements ISpecialityService {
 
   async update(
     id: number,
-    speciality: SpecialtyUpdate,
-  ): Promise<SpecialtyOutput> {
+    speciality: SpecialityUpdate,
+  ): Promise<SpecialityOutput> {
     const existing = await this._specialityRepository.findById!(id);
 
     if (!existing) {
@@ -73,7 +73,7 @@ class SpecialityService implements ISpecialityService {
 
     const { name, code } = speciality;
 
-    const updateData: Partial<SpecialtyUpdate> = {};
+    const updateData: Partial<SpecialityUpdate> = {};
 
     if (name) {
       const newName = normalize(name);
@@ -109,13 +109,13 @@ class SpecialityService implements ISpecialityService {
     return await this._specialityRepository.update(id, updateData);
   }
 
-  async findAll(): Promise<SpecialtyOutput[]> {
-    const specialties: SpecialtyOutput[] =
+  async findAll(): Promise<SpecialityOutput[]> {
+    const specialities: SpecialityOutput[] =
       await this._specialityRepository.findAll();
-    if (!specialties) {
+    if (!specialities) {
       throw new Error("Nenhuma especialidade encontrada!");
     }
-    return specialties;
+    return specialities;
   }
 
   async delete(id: number): Promise<void> {
@@ -125,14 +125,14 @@ class SpecialityService implements ISpecialityService {
     await this._specialityRepository.delete(id);
   }
 
-  async findById(id: number): Promise<SpecialtyOutput> {
-    const specialty = await this._specialityRepository.findById!(id);
+  async findById(id: number): Promise<SpecialityOutput> {
+    const speciality = await this._specialityRepository.findById!(id);
 
-    if (!specialty) {
+    if (!speciality) {
       throw new Error("Especialidade não encontrada");
     }
 
-    return specialty;
+    return speciality;
   }
 }
 

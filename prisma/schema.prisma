@@ -37,10 +37,10 @@ model Profession {
   name      String   @unique
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  specialties Specialty[]
+  specialities Speciality[]
 }
 
-model Specialty {
+model Speciality {
   id           Int        @id @default(autoincrement())
   code         String     @unique
   name         String

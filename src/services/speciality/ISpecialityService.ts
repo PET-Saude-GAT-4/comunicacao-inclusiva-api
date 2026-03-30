@@ -1,14 +1,14 @@
 import type {
-  SpecialtyInput,
-  SpecialtyOutput,
-  SpecialtyUpdate,
-} from "@/models/types/Specialty.type.js";
+  SpecialityInput,
+  SpecialityOutput,
+  SpecialityUpdate,
+} from "@/models/types/Speciality.type.js";
 
 import type { IService } from "../IService.js";
 
-interface ISpecialityService extends IService<SpecialtyOutput> {
-  create(data: SpecialtyInput): Promise<SpecialtyOutput>;
-  update(id: number, data: SpecialtyUpdate): Promise<SpecialtyOutput>;
+interface ISpecialityService extends IService<SpecialityOutput> {
+  create(data: SpecialityInput): Promise<SpecialityOutput>;
+  update(id: number, data: SpecialityUpdate): Promise<SpecialityOutput>;
 }
 
 export type { ISpecialityService };

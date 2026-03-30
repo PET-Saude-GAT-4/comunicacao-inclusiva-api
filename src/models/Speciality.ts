@@ -1,4 +1,4 @@
-export class Specialty {
+export class Speciality {
   constructor(
     readonly id: number,
     readonly code: string,

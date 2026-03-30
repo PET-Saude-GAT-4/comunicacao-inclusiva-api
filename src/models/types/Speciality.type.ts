@@ -1,15 +1,15 @@
-export type SpecialtyInput = {
+export type SpecialityInput = {
   name: string;
   code: string;
   professionId: number;
 };
 
-export type SpecialtyUpdate = {
+export type SpecialityUpdate = {
   name?: string;
   code?: string;
 };
 
-export type SpecialtyOutput = {
+export type SpecialityOutput = {
   id: number;
   name: string;
   code: string;
