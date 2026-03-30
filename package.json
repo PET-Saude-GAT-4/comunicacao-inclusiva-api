@@ -12,23 +12,28 @@
     "docker:prod": "docker compose --profile prod up -d --build",
     "prisma:migrate:dev": "docker exec -it api_dev npx prisma migrate dev",
     "prisma:migrate:prod": "dotenv -e .env.prod -- prisma migrate deploy",
+    "prisma:seed": "docker exec -it api_dev npx prisma db seed",
     "build": "tsc && tsc-alias",
     "start": "node dist/server.js",
-    "dev": "tsc --noEmit && CHOKIDAR_USEPOLLING=true tsx watch src/server.ts",
+    "dev": "npx prisma generate && tsc --noEmit && CHOKIDAR_USEPOLLING=true tsx watch src/server.ts",
     "lint": "eslint 'src/**/*.ts'"
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.3.0",
     "@prisma/client": "^7.3.0",
+    "bcryptjs": "^3.0.3",
     "cors": "^2.8.6",
     "dotenv": "^17.2.4",
-    "express": "^5.2.1"
+    "express": "^5.2.1",
+    "jsonwebtoken": "^9.0.3"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.3.3",
     "@eslint/js": "^10.0.1",
+    "@types/bcryptjs": "^3.0.0",
     "@types/cors": "^2",
     "@types/express": "^5",
+    "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^25.2.2",
     "@typescript-eslint/eslint-plugin": "^8.55.0",
     "@typescript-eslint/parser": "^8.55.0",
