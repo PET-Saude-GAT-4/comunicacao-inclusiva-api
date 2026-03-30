@@ -1,15 +1,15 @@
-import type { NextFunction, Request, Response } from "express";
+import type { Request, Response } from "express";
 
 interface IUserController {
-  create(req: Request, res: Response, next: NextFunction): Promise<void>;
+  create(req: Request, res: Response): Promise<void>;
 
-  findById(req: Request, res: Response, next: NextFunction): Promise<void>;
+  findById(req: Request, res: Response): Promise<void>;
 
-  findAll(req: Request, res: Response, next: NextFunction): Promise<void>;
+  findAll(req: Request, res: Response): Promise<void>;
 
-  update(req: Request, res: Response, next: NextFunction): Promise<void>;
+  update(req: Request, res: Response): Promise<void>;
 
-  delete(req: Request, res: Response, next: NextFunction): Promise<void>;
+  delete(req: Request, res: Response): Promise<void>;
 }
 
 export type { IUserController };

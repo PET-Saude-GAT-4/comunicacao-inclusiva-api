@@ -1,4 +1,4 @@
-import type { NextFunction, Request, Response } from "express";
+import type { Request, Response } from "express";
 
 import AuthService from "@/services/auth/AuthService.js";
 import type { IAuthService } from "@/services/auth/IAuthService.js";
@@ -21,61 +21,41 @@ class AuthController implements IAuthController {
     this._userService = props?.userService ?? new UserService();
   }
 
-  async login(req: Request, res: Response, next: NextFunction): Promise<void> {
-    try {
-      const { email, password } = req.body;
+  async login(req: Request, res: Response): Promise<void> {
+    const { email, password } = req.body;
 
-      if (!email || !password) {
-        res.status(400).json({ error: "Email and password are required." });
-        return;
-      }
-
-      const [token, user] = await this._authService.login(email, password);
-      res.status(200).send({ token: token, user: user });
-    } catch (error) {
-      next(error);
+    if (!email || !password) {
+      res.status(400).json({ error: "Email and password are required." });
+      return;
     }
+
+    const [token, user] = await this._authService.login(email, password);
+    res.status(200).send({ token: token, user: user });
   }
 
-  async checkToken(
-    req: Request,
-    res: Response,
-    next: NextFunction,
-  ): Promise<void> {
-    try {
-      if (!req.user) {
-        res.status(401).json({ error: "User not authenticated" });
-        return;
-      }
-
-      const user = await this._userService.findById(req.user.id);
-
-      res.status(200).send({ user: user });
-    } catch (error) {
-      next(error);
+  async checkToken(req: Request, res: Response): Promise<void> {
+    if (!req.user) {
+      res.status(401).json({ error: "User not authenticated" });
+      return;
     }
+
+    const user = await this._userService.findById(req.user.id);
+
+    res.status(200).send({ user: user });
   }
 
-  async register(
-    req: Request,
-    res: Response,
-    next: NextFunction,
-  ): Promise<void> {
-    try {
-      const { email, password, roleId } = req.body;
+  async register(req: Request, res: Response): Promise<void> {
+    const { email, password, roleId } = req.body;
 
-      if (!email || !password) {
-        res
-          .status(400)
-          .json({ error: "Email, password and roleId are required" });
-        return;
-      }
-
-      await this._authService.register(email, password, roleId);
-      res.status(201).send();
-    } catch (error) {
-      next(error);
+    if (!email || !password) {
+      res
+        .status(400)
+        .json({ error: "Email, password and roleId are required" });
+      return;
     }
+
+    await this._authService.register(email, password, roleId);
+    res.status(201).send();
   }
 }
 

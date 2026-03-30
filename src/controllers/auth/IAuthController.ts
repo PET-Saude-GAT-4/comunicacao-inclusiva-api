@@ -1,11 +1,11 @@
-import type { NextFunction, Request, Response } from "express";
+import type { Request, Response } from "express";
 
 interface IAuthController {
-  login(req: Request, res: Response, next: NextFunction): Promise<void>;
+  login(req: Request, res: Response): Promise<void>;
 
-  checkToken(req: Request, res: Response, next: NextFunction): Promise<void>;
+  checkToken(req: Request, res: Response): Promise<void>;
 
-  register(req: Request, res: Response, next: NextFunction): Promise<void>;
+  register(req: Request, res: Response): Promise<void>;
 }
 
 export type { IAuthController };

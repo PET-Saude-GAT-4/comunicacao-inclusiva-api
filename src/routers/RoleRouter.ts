@@ -1,8 +1,4 @@
-import express, {
-  type NextFunction,
-  type Request,
-  type Response,
-} from "express";
+import express, { type Request, type Response } from "express";
 
 import type { IRoleController } from "@/controllers/role/IRoleController.js";
 import RoleController from "@/controllers/role/RoleController.js";
@@ -18,36 +14,31 @@ const router = express.Router();
 router.post(
   "/",
   authMiddleware.auth(["super_admin"]),
-  (req: Request, res: Response, next: NextFunction) =>
-    roleController.create(req, res, next),
+  (req: Request, res: Response) => roleController.create(req, res),
 );
 
 router.get(
   "/",
   authMiddleware.auth(["super_admin", "admin"]),
-  (req: Request, res: Response, next: NextFunction) =>
-    roleController.findAll(req, res, next),
+  (req: Request, res: Response) => roleController.findAll(req, res),
 );
 
 router.get(
   "/:id",
   authMiddleware.auth(["super_admin", "admin"]),
-  (req: Request, res: Response, next: NextFunction) =>
-    roleController.findById(req, res, next),
+  (req: Request, res: Response) => roleController.findById(req, res),
 );
 
 router.put(
   "/:id",
   authMiddleware.auth(["super_admin"]),
-  (req: Request, res: Response, next: NextFunction) =>
-    roleController.update(req, res, next),
+  (req: Request, res: Response) => roleController.update(req, res),
 );
 
 router.delete(
   "/:id",
   authMiddleware.auth(["super_admin"]),
-  (req: Request, res: Response, next: NextFunction) =>
-    roleController.delete(req, res, next),
+  (req: Request, res: Response) => roleController.delete(req, res),
 );
 
 export default router;

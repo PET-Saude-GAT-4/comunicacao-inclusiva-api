@@ -1,8 +1,4 @@
-import express, {
-  type NextFunction,
-  type Request,
-  type Response,
-} from "express";
+import express, { type Request, type Response } from "express";
 
 import type { IUserController } from "@/controllers/user/IUserController.js";
 import UserController from "@/controllers/user/UserController.js";
@@ -18,36 +14,31 @@ const router = express.Router();
 router.post(
   "/",
   authMiddleware.auth(["super_admin", "admin"]),
-  (req: Request, res: Response, next: NextFunction) =>
-    userController.create(req, res, next),
+  (req: Request, res: Response) => userController.create(req, res),
 );
 
 router.get(
   "/",
   authMiddleware.auth(["super_admin", "admin"]),
-  (req: Request, res: Response, next: NextFunction) =>
-    userController.findAll(req, res, next),
+  (req: Request, res: Response) => userController.findAll(req, res),
 );
 
 router.get(
   "/:id",
   authMiddleware.auth(["super_admin", "admin"]),
-  (req: Request, res: Response, next: NextFunction) =>
-    userController.findById(req, res, next),
+  (req: Request, res: Response) => userController.findById(req, res),
 );
 
 router.put(
   "/:id",
   authMiddleware.auth(["super_admin", "admin"]),
-  (req: Request, res: Response, next: NextFunction) =>
-    userController.update(req, res, next),
+  (req: Request, res: Response) => userController.update(req, res),
 );
 
 router.delete(
   "/:id",
   authMiddleware.auth(["super_admin", "admin"]),
-  (req: Request, res: Response, next: NextFunction) =>
-    userController.delete(req, res, next),
+  (req: Request, res: Response) => userController.delete(req, res),
 );
 
 export default router;

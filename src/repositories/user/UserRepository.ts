@@ -10,198 +10,143 @@ import type { IUserRepository } from "./IUserRepository.js";
 class UserRepository implements IUserRepository {
   // Repo specific methods
   async findById(id: number): Promise<UserOutput> {
-    try {
-      const user = await prisma.user.findUniqueOrThrow({
-        where: {
-          id,
-        },
-      });
+    const user = await prisma.user.findUniqueOrThrow({
+      where: {
+        id,
+      },
+    });
 
-      return {
-        id: user.id,
-        uuid: user.uuid,
-        email: user.email,
-        roleId: user.roleId,
-        createdAt: user.createdAt,
-        updatedAt: user.updatedAt,
-      };
-    } catch (error) {
-      console.error(`Error finding user by id: ${error}`);
-      throw error;
-    }
+    return {
+      id: user.id,
+      uuid: user.uuid,
+      email: user.email,
+      roleId: user.roleId,
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt,
+    };
   }
 
   async findAll(): Promise<UserOutput[]> {
-    try {
-      const users = await prisma.user.findMany();
-      return users.map((user) => ({
-        id: user.id,
-        uuid: user.uuid,
-        email: user.email,
-        roleId: user.roleId,
-        createdAt: user.createdAt,
-        updatedAt: user.updatedAt,
-      }));
-    } catch (error) {
-      console.error(`Error finding all users: ${error}`);
-      throw error;
-    }
+    const users = await prisma.user.findMany();
+    return users.map((user) => ({
+      id: user.id,
+      uuid: user.uuid,
+      email: user.email,
+      roleId: user.roleId,
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt,
+    }));
   }
 
   async existsById(id: number): Promise<boolean> {
-    try {
-      const userCount: number = await prisma.user.count({ where: { id } });
+    const userCount: number = await prisma.user.count({ where: { id } });
 
-      return userCount > 0;
-    } catch (error) {
-      console.error(`Error checking if user exists by id: ${error}`);
-      throw error;
-    }
+    return userCount > 0;
   }
 
   async delete(id: number): Promise<void> {
-    try {
-      await prisma.user.delete({
-        where: {
-          id,
-        },
-      });
-    } catch (error) {
-      console.error(`Error deleting user: ${error}`);
-      throw error;
-    }
+    await prisma.user.delete({
+      where: {
+        id,
+      },
+    });
   }
 
   // Custom methods
   async create(data: UserInput): Promise<UserOutput> {
-    try {
-      const user = await prisma.user.create({
-        data: {
-          email: data.email,
-          passwordHash: data.passwordHash,
-          role: { connect: { id: data.roleId } },
-        },
-      });
-      return {
-        id: user.id,
-        uuid: user.uuid,
-        email: user.email,
-        roleId: user.roleId,
-        createdAt: user.createdAt,
-        updatedAt: user.updatedAt,
-      };
-    } catch (error) {
-      console.error(`Error creating user: ${error}`);
-      throw error;
-    }
+    const user = await prisma.user.create({
+      data: {
+        email: data.email,
+        passwordHash: data.passwordHash,
+        role: { connect: { id: data.roleId } },
+      },
+    });
+    return {
+      id: user.id,
+      uuid: user.uuid,
+      email: user.email,
+      roleId: user.roleId,
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt,
+    };
   }
 
   async update(id: number, data: UserUpdateInput): Promise<UserOutput> {
-    try {
-      const user = await prisma.user.update({
-        where: {
-          id,
-        },
-        data: {
-          ...data,
-        },
-      });
-      return {
-        id: user.id,
-        uuid: user.uuid,
-        email: user.email,
-        roleId: user.roleId,
-        createdAt: user.createdAt,
-        updatedAt: user.updatedAt,
-      };
-    } catch (error) {
-      console.error(`Error updating user: ${error}`);
-      throw error;
-    }
+    const user = await prisma.user.update({
+      where: {
+        id,
+      },
+      data: {
+        ...data,
+      },
+    });
+    return {
+      id: user.id,
+      uuid: user.uuid,
+      email: user.email,
+      roleId: user.roleId,
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt,
+    };
   }
 
   async findByEmail(email: string): Promise<UserOutput> {
-    try {
-      const user = await prisma.user.findUniqueOrThrow({
-        where: {
-          email,
-        },
-      });
+    const user = await prisma.user.findUniqueOrThrow({
+      where: {
+        email,
+      },
+    });
 
-      return {
-        id: user.id,
-        uuid: user.uuid,
-        email: user.email,
-        roleId: user.roleId,
-        createdAt: user.createdAt,
-        updatedAt: user.updatedAt,
-      };
-    } catch (error) {
-      console.error(`Error finding user by email: ${error}`);
-      throw error;
-    }
+    return {
+      id: user.id,
+      uuid: user.uuid,
+      email: user.email,
+      roleId: user.roleId,
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt,
+    };
   }
 
   async findByUuid(uuid: string): Promise<UserOutput> {
-    try {
-      const user = await prisma.user.findUniqueOrThrow({
-        where: {
-          uuid: uuid,
-        },
-      });
+    const user = await prisma.user.findUniqueOrThrow({
+      where: {
+        uuid: uuid,
+      },
+    });
 
-      return {
-        id: user.id,
-        uuid: user.uuid,
-        email: user.email,
-        roleId: user.roleId,
-        createdAt: user.createdAt,
-        updatedAt: user.updatedAt,
-      };
-    } catch (error) {
-      console.error(`Error finding user by uuid: ${error}`);
-      throw error;
-    }
+    return {
+      id: user.id,
+      uuid: user.uuid,
+      email: user.email,
+      roleId: user.roleId,
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt,
+    };
   }
 
   async findPasswordHashByEmail(email: string): Promise<string> {
-    try {
-      const user = await prisma.user.findUniqueOrThrow({
-        where: {
-          email,
-        },
-        select: {
-          passwordHash: true,
-        },
-      });
+    const user = await prisma.user.findUniqueOrThrow({
+      where: {
+        email,
+      },
+      select: {
+        passwordHash: true,
+      },
+    });
 
-      return user.passwordHash;
-    } catch (error) {
-      console.error(`Error finding password hash by email: ${error}`);
-      throw error;
-    }
+    return user.passwordHash;
   }
 
   async existsByEmail(email: string): Promise<boolean> {
-    try {
-      const userCount: number = await prisma.user.count({ where: { email } });
+    const userCount: number = await prisma.user.count({ where: { email } });
 
-      return userCount > 0;
-    } catch (error) {
-      console.error(`Error checking if user exists by email: ${error}`);
-      throw error;
-    }
+    return userCount > 0;
   }
 
   async existsByUuid(uuid: string): Promise<boolean> {
-    try {
-      const userCount: number = await prisma.user.count({ where: { uuid } });
+    const userCount: number = await prisma.user.count({ where: { uuid } });
 
-      return userCount > 0;
-    } catch (error) {
-      console.error(`Error checking if user exists by UUID: ${error}`);
-      throw error;
-    }
+    return userCount > 0;
   }
 }
 

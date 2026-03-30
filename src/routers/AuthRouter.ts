@@ -1,8 +1,4 @@
-import express, {
-  type NextFunction,
-  type Request,
-  type Response,
-} from "express";
+import express, { type Request, type Response } from "express";
 
 import AuthController from "@/controllers/auth/AuthController.js";
 import type { IAuthController } from "@/controllers/auth/IAuthController.js";
@@ -16,20 +12,19 @@ const authController: IAuthController = new AuthController();
 const router = express.Router();
 
 // Public routes
-router.post("/login", (req: Request, res: Response, next: NextFunction) =>
-  authController.login(req, res, next),
+router.post("/login", (req: Request, res: Response) =>
+  authController.login(req, res),
 );
 
-router.post("/register", (req: Request, res: Response, next: NextFunction) =>
-  authController.register(req, res, next),
+router.post("/register", (req: Request, res: Response) =>
+  authController.register(req, res),
 );
 
 // Protected routes
 router.get(
   "/check-token",
   authMiddleware.auth("all"),
-  (req: Request, res: Response, next: NextFunction) =>
-    authController.checkToken(req, res, next),
+  (req: Request, res: Response) => authController.checkToken(req, res),
 );
 
 export default router;
