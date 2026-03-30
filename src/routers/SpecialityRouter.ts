@@ -12,7 +12,7 @@ const specialityController: ISpecialityController = new SpecialityController();
 const router = express.Router();
 
 router.get(
-  "/findAll",
+  "/",
   authMiddleware.auth(["super_admin", "admin"]),
   specialityController.findAll.bind(specialityController),
 );

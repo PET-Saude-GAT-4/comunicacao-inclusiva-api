@@ -22,7 +22,7 @@ router.post(
 );
 
 router.get(
-  "/findAll",
+  "/",
   authMiddleware.auth(["super_admin", "admin"]),
   professionController.findAll.bind(professionController),
 );
