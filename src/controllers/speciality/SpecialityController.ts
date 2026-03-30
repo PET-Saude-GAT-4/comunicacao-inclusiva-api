@@ -41,12 +41,9 @@ class SpecialityController implements ISpecialityController {
     return res.status(200).json(specialty);
   }
 
-  async findAll(
-    request: Request,
-    response: Response,
-  ): Promise<Response | void> {
+  async findAll(req: Request, res: Response): Promise<Response | void> {
     const specialties = await this._specialityService.findAll();
-    return response.status(200).json(specialties);
+    return res.status(200).json(specialties);
   }
 
   async findById(req: Request, res: Response): Promise<Response | void> {
@@ -57,11 +54,11 @@ class SpecialityController implements ISpecialityController {
     return res.status(200).json(specialty);
   }
 
-  async delete(request: Request, response: Response): Promise<Response | void> {
-    const { id } = request.params;
+  async delete(req: Request, res: Response): Promise<Response | void> {
+    const { id } = req.params;
     await this._specialityService.delete(Number(id));
 
-    return response.status(204).send();
+    return res.status(204).send();
   }
 }
 
