@@ -6,12 +6,15 @@ import type { IRoleRepository } from "./IRoleRepository.js";
 
 class RoleRepository implements IRoleRepository {
   // Repo specific methods
-  async findById(id: number): Promise<RoleOutput> {
-    const role = await prisma.role.findUniqueOrThrow({
+  async findById(id: number): Promise<RoleOutput | null> {
+    const role = await prisma.role.findUnique({
       where: {
         id,
       },
     });
+
+    if (!role) return null;
+
     return {
       id: role.id,
       name: role.name,

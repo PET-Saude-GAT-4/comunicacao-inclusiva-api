@@ -110,12 +110,7 @@ class SpecialityService implements ISpecialityService {
   }
 
   async findAll(): Promise<SpecialityOutput[]> {
-    const specialities: SpecialityOutput[] =
-      await this._specialityRepository.findAll();
-    if (!specialities) {
-      throw new Error("Nenhuma especialidade encontrada!");
-    }
-    return specialities;
+    return this._specialityRepository.findAll();
   }
 
   async delete(id: number): Promise<void> {
@@ -125,14 +120,8 @@ class SpecialityService implements ISpecialityService {
     await this._specialityRepository.delete(id);
   }
 
-  async findById(id: number): Promise<SpecialityOutput> {
-    const speciality = await this._specialityRepository.findById!(id);
-
-    if (!speciality) {
-      throw new Error("Especialidade não encontrada");
-    }
-
-    return speciality;
+  async findById(id: number): Promise<SpecialityOutput | null> {
+    return this._specialityRepository.findById!(id);
   }
 }
 

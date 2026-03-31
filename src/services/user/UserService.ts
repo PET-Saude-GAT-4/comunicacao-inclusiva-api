@@ -47,14 +47,8 @@ class UserService implements IUserService {
     return this._userRepository.create({ email, passwordHash, roleId });
   }
 
-  async findById(id: number): Promise<UserOutput> {
-    const user = await this._userRepository.findById(id);
-
-    if (!user) {
-      throw new Error("User not found");
-    }
-
-    return user;
+  async findById(id: number): Promise<UserOutput | null> {
+    return this._userRepository.findById(id);
   }
 
   async findAll(): Promise<UserOutput[]> {

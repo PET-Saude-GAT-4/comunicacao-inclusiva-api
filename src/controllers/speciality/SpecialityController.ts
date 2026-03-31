@@ -51,6 +51,11 @@ class SpecialityController implements ISpecialityController {
 
     const speciality = await this._specialityService.findById!(Number(id));
 
+    if (!speciality) {
+      res.status(404).json({ error: "Especialidade não encontrada" });
+      return;
+    }
+
     res.status(200).json({ speciality: speciality });
   }
 

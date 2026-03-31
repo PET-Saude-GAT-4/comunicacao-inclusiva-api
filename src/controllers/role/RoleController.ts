@@ -32,6 +32,12 @@ class RoleController implements IRoleController {
   async findById(req: Request, res: Response): Promise<void> {
     const id = Number(req.params.id);
     const role = await this._roleService.findById(id);
+
+    if (!role) {
+      res.status(404).json({ error: "Role not found" });
+      return;
+    }
+
     res.status(200).json({ role: role });
   }
 

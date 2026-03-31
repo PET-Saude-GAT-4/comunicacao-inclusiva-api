@@ -9,12 +9,14 @@ import type { IUserRepository } from "./IUserRepository.js";
 
 class UserRepository implements IUserRepository {
   // Repo specific methods
-  async findById(id: number): Promise<UserOutput> {
-    const user = await prisma.user.findUniqueOrThrow({
+  async findById(id: number): Promise<UserOutput | null> {
+    const user = await prisma.user.findUnique({
       where: {
         id,
       },
     });
+
+    if (!user) return null;
 
     return {
       id: user.id,
@@ -90,13 +92,15 @@ class UserRepository implements IUserRepository {
     };
   }
 
-  async findByEmail(email: string): Promise<UserOutput> {
-    const user = await prisma.user.findUniqueOrThrow({
+  async findByEmail(email: string): Promise<UserOutput | null> {
+    const user = await prisma.user.findUnique({
       where: {
         email,
       },
     });
 
+    if (!user) return null;
+
     return {
       id: user.id,
       uuid: user.uuid,
@@ -107,13 +111,15 @@ class UserRepository implements IUserRepository {
     };
   }
 
-  async findByUuid(uuid: string): Promise<UserOutput> {
-    const user = await prisma.user.findUniqueOrThrow({
+  async findByUuid(uuid: string): Promise<UserOutput | null> {
+    const user = await prisma.user.findUnique({
       where: {
         uuid: uuid,
       },
     });
 
+    if (!user) return null;
+
     return {
       id: user.id,
       uuid: user.uuid,
@@ -124,8 +130,8 @@ class UserRepository implements IUserRepository {
     };
   }
 
-  async findPasswordHashByEmail(email: string): Promise<string> {
-    const user = await prisma.user.findUniqueOrThrow({
+  async findPasswordHashByEmail(email: string): Promise<string | null> {
+    const user = await prisma.user.findUnique({
       where: {
         email,
       },
@@ -134,7 +140,7 @@ class UserRepository implements IUserRepository {
       },
     });
 
-    return user.passwordHash;
+    return user?.passwordHash ?? null;
   }
 
   async existsByEmail(email: string): Promise<boolean> {

@@ -47,6 +47,11 @@ class ProfessionController implements IProfessionController {
 
     const profession = await this._professionService.findById!(Number(id));
 
+    if (!profession) {
+      res.status(404).json({ error: "Profissão não encontrada" });
+      return;
+    }
+
     res.status(200).json({ profession: profession });
   }
 

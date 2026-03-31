@@ -7,9 +7,9 @@ import type {
 import type { IRepository } from "../IRepository.js";
 
 interface IUserRepository extends IRepository<UserOutput> {
-  findByEmail(email: string): Promise<UserOutput>;
-  findByUuid(uuid: string): Promise<UserOutput>;
-  findPasswordHashByEmail(email: string): Promise<string>;
+  findByEmail(email: string): Promise<UserOutput | null>;
+  findByUuid(uuid: string): Promise<UserOutput | null>;
+  findPasswordHashByEmail(email: string): Promise<string | null>;
 
   existsByEmail(email: string): Promise<boolean>;
   existsByUuid(uuid: string): Promise<boolean>;

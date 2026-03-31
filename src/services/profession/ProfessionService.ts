@@ -87,14 +87,7 @@ class ProfessionService implements IProfessionService {
   }
 
   async findAll(): Promise<ProfessionOutput[]> {
-    const professions: ProfessionOutput[] =
-      await this._professionRepository.findAll();
-
-    if (!professions) {
-      throw new Error("Nenhuma Profissão encontrada!");
-    }
-
-    return professions;
+    return this._professionRepository.findAll();
   }
 
   async delete(id: number): Promise<void> {
@@ -104,14 +97,8 @@ class ProfessionService implements IProfessionService {
     await this._professionRepository.delete(id);
   }
 
-  async findById(id: number): Promise<ProfessionOutput> {
-    const profession = await this._professionRepository.findById!(id);
-
-    if (!profession) {
-      throw new Error("Profissão não encontrada");
-    }
-
-    return profession;
+  async findById(id: number): Promise<ProfessionOutput | null> {
+    return this._professionRepository.findById!(id);
   }
 }
 

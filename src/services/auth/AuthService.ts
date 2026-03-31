@@ -39,6 +39,8 @@ class AuthService implements IAuthService {
     const passwordHash =
       await this._userRepository.findPasswordHashByEmail(email);
 
+    if (!passwordHash) throw new Error("Invalid credentials");
+
     const isValid = await bcrypt.compare(password, passwordHash);
 
     if (!isValid) {

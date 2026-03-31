@@ -33,6 +33,12 @@ class UserController implements IUserController {
   async findById(req: Request, res: Response): Promise<void> {
     const id = Number(req.params.id);
     const user = await this._userService.findById(id);
+
+    if (!user) {
+      res.status(404).json({ error: "User not found" });
+      return;
+    }
+
     res.status(200).json({ user: user });
   }
 

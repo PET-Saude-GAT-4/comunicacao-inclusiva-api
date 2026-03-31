@@ -3,7 +3,7 @@ import type { UserOutput, UserUpdateInput } from "@/models/types/User.type.js";
 interface IUserService {
   create(email: string, password: string, roleId: number): Promise<UserOutput>;
 
-  findById(id: number): Promise<UserOutput>;
+  findById(id: number): Promise<UserOutput | null>;
 
   findAll(): Promise<UserOutput[]>;
 

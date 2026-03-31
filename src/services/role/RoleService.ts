@@ -21,13 +21,8 @@ class RoleService implements IRoleService {
     return this._roleRepository.create(RoleInput);
   }
 
-  async findById(id: number): Promise<RoleOutput> {
-    const role = await this._roleRepository.findById(id);
-
-    if (!role) {
-      throw new Error("Role not found.");
-    }
-    return role;
+  async findById(id: number): Promise<RoleOutput | null> {
+    return this._roleRepository.findById(id);
   }
 
   async findAll(): Promise<RoleOutput[]> {
