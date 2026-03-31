@@ -29,7 +29,7 @@ router.get(
   (req: Request, res: Response) => roleController.findById(req, res),
 );
 
-router.put(
+router.patch(
   "/:id",
   authMiddleware.auth(["super_admin"]),
   (req: Request, res: Response) => roleController.update(req, res),

@@ -29,7 +29,7 @@ router.get(
   (req: Request, res: Response) => userController.findById(req, res),
 );
 
-router.put(
+router.patch(
   "/:id",
   authMiddleware.auth(["super_admin", "admin"]),
   (req: Request, res: Response) => userController.update(req, res),
