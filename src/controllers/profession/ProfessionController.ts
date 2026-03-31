@@ -37,7 +37,7 @@ class ProfessionController implements IProfessionController {
     res.status(200).json({ profession: profession });
   }
 
-  async findAll(_req: Request, res: Response): Promise<void> {
+  async findAll(req: Request, res: Response): Promise<void> {
     const professions = await this._professionService.findAll!();
     res.status(200).json({ professions: professions });
   }

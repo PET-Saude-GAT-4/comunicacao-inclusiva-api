@@ -35,7 +35,7 @@ class RoleController implements IRoleController {
     res.status(200).json({ role: role });
   }
 
-  async findAll(_req: Request, res: Response): Promise<void> {
+  async findAll(req: Request, res: Response): Promise<void> {
     const roles = await this._roleService.findAll();
     res.status(200).json({ roles: roles });
   }

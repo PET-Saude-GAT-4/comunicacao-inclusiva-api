@@ -41,7 +41,7 @@ class SpecialityController implements ISpecialityController {
     res.status(200).json({ speciality: speciality });
   }
 
-  async findAll(_req: Request, res: Response): Promise<void> {
+  async findAll(req: Request, res: Response): Promise<void> {
     const specialities = await this._specialityService.findAll();
     res.status(200).json({ specialities: specialities });
   }

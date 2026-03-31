@@ -36,7 +36,7 @@ class UserController implements IUserController {
     res.status(200).json({ user: user });
   }
 
-  async findAll(_req: Request, res: Response): Promise<void> {
+  async findAll(req: Request, res: Response): Promise<void> {
     const users = await this._userService.findAll();
     res.status(200).json({ users: users });
   }
