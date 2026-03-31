@@ -30,7 +30,7 @@ class AuthController implements IAuthController {
     }
 
     const [token, user] = await this._authService.login(email, password);
-    res.status(200).send({ token: token, user: user });
+    res.status(200).json({ token: token, user: user });
   }
 
   async checkToken(req: Request, res: Response): Promise<void> {
@@ -41,7 +41,7 @@ class AuthController implements IAuthController {
 
     const user = await this._userService.findById(req.user.id);
 
-    res.status(200).send({ user: user });
+    res.status(200).json({ user: user });
   }
 
   async register(req: Request, res: Response): Promise<void> {
