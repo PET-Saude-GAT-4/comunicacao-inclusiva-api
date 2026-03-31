@@ -23,7 +23,7 @@ class ProfessionController implements IProfessionController {
       req.body,
     );
 
-    res.status(201).json(profession);
+    res.status(201).json({ profession: profession });
   }
 
   async update(req: Request, res: Response): Promise<void> {
@@ -34,12 +34,12 @@ class ProfessionController implements IProfessionController {
       req.body,
     );
 
-    res.status(200).json(profession);
+    res.status(200).json({ profession: profession });
   }
 
   async findAll(_req: Request, res: Response): Promise<void> {
     const professions = await this._professionService.findAll!();
-    res.status(200).json(professions);
+    res.status(200).json({ professions: professions });
   }
 
   async findById(req: Request, res: Response): Promise<void> {
@@ -47,7 +47,7 @@ class ProfessionController implements IProfessionController {
 
     const profession = await this._professionService.findById!(Number(id));
 
-    res.status(200).json(profession);
+    res.status(200).json({ profession: profession });
   }
 
   async delete(req: Request, res: Response): Promise<void> {

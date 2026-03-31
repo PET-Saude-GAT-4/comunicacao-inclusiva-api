@@ -27,7 +27,7 @@ class SpecialityController implements ISpecialityController {
       professionId: Number(professionId),
     });
 
-    res.status(201).json(speciality);
+    res.status(201).json({ speciality: speciality });
   }
 
   async update(req: Request, res: Response): Promise<void> {
@@ -38,12 +38,12 @@ class SpecialityController implements ISpecialityController {
       req.body,
     );
 
-    res.status(200).json(speciality);
+    res.status(200).json({ speciality: speciality });
   }
 
   async findAll(_req: Request, res: Response): Promise<void> {
     const specialities = await this._specialityService.findAll();
-    res.status(200).json(specialities);
+    res.status(200).json({ specialities: specialities });
   }
 
   async findById(req: Request, res: Response): Promise<void> {
@@ -51,7 +51,7 @@ class SpecialityController implements ISpecialityController {
 
     const speciality = await this._specialityService.findById!(Number(id));
 
-    res.status(200).json(speciality);
+    res.status(200).json({ speciality: speciality });
   }
 
   async delete(req: Request, res: Response): Promise<void> {
