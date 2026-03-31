@@ -17,7 +17,7 @@ class SpecialityController implements ISpecialityController {
       props?.specialityService ?? new SpecialityService();
   }
 
-  async create(req: Request, res: Response): Promise<Response | void> {
+  async create(req: Request, res: Response): Promise<void> {
     const { professionId } = req.params;
     const { name, code } = req.body;
 
@@ -27,10 +27,10 @@ class SpecialityController implements ISpecialityController {
       professionId: Number(professionId),
     });
 
-    return res.status(201).json(speciality);
+    res.status(201).json(speciality);
   }
 
-  async update(req: Request, res: Response): Promise<Response | void> {
+  async update(req: Request, res: Response): Promise<void> {
     const { id } = req.params;
 
     const speciality = await this._specialityService.update!(
@@ -38,27 +38,27 @@ class SpecialityController implements ISpecialityController {
       req.body,
     );
 
-    return res.status(200).json(speciality);
+    res.status(200).json(speciality);
   }
 
-  async findAll(req: Request, res: Response): Promise<Response | void> {
+  async findAll(_req: Request, res: Response): Promise<void> {
     const specialities = await this._specialityService.findAll();
-    return res.status(200).json(specialities);
+    res.status(200).json(specialities);
   }
 
-  async findById(req: Request, res: Response): Promise<Response | void> {
+  async findById(req: Request, res: Response): Promise<void> {
     const { id } = req.params;
 
     const speciality = await this._specialityService.findById!(Number(id));
 
-    return res.status(200).json(speciality);
+    res.status(200).json(speciality);
   }
 
-  async delete(req: Request, res: Response): Promise<Response | void> {
+  async delete(req: Request, res: Response): Promise<void> {
     const { id } = req.params;
     await this._specialityService.delete(Number(id));
 
-    return res.status(204).send();
+    res.status(204).send();
   }
 }
 

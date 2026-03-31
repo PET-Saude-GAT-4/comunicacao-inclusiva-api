@@ -18,15 +18,15 @@ class ProfessionController implements IProfessionController {
       props?.professionService ?? new ProfessionService();
   }
 
-  async create(req: Request, res: Response): Promise<Response | void> {
+  async create(req: Request, res: Response): Promise<void> {
     const profession: ProfessionOutput = await this._professionService.create(
       req.body,
     );
 
-    return res.status(201).json(profession);
+    res.status(201).json(profession);
   }
 
-  async update(req: Request, res: Response): Promise<Response | void> {
+  async update(req: Request, res: Response): Promise<void> {
     const { id } = req.params;
 
     const profession = await this._professionService.update!(
@@ -34,27 +34,27 @@ class ProfessionController implements IProfessionController {
       req.body,
     );
 
-    return res.status(200).json(profession);
+    res.status(200).json(profession);
   }
 
-  async findAll(req: Request, res: Response): Promise<Response | void> {
+  async findAll(_req: Request, res: Response): Promise<void> {
     const professions = await this._professionService.findAll!();
-    return res.status(200).json(professions);
+    res.status(200).json(professions);
   }
 
-  async findById(req: Request, res: Response): Promise<Response | void> {
+  async findById(req: Request, res: Response): Promise<void> {
     const { id } = req.params;
 
     const profession = await this._professionService.findById!(Number(id));
 
-    return res.status(200).json(profession);
+    res.status(200).json(profession);
   }
 
-  async delete(req: Request, res: Response): Promise<Response | void> {
+  async delete(req: Request, res: Response): Promise<void> {
     const { id } = req.params;
     await this._professionService.delete(Number(id));
 
-    return res.status(204).send();
+    res.status(204).send();
   }
 }
 
