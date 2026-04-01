@@ -23,6 +23,8 @@ class SpecialityRepository implements ISpecialityRepository {
       code: data.code,
       name: data.name,
       professionId: data.professionId,
+      createdAt: data.createdAt,
+      updatedAt: data.updatedAt,
     };
   }
 
@@ -35,6 +37,8 @@ class SpecialityRepository implements ISpecialityRepository {
         code: speciality.code,
         name: speciality.name,
         professionId: speciality.professionId,
+        createdAt: speciality.createdAt,
+        updatedAt: speciality.updatedAt,
       };
     });
   }
@@ -48,6 +52,8 @@ class SpecialityRepository implements ISpecialityRepository {
           code: data.code,
           name: data.name,
           professionId: data.professionId,
+          createdAt: data.createdAt,
+          updatedAt: data.updatedAt,
         }
       : null;
   }
@@ -76,6 +82,8 @@ class SpecialityRepository implements ISpecialityRepository {
       code: result.code,
       name: result.name,
       professionId: result.professionId,
+      createdAt: result.createdAt,
+      updatedAt: result.updatedAt,
     };
   }
 
@@ -94,6 +102,8 @@ class SpecialityRepository implements ISpecialityRepository {
           code: data.code,
           name: data.name,
           professionId: data.professionId,
+          createdAt: data.createdAt,
+          updatedAt: data.updatedAt,
         }
       : null;
   }
@@ -117,6 +127,8 @@ class SpecialityRepository implements ISpecialityRepository {
           code: data.code,
           name: data.name,
           professionId: data.professionId,
+          createdAt: data.createdAt,
+          updatedAt: data.updatedAt,
         }
       : null;
   }

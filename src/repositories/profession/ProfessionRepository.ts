@@ -1,6 +1,4 @@
 import type { Prisma } from "@/generated/prisma/client.js";
-import type { ProfessionCreateInput } from "@/generated/prisma/models.js";
-import { Profession } from "@/models/Profession.js";
 import type {
   ProfessionInput,
   ProfessionOutput,
@@ -23,6 +21,8 @@ class ProfessionRepository implements IProfessionRepository {
       id: newProfession.id,
       name: newProfession.name,
       code: newProfession.code,
+      createdAt: newProfession.createdAt,
+      updatedAt: newProfession.updatedAt,
     };
   }
 
@@ -49,6 +49,8 @@ class ProfessionRepository implements IProfessionRepository {
       id: result.id,
       name: result.name,
       code: result.code,
+      createdAt: result.createdAt,
+      updatedAt: result.updatedAt,
     };
   }
 
@@ -60,6 +62,8 @@ class ProfessionRepository implements IProfessionRepository {
         id: profession.id,
         name: profession.name,
         code: profession.code,
+        createdAt: profession.createdAt,
+        updatedAt: profession.updatedAt,
       };
     });
 
@@ -80,6 +84,8 @@ class ProfessionRepository implements IProfessionRepository {
           id: profession.id,
           name: profession.name,
           code: profession.code,
+          createdAt: profession.createdAt,
+          updatedAt: profession.updatedAt,
         }
       : null;
   }
@@ -87,12 +93,28 @@ class ProfessionRepository implements IProfessionRepository {
   async findByName(name: string): Promise<ProfessionOutput | null> {
     const data = await prisma.profession.findUnique({ where: { name } });
 
-    return data ? { id: data.id, name: data.name, code: data.code } : null;
+    return data
+      ? {
+          id: data.id,
+          name: data.name,
+          code: data.code,
+          createdAt: data.createdAt,
+          updatedAt: data.updatedAt,
+        }
+      : null;
   }
   async findByCode(code: string): Promise<ProfessionOutput | null> {
     const data = await prisma.profession.findUnique({ where: { code } });
 
-    return data ? { id: data.id, name: data.name, code: data.code } : null;
+    return data
+      ? {
+          id: data.id,
+          name: data.name,
+          code: data.code,
+          createdAt: data.createdAt,
+          updatedAt: data.updatedAt,
+        }
+      : null;
   }
 
   async existsById(id: number): Promise<boolean> {

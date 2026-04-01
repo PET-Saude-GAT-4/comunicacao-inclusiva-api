@@ -14,4 +14,6 @@ export type SpecialityOutput = {
   name: string;
   code: string;
   professionId: number;
+  createdAt: Date;
+  updatedAt: Date;
 };
