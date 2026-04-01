@@ -1,5 +1,6 @@
 import type { Request, Response } from "express";
 
+import { NotFoundError } from "@/errors/NotFoundError.js";
 import type { ISpecialityService } from "@/services/speciality/ISpecialityService.js";
 import SpecialityService from "@/services/speciality/SpecialityService.js";
 
@@ -52,8 +53,7 @@ class SpecialityController implements ISpecialityController {
     const speciality = await this._specialityService.findById!(Number(id));
 
     if (!speciality) {
-      res.status(404).json({ error: "Especialidade não encontrada" });
-      return;
+      throw new NotFoundError("Speciality not found");
     }
 
     res.status(200).json({ speciality: speciality });

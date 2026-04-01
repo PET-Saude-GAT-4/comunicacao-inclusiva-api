@@ -1,5 +1,7 @@
 import type { Request, Response } from "express";
 
+import { BadRequestError } from "@/errors/BadRequestError.js";
+import { UnauthorizedError } from "@/errors/UnauthorizedError.js";
 import AuthService from "@/services/auth/AuthService.js";
 import type { IAuthService } from "@/services/auth/IAuthService.js";
 import type { IUserService } from "@/services/user/IUserService.js";
@@ -25,8 +27,7 @@ class AuthController implements IAuthController {
     const { email, password } = req.body;
 
     if (!email || !password) {
-      res.status(400).json({ error: "Email and password are required." });
-      return;
+      throw new BadRequestError("Email and password are required.");
     }
 
     const [token, user] = await this._authService.login(email, password);
@@ -35,8 +36,7 @@ class AuthController implements IAuthController {
 
   async checkToken(req: Request, res: Response): Promise<void> {
     if (!req.user) {
-      res.status(401).json({ error: "User not authenticated" });
-      return;
+      throw new UnauthorizedError("User not authenticated");
     }
 
     const user = await this._userService.findById(req.user.id);
@@ -48,10 +48,7 @@ class AuthController implements IAuthController {
     const { email, password, roleId } = req.body;
 
     if (!email || !password) {
-      res
-        .status(400)
-        .json({ error: "Email, password and roleId are required" });
-      return;
+      throw new BadRequestError("Email, password and roleId are required");
     }
 
     await this._authService.register(email, password, roleId);

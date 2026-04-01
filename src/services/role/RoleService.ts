@@ -1,3 +1,4 @@
+import { BadRequestError } from "@/errors/BadRequestError.js";
 import type { RoleInput, RoleOutput } from "@/models/types/Role.type.js";
 import type { IRoleRepository } from "@/repositories/role/IRoleRepository.js";
 import RoleRepository from "@/repositories/role/RoleRepository.js";
@@ -31,7 +32,7 @@ class RoleService implements IRoleService {
 
   async update(id: number, data: RoleInput): Promise<RoleOutput> {
     if (data.name == undefined) {
-      throw new Error("No valid fields to update");
+      throw new BadRequestError("No valid fields to update");
     }
 
     return this._roleRepository.update(id, data);

@@ -1,5 +1,7 @@
 import type { Request, Response } from "express";
 
+import { BadRequestError } from "@/errors/BadRequestError.js";
+import { NotFoundError } from "@/errors/NotFoundError.js";
 import type { IUserService } from "@/services/user/IUserService.js";
 import UserService from "@/services/user/UserService.js";
 
@@ -20,10 +22,7 @@ class UserController implements IUserController {
     const { email, password, roleId } = req.body;
 
     if (!email || !password || !roleId) {
-      res
-        .status(400)
-        .json({ error: "Email, password, and role ID are required" });
-      return;
+      throw new BadRequestError("Email, password, and role ID are required");
     }
 
     await this._userService.create(email, password, roleId);
@@ -35,8 +34,7 @@ class UserController implements IUserController {
     const user = await this._userService.findById(id);
 
     if (!user) {
-      res.status(404).json({ error: "User not found" });
-      return;
+      throw new NotFoundError("User not found");
     }
 
     res.status(200).json({ user: user });

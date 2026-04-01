@@ -1,3 +1,6 @@
+import { BadRequestError } from "@/errors/BadRequestError.js";
+import { ConflictError } from "@/errors/ConflictError.js";
+import { NotFoundError } from "@/errors/NotFoundError.js";
 import type { ProfessionUpdateInput } from "@/generated/prisma/models.js";
 import type {
   ProfessionInput,
@@ -26,17 +29,17 @@ class ProfessionService implements IProfessionService {
     const { name, code } = profession;
 
     if (!name || !code) {
-      throw new Error("Nome e código da profissão são obrigatórios!");
+      throw new BadRequestError("Name and code are required!");
     }
 
     const normalizedName = normalize(name);
 
     if (await this._professionRepository.findByName(normalizedName)) {
-      throw new Error("Esse nome ja existe");
+      throw new ConflictError("This name already exists");
     }
 
     if (await this._professionRepository.findByCode(code)) {
-      throw new Error("Esse código ja existe");
+      throw new ConflictError("This code already exists");
     }
 
     return await this._professionRepository.create({
@@ -52,7 +55,7 @@ class ProfessionService implements IProfessionService {
     const existing = await this._professionRepository.findById!(id);
 
     if (!existing) {
-      throw new Error("Profissão não encontrada");
+      throw new NotFoundError("Profession not found");
     }
 
     const { name, code } = profession;
@@ -63,7 +66,7 @@ class ProfessionService implements IProfessionService {
       const nameExists = await this._professionRepository.findByName(newName);
 
       if (nameExists && nameExists.id !== id) {
-        throw new Error("Esse nome já existe");
+        throw new ConflictError("This name already exists");
       }
 
       updateData.name = newName;
@@ -73,14 +76,14 @@ class ProfessionService implements IProfessionService {
       const codeExists = await this._professionRepository.findByCode(code);
 
       if (codeExists && codeExists.id !== id) {
-        throw new Error("Esse código já existe");
+        throw new ConflictError("This code already exists");
       }
 
       updateData.code = code;
     }
 
     if (Object.keys(updateData).length === 0) {
-      throw new Error("Nenhum parâmetro passado!");
+      throw new BadRequestError("No parameters provided!");
     }
 
     return await this._professionRepository.update(id, updateData);
@@ -92,7 +95,7 @@ class ProfessionService implements IProfessionService {
 
   async delete(id: number): Promise<void> {
     if (!(await this._professionRepository.findById(id))) {
-      throw new Error("Nenhuma Profissão encontrada!");
+      throw new NotFoundError("No profession found!");
     }
     await this._professionRepository.delete(id);
   }

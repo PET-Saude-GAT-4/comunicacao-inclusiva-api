@@ -1,6 +1,9 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 
+import { ConflictError } from "@/errors/ConflictError.js";
+import { NotFoundError } from "@/errors/NotFoundError.js";
+import { UnauthorizedError } from "@/errors/UnauthorizedError.js";
 import type { UserOutput } from "@/models/types/User.type.js";
 import type { IRoleRepository } from "@/repositories/role/IRoleRepository.js";
 import RoleRepository from "@/repositories/role/RoleRepository.js";
@@ -28,23 +31,23 @@ class AuthService implements IAuthService {
   async login(email: string, password: string): Promise<[string, UserOutput]> {
     const user = await this._userRepository.findByEmail(email);
 
-    if (!user) throw new Error("Invalid credentials");
+    if (!user) throw new UnauthorizedError("Invalid credentials");
 
     const role = await this._roleRepository.findById(user.roleId);
 
     if (!role) {
-      throw new Error("Role not found.");
+      throw new NotFoundError("Role not found.");
     }
 
     const passwordHash =
       await this._userRepository.findPasswordHashByEmail(email);
 
-    if (!passwordHash) throw new Error("Invalid credentials");
+    if (!passwordHash) throw new UnauthorizedError("Invalid credentials");
 
     const isValid = await bcrypt.compare(password, passwordHash);
 
     if (!isValid) {
-      throw new Error("Invalid credentials");
+      throw new UnauthorizedError("Invalid credentials");
     }
 
     const token = jwt.sign(
@@ -66,7 +69,7 @@ class AuthService implements IAuthService {
     const exists = await this._userRepository.existsByEmail(email);
 
     if (exists) {
-      throw new Error("E-mail already in use");
+      throw new ConflictError("E-mail already in use");
     }
 
     const passwordHash = await bcrypt.hash(password, 12);

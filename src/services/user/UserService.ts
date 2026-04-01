@@ -1,5 +1,8 @@
 import bcrypt from "bcryptjs";
 
+import { BadRequestError } from "@/errors/BadRequestError.js";
+import { ConflictError } from "@/errors/ConflictError.js";
+import { NotFoundError } from "@/errors/NotFoundError.js";
 import type { UserOutput, UserUpdateInput } from "@/models/types/User.type.js";
 import type { IRoleRepository } from "@/repositories/role/IRoleRepository.js";
 import RoleRepository from "@/repositories/role/RoleRepository.js";
@@ -36,11 +39,11 @@ class UserService implements IUserService {
     const existsByRoleId = await this._roleRepository.existsById(roleId);
 
     if (!existsByRoleId) {
-      throw new Error("Role not found");
+      throw new NotFoundError("Role not found");
     }
 
     if (existsByUserEmail) {
-      throw new Error("Email already in use");
+      throw new ConflictError("Email already in use");
     }
 
     const passwordHash = await this.hashPassword(password);
@@ -69,7 +72,7 @@ class UserService implements IUserService {
       userUpdate.password == undefined &&
       userUpdate.roleId == undefined
     ) {
-      throw new Error("No valid fields to update");
+      throw new BadRequestError("No valid fields to update");
     }
 
     if (userUpdate.email != undefined) {

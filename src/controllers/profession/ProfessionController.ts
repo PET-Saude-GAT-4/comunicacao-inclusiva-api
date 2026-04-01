@@ -1,5 +1,6 @@
 import type { Request, Response } from "express";
 
+import { NotFoundError } from "@/errors/NotFoundError.js";
 import type { ProfessionOutput } from "@/models/types/Profession.type.js";
 import type { IProfessionService } from "@/services/profession/IProfessionService.js";
 import ProfessionService from "@/services/profession/ProfessionService.js";
@@ -48,8 +49,7 @@ class ProfessionController implements IProfessionController {
     const profession = await this._professionService.findById!(Number(id));
 
     if (!profession) {
-      res.status(404).json({ error: "Profissão não encontrada" });
-      return;
+      throw new NotFoundError("Profession not found");
     }
 
     res.status(200).json({ profession: profession });

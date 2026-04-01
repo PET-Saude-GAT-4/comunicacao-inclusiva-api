@@ -1,5 +1,7 @@
 import type { Request, Response } from "express";
 
+import { BadRequestError } from "@/errors/BadRequestError.js";
+import { NotFoundError } from "@/errors/NotFoundError.js";
 import type { RoleInput } from "@/models/types/Role.type.js";
 import type { IRoleService } from "@/services/role/IRoleService.js";
 import RoleService from "@/services/role/RoleService.js";
@@ -21,8 +23,7 @@ class RoleController implements IRoleController {
     const { name } = req.body;
 
     if (!name) {
-      res.status(400).json({ error: "Name is required" });
-      return;
+      throw new BadRequestError("Name is required");
     }
 
     await this._roleService.create(name);
@@ -34,8 +35,7 @@ class RoleController implements IRoleController {
     const role = await this._roleService.findById(id);
 
     if (!role) {
-      res.status(404).json({ error: "Role not found" });
-      return;
+      throw new NotFoundError("Role not found");
     }
 
     res.status(200).json({ role: role });
@@ -53,8 +53,7 @@ class RoleController implements IRoleController {
     const roleInput: RoleInput = { name };
 
     if (!roleInput.name) {
-      res.status(400).json({ error: "Name is required" });
-      return;
+      throw new BadRequestError("Name is required");
     }
 
     await this._roleService.update(id, roleInput);

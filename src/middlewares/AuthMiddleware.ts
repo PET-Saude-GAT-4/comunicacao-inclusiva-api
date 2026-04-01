@@ -1,6 +1,9 @@
 import type { NextFunction, Request, Response } from "express";
 import jwt from "jsonwebtoken";
 
+import { ForbiddenError } from "@/errors/ForbiddenError.js";
+import { UnauthorizedError } from "@/errors/UnauthorizedError.js";
+
 import type { IAuthMiddleware } from "./IAuthMiddleware.js";
 
 const JWT_SECRET = process.env.JWT_SECRET ?? "default_secret";
@@ -12,7 +15,7 @@ class AuthMiddleware implements IAuthMiddleware {
     if (!authorization) {
       delete req.user;
       if (required) {
-        res.status(401).json({ message: "Token not provided." });
+        throw new UnauthorizedError("Token not provided.");
       }
       return !required;
     }
@@ -22,7 +25,7 @@ class AuthMiddleware implements IAuthMiddleware {
     if (prefix !== "Bearer" || !token) {
       delete req.user;
       if (required) {
-        res.status(401).json({ message: "Malformed token." });
+        throw new UnauthorizedError("Malformed token.");
       }
       return !required;
     }
@@ -33,7 +36,7 @@ class AuthMiddleware implements IAuthMiddleware {
     } catch {
       delete req.user;
       if (required) {
-        res.status(401).json({ message: "Invalid or expired token." });
+        throw new UnauthorizedError("Invalid or expired token.");
       }
       return !required;
     }
@@ -60,8 +63,7 @@ class AuthMiddleware implements IAuthMiddleware {
       if (!allowedRoles || allowedRoles === "all") return next();
 
       if (!req.user || !allowedRoles.includes(req.user.role)) {
-        res.status(403).json({ message: "Role not allowed." });
-        return;
+        throw new ForbiddenError("Role not allowed.");
       }
 
       return next();

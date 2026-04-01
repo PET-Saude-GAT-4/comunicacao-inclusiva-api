@@ -1,3 +1,6 @@
+import { BadRequestError } from "@/errors/BadRequestError.js";
+import { ConflictError } from "@/errors/ConflictError.js";
+import { NotFoundError } from "@/errors/NotFoundError.js";
 import type {
   SpecialityInput,
   SpecialityOutput,
@@ -33,13 +36,13 @@ class SpecialityService implements ISpecialityService {
       !speciality.code ||
       speciality.professionId === undefined
     ) {
-      throw new Error("Nome, código e profissão são obrigatórios!");
+      throw new BadRequestError("Name, code, and profession are required!");
     }
 
     if (
       !(await this._professionRepository.existsById!(speciality.professionId))
     ) {
-      throw new Error("Essa profissão não existe!");
+      throw new NotFoundError("This profession does not exist!");
     }
 
     const name: string = normalize(speciality.name);
@@ -51,11 +54,11 @@ class SpecialityService implements ISpecialityService {
         speciality.professionId,
       )
     ) {
-      throw new Error("Esse nome já existe para esta profissão");
+      throw new ConflictError("This name already exists for this profession");
     }
 
     if (await this._specialityRepository.findByCode(speciality.code)) {
-      throw new Error("Esse código já existe");
+      throw new ConflictError("This code already exists");
     }
 
     return await this._specialityRepository.create(speciality);
@@ -68,7 +71,7 @@ class SpecialityService implements ISpecialityService {
     const existing = await this._specialityRepository.findById!(id);
 
     if (!existing) {
-      throw new Error("Especialidade não encontrada");
+      throw new NotFoundError("Speciality not found");
     }
 
     const { name, code } = speciality;
@@ -84,8 +87,8 @@ class SpecialityService implements ISpecialityService {
         );
 
       if (nameExists && nameExists.id !== id) {
-        throw new Error(
-          `Esse nome já existe para a profissão ${nameExists.professionId}`,
+        throw new ConflictError(
+          `This name already exists for the profession ${nameExists.professionId}`,
         );
       }
 
@@ -96,14 +99,14 @@ class SpecialityService implements ISpecialityService {
       const codeExists = await this._specialityRepository.findByCode(code);
 
       if (codeExists && codeExists.id !== id) {
-        throw new Error("Esse código já existe!");
+        throw new ConflictError("This code already exists!");
       }
 
       updateData.code = code;
     }
 
     if (Object.keys(updateData).length === 1) {
-      throw new Error("Nome ou código não fornecido!");
+      throw new BadRequestError("Name or code not provided!");
     }
 
     return await this._specialityRepository.update(id, updateData);
@@ -115,7 +118,7 @@ class SpecialityService implements ISpecialityService {
 
   async delete(id: number): Promise<void> {
     if (!(await this._specialityRepository.findById(id))) {
-      throw new Error("Nenhuma Especialidade encontrada!");
+      throw new NotFoundError("No speciality found!");
     }
     await this._specialityRepository.delete(id);
   }
