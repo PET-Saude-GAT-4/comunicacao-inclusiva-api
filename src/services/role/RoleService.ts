@@ -1,4 +1,5 @@
 import { BadRequestError } from "@/errors/BadRequestError.js";
+import { NotFoundError } from "@/errors/NotFoundError.js";
 import type { RoleInput, RoleOutput } from "@/models/types/Role.type.js";
 import type { IRoleRepository } from "@/repositories/role/IRoleRepository.js";
 import RoleRepository from "@/repositories/role/RoleRepository.js";
@@ -31,6 +32,12 @@ class RoleService implements IRoleService {
   }
 
   async update(id: number, data: RoleInput): Promise<RoleOutput> {
+    const existsById = this._roleRepository.existsById(id);
+
+    if (!existsById) {
+      throw new NotFoundError();
+    }
+
     if (data.name == undefined) {
       throw new BadRequestError("No valid fields to update");
     }

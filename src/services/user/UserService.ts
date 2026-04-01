@@ -63,6 +63,12 @@ class UserService implements IUserService {
 
     const userUpdate = data;
 
+    const existsById = await this._userRepository.existsById(id);
+
+    if(!existsById){
+      throw new NotFoundError();
+    }
+
     if (userUpdate.password != undefined) {
       userUpdate.password = await this.hashPassword(userUpdate.password);
     }
@@ -86,7 +92,7 @@ class UserService implements IUserService {
     if (userUpdate.roleId != undefined) {
       query.roleId = userUpdate.roleId;
     }
-
+    
     return this._userRepository.update(id, query);
   }
 
