@@ -32,7 +32,8 @@ class SpecialityController implements ISpecialityController {
   }
 
   async update(req: Request, res: Response): Promise<void> {
-
+    const { id } = req.params;
+    
     await this._specialityService.update!(Number(id), req.body);
 
     res.status(200).send();
