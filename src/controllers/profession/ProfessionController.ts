@@ -1,7 +1,6 @@
 import type { Request, Response } from "express";
 
 import { NotFoundError } from "@/errors/NotFoundError.js";
-import type { ProfessionOutput } from "@/models/types/Profession.type.js";
 import type { IProfessionService } from "@/services/profession/IProfessionService.js";
 import ProfessionService from "@/services/profession/ProfessionService.js";
 
@@ -20,22 +19,17 @@ class ProfessionController implements IProfessionController {
   }
 
   async create(req: Request, res: Response): Promise<void> {
-    const profession: ProfessionOutput = await this._professionService.create(
-      req.body,
-    );
+    await this._professionService.create(req.body);
 
-    res.status(201).json({ profession: profession });
+    res.status(201).send();
   }
 
   async update(req: Request, res: Response): Promise<void> {
     const { id } = req.params;
 
-    const profession = await this._professionService.update!(
-      Number(id),
-      req.body,
-    );
+    await this._professionService.update!(Number(id), req.body);
 
-    res.status(200).json({ profession: profession });
+    res.status(200).send();
   }
 
   async findAll(req: Request, res: Response): Promise<void> {
