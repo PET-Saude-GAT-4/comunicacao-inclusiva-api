@@ -22,21 +22,24 @@ class SpecialityController implements ISpecialityController {
     const { professionId } = req.params;
     const { name, code } = req.body;
 
-    await this._specialityService.create({
+    const speciality = await this._specialityService.create({
       name,
       code,
       professionId: Number(professionId),
     });
 
-    res.status(201).send();
+    res.status(201).json({ speciality });
   }
 
   async update(req: Request, res: Response): Promise<void> {
     const { id } = req.params;
-    
-    await this._specialityService.update!(Number(id), req.body);
 
-    res.status(200).send();
+    const speciality = await this._specialityService.update!(
+      Number(id),
+      req.body,
+    );
+
+    res.status(200).json({ speciality });
   }
 
   async findAll(req: Request, res: Response): Promise<void> {

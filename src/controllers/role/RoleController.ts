@@ -26,8 +26,8 @@ class RoleController implements IRoleController {
       throw new BadRequestError("Name is required");
     }
 
-    await this._roleService.create(name);
-    res.status(201).send();
+    const role = await this._roleService.create(name);
+    res.status(201).json({ role });
   }
 
   async findById(req: Request, res: Response): Promise<void> {
@@ -56,8 +56,8 @@ class RoleController implements IRoleController {
       throw new BadRequestError("Name is required");
     }
 
-    await this._roleService.update(id, roleInput);
-    res.status(204).send();
+    const role = await this._roleService.update(id, roleInput);
+    res.status(200).json({ role });
   }
 
   async delete(req: Request, res: Response): Promise<void> {

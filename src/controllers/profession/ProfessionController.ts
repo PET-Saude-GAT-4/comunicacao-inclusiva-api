@@ -19,17 +19,20 @@ class ProfessionController implements IProfessionController {
   }
 
   async create(req: Request, res: Response): Promise<void> {
-    await this._professionService.create(req.body);
+    const profession = await this._professionService.create(req.body);
 
-    res.status(201).send();
+    res.status(201).json({ profession });
   }
 
   async update(req: Request, res: Response): Promise<void> {
     const { id } = req.params;
 
-    await this._professionService.update!(Number(id), req.body);
+    const profession = await this._professionService.update!(
+      Number(id),
+      req.body,
+    );
 
-    res.status(200).send();
+    res.status(200).json({ profession });
   }
 
   async findAll(req: Request, res: Response): Promise<void> {

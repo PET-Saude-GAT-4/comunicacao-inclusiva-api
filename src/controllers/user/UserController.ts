@@ -25,8 +25,8 @@ class UserController implements IUserController {
       throw new BadRequestError("Email, password, and role ID are required");
     }
 
-    await this._userService.create(email, password, roleId);
-    res.status(201).send();
+    const user = await this._userService.create(email, password, roleId);
+    res.status(201).json({ user });
   }
 
   async findById(req: Request, res: Response): Promise<void> {
@@ -49,8 +49,12 @@ class UserController implements IUserController {
     const id = Number(req.params.id);
     const { email, password, roleId } = req.body;
 
-    await this._userService.update(id, { email, password, roleId });
-    res.status(204).send();
+    const user = await this._userService.update(id, {
+      email,
+      password,
+      roleId,
+    });
+    res.status(200).json({ user });
   }
 
   async delete(req: Request, res: Response): Promise<void> {
