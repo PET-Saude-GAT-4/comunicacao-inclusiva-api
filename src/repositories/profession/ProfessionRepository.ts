@@ -71,7 +71,7 @@ class ProfessionRepository implements IProfessionRepository {
   }
 
   async delete(id: number): Promise<void> {
-    await prisma.profession.delete({
+    await prisma.profession.deleteMany({
       where: { id },
     });
   }

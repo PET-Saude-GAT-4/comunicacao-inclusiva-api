@@ -88,7 +88,7 @@ class SpecialityRepository implements ISpecialityRepository {
   }
 
   async delete(id: number): Promise<void> {
-    await prisma.speciality.delete({
+    await prisma.speciality.deleteMany({
       where: { id },
     });
   }

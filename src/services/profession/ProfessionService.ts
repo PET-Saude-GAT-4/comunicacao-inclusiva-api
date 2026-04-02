@@ -94,9 +94,6 @@ class ProfessionService implements IProfessionService {
   }
 
   async delete(id: number): Promise<void> {
-    if (!(await this._professionRepository.findById(id))) {
-      throw new NotFoundError("No profession found!");
-    }
     await this._professionRepository.delete(id);
   }
 

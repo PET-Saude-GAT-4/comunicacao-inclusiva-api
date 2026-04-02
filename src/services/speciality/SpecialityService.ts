@@ -117,9 +117,6 @@ class SpecialityService implements ISpecialityService {
   }
 
   async delete(id: number): Promise<void> {
-    if (!(await this._specialityRepository.findById(id))) {
-      throw new NotFoundError("No speciality found!");
-    }
     await this._specialityRepository.delete(id);
   }
 

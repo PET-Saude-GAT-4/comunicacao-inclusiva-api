@@ -40,10 +40,8 @@ class RoleRepository implements IRoleRepository {
   }
 
   async delete(id: number): Promise<void> {
-    await prisma.role.delete({
-      where: {
-        id,
-      },
+    await prisma.role.deleteMany({
+      where: { id },
     });
   }
 
