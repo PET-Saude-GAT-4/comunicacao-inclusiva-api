@@ -1,7 +1,7 @@
 import type { ProfessionOutput } from "@/models/types/Profession.type.js";
 
-import type { Icontroller } from "../IController.js";
+import type { IController } from "../IController.js";
 
-interface IProfessionController extends Icontroller<ProfessionOutput> {}
+interface IProfessionController extends IController<ProfessionOutput> {}
 
 export type { IProfessionController };

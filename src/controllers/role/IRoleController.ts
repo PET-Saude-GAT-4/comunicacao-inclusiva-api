@@ -1,15 +1,7 @@
-import type { Request, Response } from "express";
+import type { RoleOutput } from "@/models/types/Role.type.js";
 
-interface IRoleController {
-  create(req: Request, res: Response): Promise<void>;
+import type { IController } from "../IController.js";
 
-  findById(req: Request, res: Response): Promise<void>;
-
-  findAll(req: Request, res: Response): Promise<void>;
-
-  update(req: Request, res: Response): Promise<void>;
-
-  delete(req: Request, res: Response): Promise<void>;
-}
+interface IRoleController extends IController<RoleOutput> {}
 
 export type { IRoleController };

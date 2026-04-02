@@ -1,15 +1,7 @@
-import type { Request, Response } from "express";
+import type { UserOutput } from "@/models/types/User.type.js";
 
-interface IUserController {
-  create(req: Request, res: Response): Promise<void>;
+import type { IController } from "../IController.js";
 
-  findById(req: Request, res: Response): Promise<void>;
-
-  findAll(req: Request, res: Response): Promise<void>;
-
-  update(req: Request, res: Response): Promise<void>;
-
-  delete(req: Request, res: Response): Promise<void>;
-}
+interface IUserController extends IController<UserOutput> {}
 
 export type { IUserController };

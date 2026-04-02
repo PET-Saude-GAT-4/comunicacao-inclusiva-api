@@ -1,6 +1,6 @@
 import type { Request, Response } from "express";
 
-interface Icontroller<T> {
+interface IController<T> {
   findById?(req: Request, res: Response): Promise<void>;
   findAll(req: Request, res: Response): Promise<void>;
   create(req: Request, res: Response): Promise<void>;
@@ -8,4 +8,4 @@ interface Icontroller<T> {
   delete(req: Request, res: Response): Promise<void>;
 }
 
-export type { Icontroller };
+export type { IController };

@@ -1,7 +1,7 @@
 import type { SpecialityOutput } from "@/models/types/Speciality.type.js";
 
-import type { Icontroller } from "../IController.js";
+import type { IController } from "../IController.js";
 
-interface ISpecialityController extends Icontroller<SpecialityOutput> {}
+interface ISpecialityController extends IController<SpecialityOutput> {}
 
 export type { ISpecialityController };
