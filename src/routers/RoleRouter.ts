@@ -26,13 +26,13 @@ router.get(
 router.get(
   "/:id",
   authMiddleware.auth(["super_admin", "admin"]),
-  (req: Request, res: Response) => roleController.findById(req, res),
+  (req: Request, res: Response) => roleController.findById!(req, res),
 );
 
 router.patch(
   "/:id",
   authMiddleware.auth(["super_admin"]),
-  (req: Request, res: Response) => roleController.update(req, res),
+  (req: Request, res: Response) => roleController.update!(req, res),
 );
 
 router.delete(
