@@ -33,6 +33,21 @@ class RoleRepository implements IRoleRepository {
     }));
   }
 
+  async findByName(name: string): Promise<RoleOutput | null> {
+    const role = await prisma.role.findUnique({
+      where: { name },
+    });
+
+    if (!role) return null;
+
+    return {
+      id: role.id,
+      name: role.name,
+      createdAt: role.createdAt,
+      updatedAt: role.updatedAt,
+    };
+  }
+
   async existsById(id: number): Promise<boolean> {
     const roleCount: number = await prisma.role.count({ where: { id } });
 

@@ -45,13 +45,13 @@ class AuthController implements IAuthController {
   }
 
   async register(req: Request, res: Response): Promise<void> {
-    const { email, password, roleId } = req.body;
+    const { email, password, role } = req.body;
 
     if (!email || !password) {
-      throw new BadRequestError("Email, password and roleId are required");
+      throw new BadRequestError("Email, password and role are required");
     }
 
-    const user = await this._authService.register(email, password, roleId);
+    const user = await this._authService.register(email, password, role);
     res.status(201).json({ user });
   }
 }

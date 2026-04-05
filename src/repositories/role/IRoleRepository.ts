@@ -5,6 +5,7 @@ import type { IRepository } from "../IRepository.js";
 
 interface IRoleRepository extends IRepository<RoleOutput> {
   existsById(id: number): Promise<boolean>;
+  findByName(name: string): Promise<RoleOutput | null>;
   findAttributedUsers(id: number): Promise<UserOutput[]>;
   create(data: RoleInput): Promise<RoleOutput>;
   update(id: number, data: RoleInput): Promise<RoleOutput>;

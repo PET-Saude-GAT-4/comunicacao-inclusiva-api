@@ -64,7 +64,7 @@ class AuthService implements IAuthService {
   async register(
     email: string,
     password: string,
-    roleId: number,
+    role: string,
   ): Promise<UserOutput> {
     const exists = await this._userRepository.existsByEmail(email);
 
@@ -72,11 +72,17 @@ class AuthService implements IAuthService {
       throw new ConflictError("E-mail already in use");
     }
 
+    const roleRecord = await this._roleRepository.findByName(role);
+
+    if (!roleRecord) {
+      throw new NotFoundError("Role not found.");
+    }
+
     const passwordHash = await bcrypt.hash(password, 12);
     return this._userRepository.create({
       email: email,
       passwordHash: passwordHash,
-      roleId: roleId,
+      roleId: roleRecord.id,
     });
   }
 }
