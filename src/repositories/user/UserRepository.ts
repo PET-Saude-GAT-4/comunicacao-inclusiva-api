@@ -14,6 +14,7 @@ class UserRepository implements IUserRepository {
       where: {
         id,
       },
+      include: { role: true },
     });
 
     if (!user) return null;
@@ -22,19 +23,19 @@ class UserRepository implements IUserRepository {
       id: user.id,
       uuid: user.uuid,
       email: user.email,
-      roleId: user.roleId,
+      role: user.role,
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
     };
   }
 
   async findAll(): Promise<UserOutput[]> {
-    const users = await prisma.user.findMany();
+    const users = await prisma.user.findMany({ include: { role: true } });
     return users.map((user) => ({
       id: user.id,
       uuid: user.uuid,
       email: user.email,
-      roleId: user.roleId,
+      role: user.role,
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
     }));
@@ -60,12 +61,13 @@ class UserRepository implements IUserRepository {
         passwordHash: data.passwordHash,
         role: { connect: { id: data.roleId } },
       },
+      include: { role: true },
     });
     return {
       id: user.id,
       uuid: user.uuid,
       email: user.email,
-      roleId: user.roleId,
+      role: user.role,
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
     };
@@ -79,12 +81,13 @@ class UserRepository implements IUserRepository {
       data: {
         ...data,
       },
+      include: { role: true },
     });
     return {
       id: user.id,
       uuid: user.uuid,
       email: user.email,
-      roleId: user.roleId,
+      role: user.role,
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
     };
@@ -95,6 +98,7 @@ class UserRepository implements IUserRepository {
       where: {
         email,
       },
+      include: { role: true },
     });
 
     if (!user) return null;
@@ -103,7 +107,7 @@ class UserRepository implements IUserRepository {
       id: user.id,
       uuid: user.uuid,
       email: user.email,
-      roleId: user.roleId,
+      role: user.role,
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
     };
@@ -114,6 +118,7 @@ class UserRepository implements IUserRepository {
       where: {
         uuid: uuid,
       },
+      include: { role: true },
     });
 
     if (!user) return null;
@@ -122,7 +127,7 @@ class UserRepository implements IUserRepository {
       id: user.id,
       uuid: user.uuid,
       email: user.email,
-      roleId: user.roleId,
+      role: user.role,
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
     };

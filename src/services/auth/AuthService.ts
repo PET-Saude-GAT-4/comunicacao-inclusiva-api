@@ -33,12 +33,6 @@ class AuthService implements IAuthService {
 
     if (!user) throw new UnauthorizedError("Invalid credentials");
 
-    const role = await this._roleRepository.findById(user.roleId);
-
-    if (!role) {
-      throw new NotFoundError("Role not found.");
-    }
-
     const passwordHash =
       await this._userRepository.findPasswordHashByEmail(email);
 
@@ -51,7 +45,7 @@ class AuthService implements IAuthService {
     }
 
     const token = jwt.sign(
-      { id: user.id, email: user.email, role: role.name },
+      { id: user.id, email: user.email, role: user.role.name },
       JWT_SECRET,
       {
         expiresIn: "24h",

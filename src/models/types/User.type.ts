@@ -1,3 +1,5 @@
+import type { RoleOutput } from "./Role.type.js";
+
 export type UserInput = {
   email: string;
   passwordHash: string;
@@ -14,7 +16,7 @@ export type UserOutput = {
   id: number;
   uuid: string;
   email: string;
-  roleId: number;
+  role: RoleOutput;
   createdAt: Date;
   updatedAt: Date;
 };

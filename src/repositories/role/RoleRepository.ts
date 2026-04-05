@@ -80,12 +80,13 @@ class RoleRepository implements IRoleRepository {
       where: {
         roleId: id,
       },
+      include: { role: true },
     });
     return users.map((user) => ({
       id: user.id,
       uuid: user.uuid,
       email: user.email,
-      roleId: user.roleId,
+      role: user.role,
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
     }));
