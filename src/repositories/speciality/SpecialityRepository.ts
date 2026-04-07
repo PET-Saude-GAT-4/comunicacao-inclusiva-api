@@ -1,7 +1,7 @@
 import type { Prisma } from "@/generated/prisma/client.js";
 import type {
-  SpecialityInput,
   SpecialityOutput,
+  SpecialityRepositoryInput,
   SpecialityUpdate,
 } from "@/models/types/Speciality.type.js";
 import { prisma } from "@/prisma.js";
@@ -9,7 +9,9 @@ import { prisma } from "@/prisma.js";
 import type { ISpecialityRepository } from "./ISpecialityRepository.js";
 
 class SpecialityRepository implements ISpecialityRepository {
-  async create(speciality: SpecialityInput): Promise<SpecialityOutput> {
+  async create(
+    speciality: SpecialityRepositoryInput,
+  ): Promise<SpecialityOutput> {
     const data = await prisma.speciality.create({
       data: {
         code: speciality.code,

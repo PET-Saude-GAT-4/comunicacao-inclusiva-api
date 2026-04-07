@@ -31,17 +31,15 @@ class SpecialityService implements ISpecialityService {
   }
 
   async create(speciality: SpecialityInput): Promise<SpecialityOutput> {
-    if (
-      !speciality.name ||
-      !speciality.code ||
-      speciality.professionId === undefined
-    ) {
+    if (!speciality.name || !speciality.code || !speciality.professionCode) {
       throw new BadRequestError("Name, code, and profession are required!");
     }
 
-    if (
-      !(await this._professionRepository.existsById!(speciality.professionId))
-    ) {
+    const profession = await this._professionRepository.findByCode(
+      speciality.professionCode,
+    );
+
+    if (!profession) {
       throw new NotFoundError("This profession does not exist!");
     }
 
@@ -51,7 +49,7 @@ class SpecialityService implements ISpecialityService {
     if (
       await this._specialityRepository.findByNameAndProfessionId(
         speciality.name,
-        speciality.professionId,
+        profession.id,
       )
     ) {
       throw new ConflictError("This name already exists for this profession");
@@ -61,7 +59,11 @@ class SpecialityService implements ISpecialityService {
       throw new ConflictError("This code already exists");
     }
 
-    return await this._specialityRepository.create(speciality);
+    return await this._specialityRepository.create({
+      code: speciality.code,
+      name: speciality.name,
+      professionId: profession.id,
+    });
   }
 
   async update(

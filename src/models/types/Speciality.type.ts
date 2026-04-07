@@ -1,6 +1,12 @@
 export type SpecialityInput = {
   name: string;
   code: string;
+  professionCode: string;
+};
+
+export type SpecialityRepositoryInput = {
+  name: string;
+  code: string;
   professionId: number;
 };
 

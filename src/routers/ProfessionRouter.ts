@@ -47,7 +47,7 @@ router.delete(
 
 //Rota aninhada para criar specialities
 router.post(
-  "/:professionId/specialities",
+  "/:professionCode/specialities",
   authMiddleware.auth(["super_admin", "admin"]),
   specialityController.create.bind(specialityController),
 );

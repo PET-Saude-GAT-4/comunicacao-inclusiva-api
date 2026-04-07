@@ -19,13 +19,13 @@ class SpecialityController implements ISpecialityController {
   }
 
   async create(req: Request, res: Response): Promise<void> {
-    const { professionId } = req.params;
+    const professionCode = req.params.professionCode as string;
     const { name, code } = req.body;
 
     const speciality = await this._specialityService.create({
       name,
       code,
-      professionId: Number(professionId),
+      professionCode,
     });
 
     res.status(201).json({ speciality });

@@ -1,6 +1,6 @@
 import type {
-  SpecialityInput,
   SpecialityOutput,
+  SpecialityRepositoryInput,
   SpecialityUpdate,
 } from "@/models/types/Speciality.type.js";
 
@@ -13,7 +13,7 @@ interface ISpecialityRepository extends IRepository<SpecialityOutput> {
     professionId: number,
   ): Promise<SpecialityOutput | null>;
 
-  create(data: SpecialityInput): Promise<SpecialityOutput>;
+  create(data: SpecialityRepositoryInput): Promise<SpecialityOutput>;
   update(id: number, data: SpecialityUpdate): Promise<SpecialityOutput>;
 }
 
