@@ -1,6 +1,7 @@
 import express from "express";
 
 import AuthRouter from "./AuthRouter.js";
+import FileRouter from "./FileRouter.js";
 import ProfessionRouter from "./ProfessionRouter.js";
 import RoleRouter from "./RoleRouter.js";
 import SpecialityRouter from "./SpecialityRouter.js";
@@ -9,6 +10,7 @@ import UserRouter from "./UserRouter.js";
 const router = express.Router();
 
 router.use("/auth", AuthRouter);
+router.use("/files", FileRouter);
 router.use("/professions", ProfessionRouter);
 router.use("/roles", RoleRouter);
 router.use("/specialities", SpecialityRouter);

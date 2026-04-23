@@ -8,8 +8,18 @@ generator client {
   provider = "prisma-client"
   output   = "../src/generated/prisma"
 }
+
 datasource db {
   provider = "postgresql"
+}
+
+enum FileType {
+  image
+  video
+  audio
+  document
+  archive
+  other
 }
 
 model Role {
@@ -21,22 +31,40 @@ model Role {
 }
 
 model User {
-  id           Int      @id @default(autoincrement())
-  uuid         String   @unique @default(uuid())
-  email        String   @unique
+  id           Int          @id @default(autoincrement())
+  uuid         String       @unique @default(uuid())
+  email        String       @unique
   passwordHash String
   roleId       Int
-  role         Role     @relation(fields: [roleId], references: [id])
+  role         Role         @relation(fields: [roleId], references: [id])
+  storedFiles  StoredFile[]
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+}
+
+model StoredFile {
+  id           Int      @id @default(autoincrement())
+  uuid         String   @unique @default(uuid())
+  location     String   @unique
+  filename     String
+  originalName String
+  fileSize     BigInt?
+  mimeType     String
+  fileType     FileType
+  purpose      String?
+  isPrivate    Boolean  @default(true)
+  userId       Int?
+  user         User?    @relation(fields: [userId], references: [id])
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 }
 
 model Profession {
-  id        Int      @id @default(autoincrement())
-  code      String   @unique
-  name      String   @unique
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id           Int          @id @default(autoincrement())
+  code         String       @unique
+  name         String       @unique
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
   specialities Speciality[]
 }
 

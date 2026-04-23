@@ -1,12 +1,11 @@
 import type { NextFunction, Request, Response } from "express";
 import jwt from "jsonwebtoken";
 
+import { env } from "@/config/env.js";
 import { ForbiddenError } from "@/errors/ForbiddenError.js";
 import { UnauthorizedError } from "@/errors/UnauthorizedError.js";
 
 import type { IAuthMiddleware } from "./IAuthMiddleware.js";
-
-const JWT_SECRET = process.env.JWT_SECRET ?? "default_secret";
 
 class AuthMiddleware implements IAuthMiddleware {
   private validate(req: Request, res: Response, required: boolean): boolean {
@@ -32,7 +31,7 @@ class AuthMiddleware implements IAuthMiddleware {
 
     let decoded: jwt.JwtPayload;
     try {
-      decoded = jwt.verify(token, JWT_SECRET) as jwt.JwtPayload;
+      decoded = jwt.verify(token, env.jwtSecret) as jwt.JwtPayload;
     } catch {
       delete req.user;
       if (required) {
