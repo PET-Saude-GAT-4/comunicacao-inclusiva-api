@@ -37,26 +37,63 @@ model User {
   passwordHash String
   roleId       Int
   role         Role         @relation(fields: [roleId], references: [id])
-  storedFiles  StoredFile[]
   createdAt    DateTime     @default(now())
   updatedAt    DateTime     @updatedAt
+  storedFiles  StoredFile[]
+  boards       Board[]      @relation("BoardAuthor")
 }
 
 model StoredFile {
-  id           Int      @id @default(autoincrement())
-  uuid         String   @unique @default(uuid())
-  location     String   @unique
+  id           Int        @id @default(autoincrement())
+  uuid         String     @unique @default(uuid())
+  location     String     @unique
   filename     String
   originalName String
   fileSize     BigInt?
   mimeType     String
   fileType     FileType
   purpose      String?
-  isPrivate    Boolean  @default(true)
+  isPrivate    Boolean    @default(true)
   userId       Int?
-  user         User?    @relation(fields: [userId], references: [id])
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  user         User?      @relation(fields: [userId], references: [id])
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  pictogram    Pictogram?
+}
+
+model Pictogram {
+  id                   Int              @id @default(autoincrement())
+  uuid                 String           @unique @default(uuid())
+  description          String
+  storedFileId         Int              @unique
+  storedFile           StoredFile       @relation(fields: [storedFileId], references: [id])
+  createdAt            DateTime         @default(now())
+  updatedAt            DateTime         @updatedAt
+  boardPictograms      BoardPictogram[]
+  representativeBoards Board[]          @relation("BoardRepresentative")
+}
+
+model Board {
+  id               Int              @id @default(autoincrement())
+  uuid             String           @unique @default(uuid())
+  title            String
+  authorId         Int?
+  author           User?            @relation("BoardAuthor", fields: [authorId], references: [id])
+  representativeId Int
+  representative   Pictogram        @relation("BoardRepresentative", fields: [representativeId], references: [id])
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+  pictograms       BoardPictogram[]
+}
+
+model BoardPictogram {
+  boardId     Int
+  pictogramId Int
+  order       Int
+  board       Board     @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  pictogram   Pictogram @relation(fields: [pictogramId], references: [id])
+
+  @@id([boardId, pictogramId])
 }
 
 model Profession {

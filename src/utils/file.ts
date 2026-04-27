@@ -1,4 +1,9 @@
 import type { FileType } from "@/models/types/StoredFile.type.js";
+import { concatWithBaseUrl } from "@/utils/url.js";
+
+export function buildFileUrl(fileUuid: string): string {
+  return concatWithBaseUrl(`/files/${fileUuid}`);
+}
 
 export function mimeToFileType(mime: string): FileType {
   if (mime.startsWith("image/")) return "image";
