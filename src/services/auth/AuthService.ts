@@ -1,6 +1,7 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 
+import { env } from "@/config/env.js";
 import { ConflictError } from "@/errors/ConflictError.js";
 import { NotFoundError } from "@/errors/NotFoundError.js";
 import { UnauthorizedError } from "@/errors/UnauthorizedError.js";
@@ -11,8 +12,6 @@ import type { IUserRepository } from "@/repositories/user/IUserRepository.js";
 import UserRepository from "@/repositories/user/UserRepository.js";
 
 import type { IAuthService } from "./IAuthService.js";
-
-const JWT_SECRET = process.env.JWT_SECRET || "default_secret";
 
 type Props = {
   userRepository?: IUserRepository;
@@ -46,9 +45,11 @@ class AuthService implements IAuthService {
 
     const token = jwt.sign(
       { id: user.id, email: user.email, role: user.role.name },
-      JWT_SECRET,
+      env.jwtSecret,
       {
-        expiresIn: "24h",
+        expiresIn: env.jwtExpiresIn as NonNullable<
+          jwt.SignOptions["expiresIn"]
+        >,
       },
     );
 
