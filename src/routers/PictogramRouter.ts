@@ -15,13 +15,13 @@ const router = express.Router();
 
 router.get(
   "/",
-  authMiddleware.auth(["super_admin", "admin", "user"]),
+  authMiddleware.auth(["super_admin", "admin", "viewer"]),
   pictogramController.findAll.bind(pictogramController),
 );
 
 router.get(
   "/:uuid",
-  authMiddleware.auth(["super_admin", "admin", "user"]),
+  authMiddleware.auth(["super_admin", "admin", "viewer"]),
   pictogramController.findById!.bind(pictogramController),
 );
 
