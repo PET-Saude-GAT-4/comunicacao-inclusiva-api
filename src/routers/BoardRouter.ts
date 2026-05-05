@@ -12,13 +12,13 @@ const router = express.Router();
 
 router.get(
   "/",
-  authMiddleware.auth(["super_admin", "admin", "user"]),
+  authMiddleware.auth(["super_admin", "admin", "viewer"]),
   boardController.findAll.bind(boardController),
 );
 
 router.get(
   "/:uuid",
-  authMiddleware.auth(["super_admin", "admin", "user"]),
+  authMiddleware.auth(["super_admin", "admin", "viewer"]),
   boardController.findById!.bind(boardController),
 );
 
@@ -30,7 +30,7 @@ router.post(
 
 router.get(
   "/:uuid/pictograms",
-  authMiddleware.auth(["super_admin", "admin", "user"]),
+  authMiddleware.auth(["super_admin", "admin", "viewer"]),
   boardController.findPictograms.bind(boardController),
 );
 
