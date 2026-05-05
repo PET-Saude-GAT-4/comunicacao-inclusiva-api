@@ -40,4 +40,10 @@ router.post(
   boardController.addPictogram.bind(boardController),
 );
 
+router.delete(
+  "/:uuid",
+  authMiddleware.auth(["super_admin", "admin"]),
+  boardController.delete.bind(boardController),
+)
+
 export default router;
