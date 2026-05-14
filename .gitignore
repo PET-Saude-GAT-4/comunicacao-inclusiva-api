@@ -53,3 +53,7 @@ node_modules/
 # build
 dist/
 src/generated/
+
+
+# app
+/storage

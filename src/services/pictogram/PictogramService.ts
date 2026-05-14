@@ -1,8 +1,10 @@
+import { BadRequestError } from "@/errors/BadRequestError.js";
 import { NotFoundError } from "@/errors/NotFoundError.js";
 import type {
   PictogramInput,
   PictogramOutput,
 } from "@/models/types/Pictogram.type.js";
+import { prisma } from "@/prisma.js";
 import type { IPictogramRepository } from "@/repositories/pictogram/IPictogramRepository.js";
 import PictogramRepository from "@/repositories/pictogram/PictogramRepository.js";
 import FileService from "@/services/file/FileService.js";
@@ -67,6 +69,18 @@ class PictogramService implements IPictogramService {
       throw new NotFoundError("Pictogram not found");
     }
 
+    const owningBoard = await prisma.board.findMany({
+      where: {
+        representativeId: pictogram?.id,
+      },
+    });
+
+    if (owningBoard) {
+      throw new BadRequestError(
+        "You cannot delete a pictogram which represents a board",
+      );
+    }
+
     await this._pictogramRepository.delete(id);
     await this._fileService.delete(pictogram.fileUuid);
   }
@@ -78,7 +92,19 @@ class PictogramService implements IPictogramService {
       throw new NotFoundError("Pictogram not found");
     }
 
-    await this._pictogramRepository.deleteByUuid(uuid);
+    const owningBoard = await prisma.board.findMany({
+      where: {
+        representativeId: pictogram?.id,
+      },
+    });
+
+    if (owningBoard) {
+      throw new BadRequestError(
+        "You cannot delete a pictogram which represents a board",
+      );
+    }
+
+    await this._pictogramRepository.delete(pictogram.id);
     await this._fileService.delete(pictogram.fileUuid);
   }
 }

@@ -9,6 +9,7 @@ interface IPictogramService extends IService<PictogramOutput> {
 
   findByUuid(uuid: string): Promise<PictogramOutput | null>;
 
+  delete(id: number): Promise<void>;
   deleteByUuid(uuid: string): Promise<void>;
 }
 
