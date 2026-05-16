@@ -41,6 +41,32 @@ class BoardService implements IBoardService {
     });
   }
 
+  async update(
+    uuid: string,
+    data: { title?: string; representativeUuid?: string },
+  ): Promise<BoardOutput> {
+    const board = await this._boardRepository.findByUuid(uuid);
+    if (!board) {
+      throw new NotFoundError("Board not found");
+    }
+
+    let representativeId: number | undefined;
+    if (data.representativeUuid) {
+      const pictogram = await this._pictogramRepository.findByUuid(
+        data.representativeUuid,
+      );
+      if (!pictogram) {
+        throw new NotFoundError("Representative pictogram not found");
+      }
+      representativeId = pictogram.id;
+    }
+
+    return this._boardRepository.update(board.id, {
+      title: data.title,
+      representativeId,
+    });
+  }
+
   async findAll(): Promise<BoardOutput[]> {
     return this._boardRepository.findAll();
   }

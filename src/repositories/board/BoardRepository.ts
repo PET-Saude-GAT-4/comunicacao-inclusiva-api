@@ -1,3 +1,4 @@
+import { Prisma } from "@/generated/prisma/client.js";
 import type {
   BoardOutput,
   BoardRepositoryInput,
@@ -5,6 +6,7 @@ import type {
 import type { BoardPictogramRepositoryInput } from "@/models/types/BoardPictogram.type.js";
 import type { PictogramOutput } from "@/models/types/Pictogram.type.js";
 import { prisma } from "@/prisma.js";
+import { isEmpty } from "@/utils/object.js";
 
 import type { IBoardRepository } from "./IBoardRepository.js";
 
@@ -71,6 +73,25 @@ class BoardRepository implements IBoardRepository {
       include: includeRepresentative,
     });
 
+    return this._map(result);
+  }
+
+  async update(
+    id: number,
+    data: { title: string | undefined; representativeId: number | undefined },
+  ): Promise<BoardOutput> {
+    if (isEmpty(data)) {
+      throw new Error("No fields to update.");
+    }
+
+    const result = await prisma.board.update({
+      where: { id },
+      data: {
+        title: data.title ?? Prisma.skip,
+        representativeId: data.representativeId ?? Prisma.skip,
+      },
+      include: includeRepresentative,
+    });
     return this._map(result);
   }
 

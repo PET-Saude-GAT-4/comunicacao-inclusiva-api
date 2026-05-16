@@ -67,6 +67,18 @@ class BoardController implements IBoardController {
     res.status(201).json({ board: this._toResponse(board) });
   }
 
+  async update(req: Request, res: Response): Promise<void> {
+    const uuid = req.params.uuid as string;
+    const { title, representativeUuid } = req.body;
+
+    const board = await this._boardService.update(uuid, {
+      title,
+      representativeUuid,
+    });
+
+    res.status(200).json({ board: this._toResponse(board) });
+  }
+
   async findAll(req: Request, res: Response): Promise<void> {
     const boards = await this._boardService.findAll();
     res.status(200).json({

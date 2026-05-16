@@ -9,6 +9,11 @@ import type { IRepository } from "@/repositories/IRepository.js";
 interface IBoardRepository extends IRepository<BoardOutput> {
   create(data: BoardRepositoryInput): Promise<BoardOutput>;
 
+  update(
+    id: number,
+    data: { title: string | undefined; representativeId: number | undefined },
+  ): Promise<BoardOutput>;
+
   findByUuid(uuid: string): Promise<BoardOutput | null>;
 
   existsByUuid(uuid: string): Promise<boolean>;
