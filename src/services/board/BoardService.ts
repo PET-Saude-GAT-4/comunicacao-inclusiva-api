@@ -125,6 +125,25 @@ class BoardService implements IBoardService {
     });
   }
 
+  async deleteBoardPictogram(
+    boardUuid: string,
+    pictogramUuid: string,
+  ): Promise<void> {
+    const board = await this._boardRepository.findByUuid(boardUuid);
+
+    if (!board) {
+      throw new NotFoundError("Board not found");
+    }
+
+    const pictogram = await this._pictogramRepository.findByUuid(pictogramUuid);
+
+    if (!pictogram) {
+      throw new NotFoundError("Pictogram not found");
+    }
+
+    await this._boardRepository.deleteBoardPictogram(board.id, pictogram.id);
+  }
+
   async findPictogramsByBoardUuid(
     boardUuid: string,
   ): Promise<PictogramOutput[]> {

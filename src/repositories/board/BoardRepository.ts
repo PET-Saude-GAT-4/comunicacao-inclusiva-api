@@ -142,6 +142,15 @@ class BoardRepository implements IBoardRepository {
     });
   }
 
+  async deleteBoardPictogram(
+    boardId: number,
+    pictogramId: number,
+  ): Promise<void> {
+    await prisma.boardPictogram.delete({
+      where: { boardId_pictogramId: { boardId, pictogramId } },
+    });
+  }
+
   async findPictogramsByBoardId(boardId: number): Promise<PictogramOutput[]> {
     const results = await prisma.boardPictogram.findMany({
       where: { boardId },

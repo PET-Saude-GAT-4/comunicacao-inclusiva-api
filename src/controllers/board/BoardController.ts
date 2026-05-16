@@ -122,6 +122,24 @@ class BoardController implements IBoardController {
     res.status(204).send();
   }
 
+  async deleteBoardPictogram(req: Request, res: Response): Promise<void> {
+    const { uuid: boardUuid, pictogramUuid } = req.params as Record<
+      string,
+      string
+    >;
+
+    if (!boardUuid) {
+      throw new BadRequestError("'boardUuid' is required");
+    }
+
+    if (!pictogramUuid) {
+      throw new BadRequestError("'pictogramUuid' is required");
+    }
+
+    await this._boardService.deleteBoardPictogram(boardUuid, pictogramUuid);
+    res.status(204).send();
+  }
+
   async findPictograms(req: Request, res: Response): Promise<void> {
     const boardUuid = req.params.uuid as string;
 
