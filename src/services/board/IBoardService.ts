@@ -15,6 +15,8 @@ interface IBoardService extends IService<BoardOutput> {
 
   addPictogram(boardUuid: string, data: BoardPictogramInput): Promise<void>;
 
+  deleteBoardPictogram(boardUuid: string, pictogramUuid: string): Promise<void>;
+
   findPictogramsByBoardUuid(boardUuid: string): Promise<PictogramOutput[]>;
 }
 
