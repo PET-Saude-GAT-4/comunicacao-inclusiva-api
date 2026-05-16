@@ -6,6 +6,11 @@ import type { IService } from "@/services/IService.js";
 interface IBoardService extends IService<BoardOutput> {
   create(data: BoardInput): Promise<BoardOutput>;
 
+  update(
+    uuid: string,
+    data: { title?: string; representativeUuid?: string },
+  ): Promise<BoardOutput>;
+
   findByUuid(uuid: string): Promise<BoardOutput | null>;
 
   addPictogram(boardUuid: string, data: BoardPictogramInput): Promise<void>;

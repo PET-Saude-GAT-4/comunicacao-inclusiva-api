@@ -1,4 +1,4 @@
-import express from "express";
+import express, { type Request, type Response } from "express";
 
 import BoardController from "@/controllers/board/BoardController.js";
 import type { IBoardController } from "@/controllers/board/IBoardController.js";
@@ -40,10 +40,16 @@ router.post(
   boardController.addPictogram.bind(boardController),
 );
 
+router.patch(
+  "/:uuid",
+  authMiddleware.auth(["super_admin", "admin"]),
+  (req: Request, res: Response) => boardController.update!(req, res),
+);
+
 router.delete(
   "/:uuid",
   authMiddleware.auth(["super_admin", "admin"]),
   boardController.delete.bind(boardController),
-)
+);
 
 export default router;
