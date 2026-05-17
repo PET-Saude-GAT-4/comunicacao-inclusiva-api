@@ -58,4 +58,10 @@ router.delete(
   boardController.deleteBoardPictogram.bind(boardController),
 );
 
+router.patch(
+  "/:uuid/pictograms/:pictogramUuid/order",
+  authMiddleware.auth(["super_admin", "admin"]),
+  boardController.reorderPictogram.bind(boardController),
+);
+
 export default router;

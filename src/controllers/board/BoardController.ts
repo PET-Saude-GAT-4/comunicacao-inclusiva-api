@@ -112,11 +112,11 @@ class BoardController implements IBoardController {
 
   async addPictogram(req: Request, res: Response): Promise<void> {
     const boardUuid = req.params.uuid as string;
-    const { pictogramUuid, order } = req.body;
+    const { pictogramUuid, next } = req.body;
 
     await this._boardService.addPictogram(boardUuid, {
       pictogramUuid,
-      ...(order !== undefined ? { order: Number(order) } : {}),
+      next,
     });
 
     res.status(204).send();
@@ -147,8 +147,25 @@ class BoardController implements IBoardController {
       await this._boardService.findPictogramsByBoardUuid(boardUuid);
 
     res.status(200).json({
-      pictograms: pictograms.map((p) => this._toPictogramResponse(p)),
+      pictograms: pictograms.map((p, i) => ({
+        ...this._toPictogramResponse(p),
+        order: i + 1,
+      })),
     });
+  }
+
+  async reorderPictogram(req: Request, res: Response): Promise<void> {
+    const boardUuid = req.params.uuid as string;
+    const pictogramUuid = req.params.pictogramUuid as string;
+    const { next } = req.body;
+
+    await this._boardService.reorderPictogram(
+      boardUuid,
+      pictogramUuid,
+      next ?? null,
+    );
+
+    res.status(204).send();
   }
 }
 

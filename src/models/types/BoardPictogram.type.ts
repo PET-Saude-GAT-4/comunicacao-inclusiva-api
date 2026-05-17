@@ -1,10 +1,10 @@
 export type BoardPictogramInput = {
   pictogramUuid: string;
-  order?: number;
+  next?: string | null;
 };
 
 export type BoardPictogramRepositoryInput = {
   boardId: number;
   pictogramId: number;
-  order: number;
+  next: number | null;
 };

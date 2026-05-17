@@ -24,9 +24,13 @@ interface IBoardRepository extends IRepository<BoardOutput> {
 
   existsBoardPictogram(boardId: number, pictogramId: number): Promise<boolean>;
 
-  getMaxPictogramOrder(boardId: number): Promise<number>;
-
   deleteBoardPictogram(boardId: number, pictogramId: number): Promise<void>;
+
+  reorderPictogram(
+    boardId: number,
+    pictogramId: number,
+    next: number | null,
+  ): Promise<void>;
 }
 
 export type { IBoardRepository };
