@@ -9,6 +9,8 @@ interface IBoardController extends IController<BoardOutput> {
   deleteBoardPictogram(req: Request, res: Response): Promise<void>;
 
   findPictograms(req: Request, res: Response): Promise<void>;
+
+  reorderPictogram(req: Request, res: Response): Promise<void>;
 }
 
 export type { IBoardController };

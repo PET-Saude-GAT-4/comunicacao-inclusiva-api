@@ -18,6 +18,12 @@ interface IBoardService extends IService<BoardOutput> {
   deleteBoardPictogram(boardUuid: string, pictogramUuid: string): Promise<void>;
 
   findPictogramsByBoardUuid(boardUuid: string): Promise<PictogramOutput[]>;
+
+  reorderPictogram(
+    boardUuid: string,
+    pictogramUuid: string,
+    next: string | null,
+  ): Promise<void>;
 }
 
 export type { IBoardService };
