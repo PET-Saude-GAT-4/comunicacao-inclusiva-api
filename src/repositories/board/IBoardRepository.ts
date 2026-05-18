@@ -9,6 +9,11 @@ import type { IRepository } from "@/repositories/IRepository.js";
 interface IBoardRepository extends IRepository<BoardOutput> {
   create(data: BoardRepositoryInput): Promise<BoardOutput>;
 
+  update(
+    id: number,
+    data: { title: string | undefined; representativeId: number | undefined },
+  ): Promise<BoardOutput>;
+
   findByUuid(uuid: string): Promise<BoardOutput | null>;
 
   existsByUuid(uuid: string): Promise<boolean>;
@@ -19,7 +24,13 @@ interface IBoardRepository extends IRepository<BoardOutput> {
 
   existsBoardPictogram(boardId: number, pictogramId: number): Promise<boolean>;
 
-  getMaxPictogramOrder(boardId: number): Promise<number>;
+  deleteBoardPictogram(boardId: number, pictogramId: number): Promise<void>;
+
+  reorderPictogram(
+    boardId: number,
+    pictogramId: number,
+    next: number | null,
+  ): Promise<void>;
 }
 
 export type { IBoardRepository };

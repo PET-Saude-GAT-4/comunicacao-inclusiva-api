@@ -1,3 +1,4 @@
+import { BadRequestError } from "@/errors/BadRequestError.js";
 import { ConflictError } from "@/errors/ConflictError.js";
 import { NotFoundError } from "@/errors/NotFoundError.js";
 import type { BoardInput, BoardOutput } from "@/models/types/Board.type.js";
@@ -38,6 +39,32 @@ class BoardService implements IBoardService {
       title: data.title,
       authorId: data.authorId ?? null,
       representativeId: pictogram.id,
+    });
+  }
+
+  async update(
+    uuid: string,
+    data: { title?: string; representativeUuid?: string },
+  ): Promise<BoardOutput> {
+    const board = await this._boardRepository.findByUuid(uuid);
+    if (!board) {
+      throw new NotFoundError("Board not found");
+    }
+
+    let representativeId: number | undefined;
+    if (data.representativeUuid) {
+      const pictogram = await this._pictogramRepository.findByUuid(
+        data.representativeUuid,
+      );
+      if (!pictogram) {
+        throw new NotFoundError("Representative pictogram not found");
+      }
+      representativeId = pictogram.id;
+    }
+
+    return this._boardRepository.update(board.id, {
+      title: data.title,
+      representativeId,
     });
   }
 
@@ -84,19 +111,50 @@ class BoardService implements IBoardService {
       throw new ConflictError("This pictogram is already in the board");
     }
 
-    let order = data.order;
-    if (order === undefined) {
-      const maxOrder = await this._boardRepository.getMaxPictogramOrder(
-        board.id,
+    let nextPictogramId: number | null = null;
+    if (data.next != null) {
+      const nextPictogram = await this._pictogramRepository.findByUuid(
+        data.next,
       );
-      order = maxOrder + 1;
+      if (!nextPictogram) {
+        throw new BadRequestError("Next pictogram not found");
+      }
+      const nextInBoard = await this._boardRepository.existsBoardPictogram(
+        board.id,
+        nextPictogram.id,
+      );
+      if (!nextInBoard) {
+        throw new BadRequestError(
+          "Next pictogram is not associated with this board",
+        );
+      }
+      nextPictogramId = nextPictogram.id;
     }
 
     await this._boardRepository.addPictogram({
       boardId: board.id,
       pictogramId: pictogram.id,
-      order,
+      next: nextPictogramId,
     });
+  }
+
+  async deleteBoardPictogram(
+    boardUuid: string,
+    pictogramUuid: string,
+  ): Promise<void> {
+    const board = await this._boardRepository.findByUuid(boardUuid);
+
+    if (!board) {
+      throw new NotFoundError("Board not found");
+    }
+
+    const pictogram = await this._pictogramRepository.findByUuid(pictogramUuid);
+
+    if (!pictogram) {
+      throw new NotFoundError("Pictogram not found");
+    }
+
+    await this._boardRepository.deleteBoardPictogram(board.id, pictogram.id);
   }
 
   async findPictogramsByBoardUuid(
@@ -109,6 +167,62 @@ class BoardService implements IBoardService {
     }
 
     return this._boardRepository.findPictogramsByBoardId(board.id);
+  }
+
+  async reorderPictogram(
+    boardUuid: string,
+    pictogramUuid: string,
+    next: string | null,
+  ): Promise<void> {
+    const board = await this._boardRepository.findByUuid(boardUuid);
+
+    if (!board) {
+      throw new NotFoundError("Board not found");
+    }
+
+    const pictogram = await this._pictogramRepository.findByUuid(pictogramUuid);
+
+    if (!pictogram) {
+      throw new NotFoundError("Pictogram not found");
+    }
+
+    const pictogramInBoard = await this._boardRepository.existsBoardPictogram(
+      board.id,
+      pictogram.id,
+    );
+
+    if (!pictogramInBoard) {
+      throw new NotFoundError("Pictogram is not associated with this board");
+    }
+
+    let nextPictogramId: number | null = null;
+    if (next != null) {
+      if (next === pictogramUuid) {
+        throw new BadRequestError(
+          "Next pictogram must not be the same as the pictogram being moved",
+        );
+      }
+      const nextPictogram = await this._pictogramRepository.findByUuid(next);
+      if (!nextPictogram) {
+        throw new BadRequestError("Next pictogram not found");
+      }
+      const nextInBoard = await this._boardRepository.existsBoardPictogram(
+        board.id,
+        nextPictogram.id,
+      );
+      if (!nextInBoard) {
+        throw new BadRequestError(
+          "Next pictogram is not associated with this board",
+        );
+      }
+      nextPictogramId = nextPictogram.id;
+    }
+
+    await this._boardRepository.reorderPictogram(
+      board.id,
+      pictogram.id,
+      nextPictogramId,
+    );
   }
 }
 

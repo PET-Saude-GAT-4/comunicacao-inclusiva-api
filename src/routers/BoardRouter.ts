@@ -1,4 +1,4 @@
-import express from "express";
+import express, { type Request, type Response } from "express";
 
 import BoardController from "@/controllers/board/BoardController.js";
 import type { IBoardController } from "@/controllers/board/IBoardController.js";
@@ -16,16 +16,28 @@ router.get(
   boardController.findAll.bind(boardController),
 );
 
+router.post(
+  "/",
+  authMiddleware.auth(["super_admin", "admin"]),
+  boardController.create.bind(boardController),
+);
+
 router.get(
   "/:uuid",
   authMiddleware.auth(["super_admin", "admin", "viewer"]),
   boardController.findById!.bind(boardController),
 );
 
-router.post(
-  "/",
+router.patch(
+  "/:uuid",
   authMiddleware.auth(["super_admin", "admin"]),
-  boardController.create.bind(boardController),
+  (req: Request, res: Response) => boardController.update!(req, res),
+);
+
+router.delete(
+  "/:uuid",
+  authMiddleware.auth(["super_admin", "admin"]),
+  boardController.delete.bind(boardController),
 );
 
 router.get(
@@ -41,9 +53,15 @@ router.post(
 );
 
 router.delete(
-  "/:uuid",
+  "/:uuid/pictograms/:pictogramUuid",
   authMiddleware.auth(["super_admin", "admin"]),
-  boardController.delete.bind(boardController),
-)
+  boardController.deleteBoardPictogram.bind(boardController),
+);
+
+router.patch(
+  "/:uuid/pictograms/:pictogramUuid/order",
+  authMiddleware.auth(["super_admin", "admin"]),
+  boardController.reorderPictogram.bind(boardController),
+);
 
 export default router;

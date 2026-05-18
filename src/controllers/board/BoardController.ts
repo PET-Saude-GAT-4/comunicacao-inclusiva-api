@@ -67,6 +67,18 @@ class BoardController implements IBoardController {
     res.status(201).json({ board: this._toResponse(board) });
   }
 
+  async update(req: Request, res: Response): Promise<void> {
+    const uuid = req.params.uuid as string;
+    const { title, representativeUuid } = req.body;
+
+    const board = await this._boardService.update(uuid, {
+      title,
+      representativeUuid,
+    });
+
+    res.status(200).json({ board: this._toResponse(board) });
+  }
+
   async findAll(req: Request, res: Response): Promise<void> {
     const boards = await this._boardService.findAll();
     res.status(200).json({
@@ -100,13 +112,31 @@ class BoardController implements IBoardController {
 
   async addPictogram(req: Request, res: Response): Promise<void> {
     const boardUuid = req.params.uuid as string;
-    const { pictogramUuid, order } = req.body;
+    const { pictogramUuid, next } = req.body;
 
     await this._boardService.addPictogram(boardUuid, {
       pictogramUuid,
-      ...(order !== undefined ? { order: Number(order) } : {}),
+      next,
     });
 
+    res.status(204).send();
+  }
+
+  async deleteBoardPictogram(req: Request, res: Response): Promise<void> {
+    const { uuid: boardUuid, pictogramUuid } = req.params as Record<
+      string,
+      string
+    >;
+
+    if (!boardUuid) {
+      throw new BadRequestError("'boardUuid' is required");
+    }
+
+    if (!pictogramUuid) {
+      throw new BadRequestError("'pictogramUuid' is required");
+    }
+
+    await this._boardService.deleteBoardPictogram(boardUuid, pictogramUuid);
     res.status(204).send();
   }
 
@@ -117,8 +147,25 @@ class BoardController implements IBoardController {
       await this._boardService.findPictogramsByBoardUuid(boardUuid);
 
     res.status(200).json({
-      pictograms: pictograms.map((p) => this._toPictogramResponse(p)),
+      pictograms: pictograms.map((p, i) => ({
+        ...this._toPictogramResponse(p),
+        order: i + 1,
+      })),
     });
+  }
+
+  async reorderPictogram(req: Request, res: Response): Promise<void> {
+    const boardUuid = req.params.uuid as string;
+    const pictogramUuid = req.params.pictogramUuid as string;
+    const { next } = req.body;
+
+    await this._boardService.reorderPictogram(
+      boardUuid,
+      pictogramUuid,
+      next ?? null,
+    );
+
+    res.status(204).send();
   }
 }
 

@@ -1,3 +1,4 @@
+import { Prisma } from "@/generated/prisma/client.js";
 import type {
   BoardOutput,
   BoardRepositoryInput,
@@ -5,6 +6,7 @@ import type {
 import type { BoardPictogramRepositoryInput } from "@/models/types/BoardPictogram.type.js";
 import type { PictogramOutput } from "@/models/types/Pictogram.type.js";
 import { prisma } from "@/prisma.js";
+import { isEmpty } from "@/utils/object.js";
 
 import type { IBoardRepository } from "./IBoardRepository.js";
 
@@ -74,6 +76,25 @@ class BoardRepository implements IBoardRepository {
     return this._map(result);
   }
 
+  async update(
+    id: number,
+    data: { title: string | undefined; representativeId: number | undefined },
+  ): Promise<BoardOutput> {
+    if (isEmpty(data)) {
+      throw new Error("No fields to update.");
+    }
+
+    const result = await prisma.board.update({
+      where: { id },
+      data: {
+        title: data.title ?? Prisma.skip,
+        representativeId: data.representativeId ?? Prisma.skip,
+      },
+      include: includeRepresentative,
+    });
+    return this._map(result);
+  }
+
   async findAll(): Promise<BoardOutput[]> {
     const results = await prisma.board.findMany({
       include: includeRepresentative,
@@ -112,22 +133,120 @@ class BoardRepository implements IBoardRepository {
   }
 
   async addPictogram(data: BoardPictogramRepositoryInput): Promise<void> {
-    await prisma.boardPictogram.create({
-      data: {
-        boardId: data.boardId,
-        pictogramId: data.pictogramId,
-        order: data.order,
-      },
+    await prisma.$transaction(async (tx) => {
+      const board = await tx.board.findUniqueOrThrow({
+        where: { id: data.boardId },
+        select: { first: true },
+      });
+
+      const isHead = data.next === board.first;
+
+      let predecessorPictogramId: number | null = null;
+      if (!isHead) {
+        if (data.next === null) {
+          const tail = await tx.boardPictogram.findFirst({
+            where: { boardId: data.boardId, next: null },
+          });
+          predecessorPictogramId = tail?.pictogramId ?? null;
+        } else {
+          const predecessor = await tx.boardPictogram.findFirst({
+            where: { boardId: data.boardId, next: data.next },
+          });
+          predecessorPictogramId = predecessor?.pictogramId ?? null;
+        }
+      }
+
+      await tx.boardPictogram.create({
+        data: {
+          boardId: data.boardId,
+          pictogramId: data.pictogramId,
+          next: data.next,
+        },
+      });
+
+      if (isHead) {
+        await tx.board.update({
+          where: { id: data.boardId },
+          data: { first: data.pictogramId },
+        });
+      } else if (predecessorPictogramId !== null) {
+        await tx.boardPictogram.update({
+          where: {
+            boardId_pictogramId: {
+              boardId: data.boardId,
+              pictogramId: predecessorPictogramId,
+            },
+          },
+          data: { next: data.pictogramId },
+        });
+      }
+    });
+  }
+
+  async deleteBoardPictogram(
+    boardId: number,
+    pictogramId: number,
+  ): Promise<void> {
+    await prisma.$transaction(async (tx) => {
+      const node = await tx.boardPictogram.findUniqueOrThrow({
+        where: { boardId_pictogramId: { boardId, pictogramId } },
+        select: { next: true },
+      });
+
+      const board = await tx.board.findUniqueOrThrow({
+        where: { id: boardId },
+        select: { first: true },
+      });
+
+      if (board.first === pictogramId) {
+        await tx.board.update({
+          where: { id: boardId },
+          data: { first: node.next },
+        });
+      } else {
+        const predecessor = await tx.boardPictogram.findFirst({
+          where: { boardId, next: pictogramId },
+        });
+        if (predecessor) {
+          await tx.boardPictogram.update({
+            where: {
+              boardId_pictogramId: {
+                boardId,
+                pictogramId: predecessor.pictogramId,
+              },
+            },
+            data: { next: node.next },
+          });
+        }
+      }
+
+      await tx.boardPictogram.delete({
+        where: { boardId_pictogramId: { boardId, pictogramId } },
+      });
     });
   }
 
   async findPictogramsByBoardId(boardId: number): Promise<PictogramOutput[]> {
-    const results = await prisma.boardPictogram.findMany({
-      where: { boardId },
-      orderBy: { order: "asc" },
-      include: { pictogram: { include: { storedFile: true } } },
+    const board = await prisma.board.findUniqueOrThrow({
+      where: { id: boardId },
+      select: {
+        first: true,
+        pictograms: {
+          include: { pictogram: { include: { storedFile: true } } },
+        },
+      },
     });
-    return results.map((r) => this._mapPictogram(r));
+
+    const map = new Map(board.pictograms.map((bp) => [bp.pictogramId, bp]));
+    const ordered: PictogramOutput[] = [];
+    let currentId = board.first;
+    while (currentId !== null) {
+      const node = map.get(currentId);
+      if (!node) break;
+      ordered.push(this._mapPictogram(node));
+      currentId = node.next;
+    }
+    return ordered;
   }
 
   async existsBoardPictogram(
@@ -140,12 +259,93 @@ class BoardRepository implements IBoardRepository {
     return count > 0;
   }
 
-  async getMaxPictogramOrder(boardId: number): Promise<number> {
-    const result = await prisma.boardPictogram.aggregate({
-      where: { boardId },
-      _max: { order: true },
+  async reorderPictogram(
+    boardId: number,
+    pictogramId: number,
+    next: number | null,
+  ): Promise<void> {
+    await prisma.$transaction(async (tx) => {
+      const node = await tx.boardPictogram.findUniqueOrThrow({
+        where: { boardId_pictogramId: { boardId, pictogramId } },
+        select: { next: true },
+      });
+
+      if (node.next === next) return;
+
+      const board = await tx.board.findUniqueOrThrow({
+        where: { id: boardId },
+        select: { first: true },
+      });
+
+      // Detach from current position
+      if (board.first === pictogramId) {
+        await tx.board.update({
+          where: { id: boardId },
+          data: { first: node.next },
+        });
+      } else {
+        const currentPredecessor = await tx.boardPictogram.findFirst({
+          where: { boardId, next: pictogramId },
+        });
+        if (currentPredecessor) {
+          await tx.boardPictogram.update({
+            where: {
+              boardId_pictogramId: {
+                boardId,
+                pictogramId: currentPredecessor.pictogramId,
+              },
+            },
+            data: { next: node.next },
+          });
+        }
+      }
+
+      // Re-fetch board.first after detach (may have changed)
+      const updatedBoard = await tx.board.findUniqueOrThrow({
+        where: { id: boardId },
+        select: { first: true },
+      });
+
+      // Reattach at new position
+      const isNewHead = next === updatedBoard.first;
+
+      let newPredecessorPictogramId: number | null = null;
+      if (!isNewHead) {
+        if (next === null) {
+          const tail = await tx.boardPictogram.findFirst({
+            where: { boardId, next: null, pictogramId: { not: pictogramId } },
+          });
+          newPredecessorPictogramId = tail?.pictogramId ?? null;
+        } else {
+          const predecessor = await tx.boardPictogram.findFirst({
+            where: { boardId, next, pictogramId: { not: pictogramId } },
+          });
+          newPredecessorPictogramId = predecessor?.pictogramId ?? null;
+        }
+      }
+
+      await tx.boardPictogram.update({
+        where: { boardId_pictogramId: { boardId, pictogramId } },
+        data: { next },
+      });
+
+      if (isNewHead) {
+        await tx.board.update({
+          where: { id: boardId },
+          data: { first: pictogramId },
+        });
+      } else if (newPredecessorPictogramId !== null) {
+        await tx.boardPictogram.update({
+          where: {
+            boardId_pictogramId: {
+              boardId,
+              pictogramId: newPredecessorPictogramId,
+            },
+          },
+          data: { next: pictogramId },
+        });
+      }
     });
-    return result._max.order ?? 0;
   }
 }
 

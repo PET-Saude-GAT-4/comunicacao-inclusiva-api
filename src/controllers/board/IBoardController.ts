@@ -6,7 +6,11 @@ import type { BoardOutput } from "@/models/types/Board.type.js";
 interface IBoardController extends IController<BoardOutput> {
   addPictogram(req: Request, res: Response): Promise<void>;
 
+  deleteBoardPictogram(req: Request, res: Response): Promise<void>;
+
   findPictograms(req: Request, res: Response): Promise<void>;
+
+  reorderPictogram(req: Request, res: Response): Promise<void>;
 }
 
 export type { IBoardController };
