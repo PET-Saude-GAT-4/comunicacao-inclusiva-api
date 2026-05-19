@@ -94,11 +94,11 @@ class PictogramService implements IPictogramService {
 
     const owningBoard = await prisma.board.findMany({
       where: {
-        representativeId: pictogram?.id,
+        representativeId: pictogram.id,
       },
     });
 
-    if (owningBoard) {
+    if (owningBoard.length != 0) {
       throw new BadRequestError(
         "You cannot delete a pictogram which represents a board",
       );
