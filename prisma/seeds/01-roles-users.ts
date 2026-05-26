@@ -1,6 +1,6 @@
 import bcrypt from "bcryptjs";
 
-import type { PrismaClient } from "../../src/generated/prisma/client";
+import type { PrismaClient } from "../../src/generated/prisma/client.js";
 
 export async function seedRolesAndUsers(prisma: PrismaClient): Promise<void> {
   const adminPassword = process.env.ADMIN_PASSWORD;
