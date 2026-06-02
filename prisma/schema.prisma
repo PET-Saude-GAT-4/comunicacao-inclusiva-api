@@ -83,6 +83,7 @@ model Board {
   representativeId Int
   representative   Pictogram        @relation("BoardRepresentative", fields: [representativeId], references: [id])
   first            Int?
+  publishedAt      DateTime?
   createdAt        DateTime         @default(now())
   updatedAt        DateTime         @updatedAt
   pictograms       BoardPictogram[]

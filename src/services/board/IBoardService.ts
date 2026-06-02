@@ -13,6 +13,12 @@ interface IBoardService extends IService<BoardOutput> {
 
   findByUuid(uuid: string): Promise<BoardOutput | null>;
 
+  findAllPublished(): Promise<BoardOutput[]>;
+
+  publish(uuid: string): Promise<BoardOutput>;
+
+  unpublish(uuid: string): Promise<BoardOutput>;
+
   addPictogram(boardUuid: string, data: BoardPictogramInput): Promise<void>;
 
   deleteBoardPictogram(boardUuid: string, pictogramUuid: string): Promise<void>;

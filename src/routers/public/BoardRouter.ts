@@ -7,7 +7,7 @@ const boardController: IBoardController = new BoardController();
 
 const router = express.Router();
 
-router.get("/", boardController.findAll.bind(boardController));
+router.get("/", boardController.findAllPublished.bind(boardController));
 
 router.get("/:uuid", boardController.findById!.bind(boardController));
 

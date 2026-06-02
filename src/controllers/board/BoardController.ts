@@ -32,6 +32,7 @@ class BoardController implements IBoardController {
         createdAt: board.representativePictogram.createdAt,
         updatedAt: board.representativePictogram.updatedAt,
       },
+      publishedAt: board.publishedAt,
       createdAt: board.createdAt,
       updatedAt: board.updatedAt,
     };
@@ -84,6 +85,29 @@ class BoardController implements IBoardController {
     res.status(200).json({
       boards: boards.map((b) => this._toResponse(b)),
     });
+  }
+
+  async findAllPublished(req: Request, res: Response): Promise<void> {
+    const boards = await this._boardService.findAllPublished();
+    res.status(200).json({
+      boards: boards.map((b) => this._toResponse(b)),
+    });
+  }
+
+  async publish(req: Request, res: Response): Promise<void> {
+    const uuid = req.params.uuid as string;
+
+    await this._boardService.publish(uuid);
+
+    res.status(204).send();
+  }
+
+  async unpublish(req: Request, res: Response): Promise<void> {
+    const uuid = req.params.uuid as string;
+
+    await this._boardService.unpublish(uuid);
+
+    res.status(204).send();
   }
 
   async findById(req: Request, res: Response): Promise<void> {

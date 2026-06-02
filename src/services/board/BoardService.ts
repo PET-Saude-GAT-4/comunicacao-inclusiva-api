@@ -80,6 +80,26 @@ class BoardService implements IBoardService {
     return this._boardRepository.findByUuid(uuid);
   }
 
+  async findAllPublished(): Promise<BoardOutput[]> {
+    return this._boardRepository.findAllPublished();
+  }
+
+  async publish(uuid: string): Promise<BoardOutput> {
+    const board = await this._boardRepository.findByUuid(uuid);
+    if (!board) {
+      throw new NotFoundError("Board not found");
+    }
+    return this._boardRepository.setPublishedAt(board.id, new Date());
+  }
+
+  async unpublish(uuid: string): Promise<BoardOutput> {
+    const board = await this._boardRepository.findByUuid(uuid);
+    if (!board) {
+      throw new NotFoundError("Board not found");
+    }
+    return this._boardRepository.setPublishedAt(board.id, null);
+  }
+
   async delete(id: number): Promise<void> {
     await this._boardRepository.delete(id);
   }
