@@ -94,12 +94,17 @@ export async function seedBoards(prisma: PrismaClient): Promise<void> {
           title: def.title,
           representativeId: representative.id,
           first: pictograms[0].id,
+          publishedAt: new Date(),
         },
       });
     } else {
       await prisma.board.update({
         where: { id: board.id },
-        data: { first: pictograms[0].id, representativeId: representative.id },
+        data: {
+          first: pictograms[0].id,
+          representativeId: representative.id,
+          publishedAt: board.publishedAt ?? new Date(),
+        },
       });
     }
 
