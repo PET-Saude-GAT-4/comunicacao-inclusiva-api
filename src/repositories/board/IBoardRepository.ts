@@ -16,6 +16,10 @@ interface IBoardRepository extends IRepository<BoardOutput> {
 
   findByUuid(uuid: string): Promise<BoardOutput | null>;
 
+  findAllPublished(): Promise<BoardOutput[]>;
+
+  setPublishedAt(id: number, value: Date | null): Promise<BoardOutput>;
+
   existsByUuid(uuid: string): Promise<boolean>;
 
   addPictogram(data: BoardPictogramRepositoryInput): Promise<void>;

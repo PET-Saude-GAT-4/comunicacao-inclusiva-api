@@ -40,6 +40,7 @@ class BoardRepository implements IBoardRepository {
     uuid: string;
     title: string;
     authorId: number | null;
+    publishedAt: Date | null;
     createdAt: Date;
     updatedAt: Date;
     representative: {
@@ -58,6 +59,7 @@ class BoardRepository implements IBoardRepository {
       representativePictogram: this._mapPictogram({
         pictogram: data.representative,
       }),
+      publishedAt: data.publishedAt,
       createdAt: data.createdAt,
       updatedAt: data.updatedAt,
     };
@@ -97,6 +99,9 @@ class BoardRepository implements IBoardRepository {
 
   async findAll(): Promise<BoardOutput[]> {
     const results = await prisma.board.findMany({
+      orderBy: {
+        createdAt: "desc",
+      },
       include: includeRepresentative,
     });
     return results.map((r) => this._map(r));
@@ -116,6 +121,24 @@ class BoardRepository implements IBoardRepository {
       include: includeRepresentative,
     });
     return result ? this._map(result) : null;
+  }
+
+  async findAllPublished(): Promise<BoardOutput[]> {
+    const results = await prisma.board.findMany({
+      where: { publishedAt: { not: null } },
+      orderBy: { publishedAt: "desc" },
+      include: includeRepresentative,
+    });
+    return results.map((r) => this._map(r));
+  }
+
+  async setPublishedAt(id: number, value: Date | null): Promise<BoardOutput> {
+    const result = await prisma.board.update({
+      where: { id },
+      data: { publishedAt: value },
+      include: includeRepresentative,
+    });
+    return this._map(result);
   }
 
   async existsById(id: number): Promise<boolean> {

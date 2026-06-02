@@ -34,6 +34,18 @@ router.patch(
   (req: Request, res: Response) => boardController.update!(req, res),
 );
 
+router.patch(
+  "/:uuid/publish",
+  authMiddleware.auth(["super_admin", "admin"]),
+  boardController.publish.bind(boardController),
+);
+
+router.patch(
+  "/:uuid/unpublish",
+  authMiddleware.auth(["super_admin", "admin"]),
+  boardController.unpublish.bind(boardController),
+);
+
 router.delete(
   "/:uuid",
   authMiddleware.auth(["super_admin", "admin"]),
