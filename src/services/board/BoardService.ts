@@ -86,17 +86,29 @@ class BoardService implements IBoardService {
 
   async publish(uuid: string): Promise<BoardOutput> {
     const board = await this._boardRepository.findByUuid(uuid);
+
     if (!board) {
       throw new NotFoundError("Board not found");
     }
+
+    if (board.publishedAt !== null) {
+      return board;
+    }
+
     return this._boardRepository.setPublishedAt(board.id, new Date());
   }
 
   async unpublish(uuid: string): Promise<BoardOutput> {
     const board = await this._boardRepository.findByUuid(uuid);
+
     if (!board) {
       throw new NotFoundError("Board not found");
     }
+
+    if (board.publishedAt === null) {
+      return board;
+    }
+
     return this._boardRepository.setPublishedAt(board.id, null);
   }
 
