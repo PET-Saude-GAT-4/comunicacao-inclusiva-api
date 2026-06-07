@@ -10,8 +10,9 @@ import { isEmpty } from "@/utils/object.js";
 
 import type { IBoardRepository } from "./IBoardRepository.js";
 
-const includeRepresentative = {
+const include = {
   representative: { include: { storedFile: true } },
+  author: { select: { uuid: true } },
 } as const;
 
 class BoardRepository implements IBoardRepository {
@@ -39,7 +40,7 @@ class BoardRepository implements IBoardRepository {
     id: number;
     uuid: string;
     title: string;
-    authorId: number | null;
+    author: { uuid: string } | null;
     publishedAt: Date | null;
     createdAt: Date;
     updatedAt: Date;
@@ -56,6 +57,7 @@ class BoardRepository implements IBoardRepository {
       id: data.id,
       uuid: data.uuid,
       title: data.title,
+      authorUuid: data.author?.uuid ?? null,
       representativePictogram: this._mapPictogram({
         pictogram: data.representative,
       }),
@@ -72,7 +74,7 @@ class BoardRepository implements IBoardRepository {
         authorId: data.authorId ?? null,
         representativeId: data.representativeId,
       },
-      include: includeRepresentative,
+      include,
     });
 
     return this._map(result);
@@ -92,17 +94,21 @@ class BoardRepository implements IBoardRepository {
         title: data.title ?? Prisma.skip,
         representativeId: data.representativeId ?? Prisma.skip,
       },
-      include: includeRepresentative,
+      include,
     });
     return this._map(result);
   }
 
-  async findAll(): Promise<BoardOutput[]> {
+  async findAll(filter?: { authorUuid?: string }): Promise<BoardOutput[]> {
     const results = await prisma.board.findMany({
+      where:
+        filter?.authorUuid != null
+          ? { author: { uuid: filter.authorUuid } }
+          : Prisma.skip,
       orderBy: {
         createdAt: "desc",
       },
-      include: includeRepresentative,
+      include,
     });
     return results.map((r) => this._map(r));
   }
@@ -110,7 +116,7 @@ class BoardRepository implements IBoardRepository {
   async findById(id: number): Promise<BoardOutput | null> {
     const result = await prisma.board.findUnique({
       where: { id },
-      include: includeRepresentative,
+      include,
     });
     return result ? this._map(result) : null;
   }
@@ -118,7 +124,7 @@ class BoardRepository implements IBoardRepository {
   async findByUuid(uuid: string): Promise<BoardOutput | null> {
     const result = await prisma.board.findUnique({
       where: { uuid },
-      include: includeRepresentative,
+      include,
     });
     return result ? this._map(result) : null;
   }
@@ -127,7 +133,7 @@ class BoardRepository implements IBoardRepository {
     const results = await prisma.board.findMany({
       where: { publishedAt: { not: null } },
       orderBy: { publishedAt: "desc" },
-      include: includeRepresentative,
+      include,
     });
     return results.map((r) => this._map(r));
   }
@@ -136,7 +142,7 @@ class BoardRepository implements IBoardRepository {
     const result = await prisma.board.update({
       where: { id },
       data: { publishedAt: value },
-      include: includeRepresentative,
+      include,
     });
     return this._map(result);
   }

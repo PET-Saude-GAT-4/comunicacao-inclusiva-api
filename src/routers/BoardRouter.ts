@@ -12,7 +12,7 @@ const router = express.Router();
 
 router.get(
   "/",
-  authMiddleware.auth(["super_admin", "admin", "viewer"]),
+  authMiddleware.auth(["super_admin", "admin"]),
   boardController.findAll.bind(boardController),
 );
 
