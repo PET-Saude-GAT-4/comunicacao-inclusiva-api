@@ -25,6 +25,7 @@ class BoardController implements IBoardController {
     return {
       uuid: board.uuid,
       title: board.title,
+      authorUuid: board.authorUuid,
       representativePictogram: {
         uuid: board.representativePictogram.uuid,
         description: board.representativePictogram.description,
@@ -72,16 +73,20 @@ class BoardController implements IBoardController {
     const uuid = req.params.uuid as string;
     const { title, representativeUuid } = req.body;
 
-    const board = await this._boardService.update(uuid, {
-      title,
-      representativeUuid,
-    });
+    const board = await this._boardService.update(
+      uuid,
+      {
+        title,
+        representativeUuid,
+      },
+      req.user!,
+    );
 
     res.status(200).json({ board: this._toResponse(board) });
   }
 
   async findAll(req: Request, res: Response): Promise<void> {
-    const boards = await this._boardService.findAll();
+    const boards = await this._boardService.findAll(req.user!);
     res.status(200).json({
       boards: boards.map((b) => this._toResponse(b)),
     });
@@ -94,10 +99,39 @@ class BoardController implements IBoardController {
     });
   }
 
+  async findPublishedByUuid(req: Request, res: Response): Promise<void> {
+    const uuid = req.params.uuid as string;
+
+    const board = await this._boardService.findPublishedByUuid(uuid);
+
+    if (!board) {
+      throw new NotFoundError("Board not found");
+    }
+
+    res.status(200).json({ board: this._toResponse(board) });
+  }
+
+  async findPictogramsByPublishedBoard(
+    req: Request,
+    res: Response,
+  ): Promise<void> {
+    const uuid = req.params.uuid as string;
+
+    const pictograms =
+      await this._boardService.findPictogramsByPublishedBoardUuid(uuid);
+
+    res.status(200).json({
+      pictograms: pictograms.map((p, i) => ({
+        ...this._toPictogramResponse(p),
+        order: i + 1,
+      })),
+    });
+  }
+
   async publish(req: Request, res: Response): Promise<void> {
     const uuid = req.params.uuid as string;
 
-    await this._boardService.publish(uuid);
+    await this._boardService.publish(uuid, req.user!);
 
     res.status(204).send();
   }
@@ -105,15 +139,15 @@ class BoardController implements IBoardController {
   async unpublish(req: Request, res: Response): Promise<void> {
     const uuid = req.params.uuid as string;
 
-    await this._boardService.unpublish(uuid);
+    await this._boardService.unpublish(uuid, req.user!);
 
     res.status(204).send();
   }
 
-  async findById(req: Request, res: Response): Promise<void> {
+  async findByUuid(req: Request, res: Response): Promise<void> {
     const uuid = req.params.uuid as string;
 
-    const board = await this._boardService.findByUuid(uuid);
+    const board = await this._boardService.findByUuid(uuid, req.user!);
 
     if (!board) {
       throw new NotFoundError("Board not found");
@@ -124,13 +158,8 @@ class BoardController implements IBoardController {
 
   async delete(req: Request, res: Response): Promise<void> {
     const uuid = req.params.uuid as string;
-    const board = await this._boardService.findByUuid(uuid);
 
-    if (!board) {
-      throw new NotFoundError("Board not found");
-    }
-
-    await this._boardService.delete(board.id);
+    await this._boardService.delete(uuid, req.user!);
     res.status(204).send();
   }
 
@@ -138,10 +167,14 @@ class BoardController implements IBoardController {
     const boardUuid = req.params.uuid as string;
     const { pictogramUuid, next } = req.body;
 
-    await this._boardService.addPictogram(boardUuid, {
-      pictogramUuid,
-      next,
-    });
+    await this._boardService.addPictogram(
+      boardUuid,
+      {
+        pictogramUuid,
+        next,
+      },
+      req.user!,
+    );
 
     res.status(204).send();
   }
@@ -160,15 +193,21 @@ class BoardController implements IBoardController {
       throw new BadRequestError("'pictogramUuid' is required");
     }
 
-    await this._boardService.deleteBoardPictogram(boardUuid, pictogramUuid);
+    await this._boardService.deleteBoardPictogram(
+      boardUuid,
+      pictogramUuid,
+      req.user!,
+    );
     res.status(204).send();
   }
 
   async findPictograms(req: Request, res: Response): Promise<void> {
     const boardUuid = req.params.uuid as string;
 
-    const pictograms =
-      await this._boardService.findPictogramsByBoardUuid(boardUuid);
+    const pictograms = await this._boardService.findPictogramsByBoardUuid(
+      boardUuid,
+      req.user!,
+    );
 
     res.status(200).json({
       pictograms: pictograms.map((p, i) => ({
@@ -187,6 +226,7 @@ class BoardController implements IBoardController {
       boardUuid,
       pictogramUuid,
       next ?? null,
+      req.user!,
     );
 
     res.status(204).send();

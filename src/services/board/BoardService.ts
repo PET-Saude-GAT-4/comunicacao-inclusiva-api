@@ -1,5 +1,6 @@
 import { BadRequestError } from "@/errors/BadRequestError.js";
 import { ConflictError } from "@/errors/ConflictError.js";
+import { ForbiddenError } from "@/errors/ForbiddenError.js";
 import { NotFoundError } from "@/errors/NotFoundError.js";
 import type { BoardInput, BoardOutput } from "@/models/types/Board.type.js";
 import type { BoardPictogramInput } from "@/models/types/BoardPictogram.type.js";
@@ -8,6 +9,7 @@ import BoardRepository from "@/repositories/board/BoardRepository.js";
 import type { IBoardRepository } from "@/repositories/board/IBoardRepository.js";
 import type { IPictogramRepository } from "@/repositories/pictogram/IPictogramRepository.js";
 import PictogramRepository from "@/repositories/pictogram/PictogramRepository.js";
+import type { AuthenticatedUser } from "@/types/user.js";
 
 import type { IBoardService } from "./IBoardService.js";
 
@@ -24,6 +26,19 @@ class BoardService implements IBoardService {
     this._boardRepository = props?.boardRepository ?? new BoardRepository();
     this._pictogramRepository =
       props?.pictogramRepository ?? new PictogramRepository();
+  }
+
+  private _assertCanManage(board: BoardOutput, user: AuthenticatedUser): void {
+    if (user.role === "super_admin") return;
+    if (user.role === "admin" && board.authorUuid === user.uuid) return;
+    throw new ForbiddenError("You are not allowed to manage this board.");
+  }
+
+  private _assertCanRead(board: BoardOutput, user: AuthenticatedUser): void {
+    if (user.role === "super_admin") return;
+    if (board.publishedAt !== null) return;
+    if (user.role === "admin" && board.authorUuid === user.uuid) return;
+    throw new ForbiddenError("You are not allowed to access this board.");
   }
 
   async create(data: BoardInput): Promise<BoardOutput> {
@@ -45,11 +60,14 @@ class BoardService implements IBoardService {
   async update(
     uuid: string,
     data: { title?: string; representativeUuid?: string },
+    user: AuthenticatedUser,
   ): Promise<BoardOutput> {
     const board = await this._boardRepository.findByUuid(uuid);
     if (!board) {
       throw new NotFoundError("Board not found");
     }
+
+    this._assertCanManage(board, user);
 
     let representativeId: number | undefined;
     if (data.representativeUuid) {
@@ -68,28 +86,63 @@ class BoardService implements IBoardService {
     });
   }
 
-  async findAll(): Promise<BoardOutput[]> {
-    return this._boardRepository.findAll();
+  async findAll(user: AuthenticatedUser): Promise<BoardOutput[]> {
+    return this._boardRepository.findAll(
+      user.role === "admin" ? { authorUuid: user.uuid } : undefined,
+    );
   }
 
   async findById(id: number): Promise<BoardOutput | null> {
     return this._boardRepository.findById(id);
   }
 
-  async findByUuid(uuid: string): Promise<BoardOutput | null> {
-    return this._boardRepository.findByUuid(uuid);
+  async findByUuid(
+    uuid: string,
+    user?: AuthenticatedUser,
+  ): Promise<BoardOutput | null> {
+    const board = await this._boardRepository.findByUuid(uuid);
+
+    if (board && user) {
+      this._assertCanRead(board, user);
+    }
+
+    return board;
   }
 
   async findAllPublished(): Promise<BoardOutput[]> {
     return this._boardRepository.findAllPublished();
   }
 
-  async publish(uuid: string): Promise<BoardOutput> {
+  async findPublishedByUuid(uuid: string): Promise<BoardOutput | null> {
+    const board = await this._boardRepository.findByUuid(uuid);
+
+    if (!board || board.publishedAt === null) {
+      return null;
+    }
+
+    return board;
+  }
+
+  async findPictogramsByPublishedBoardUuid(
+    uuid: string,
+  ): Promise<PictogramOutput[]> {
+    const board = await this._boardRepository.findByUuid(uuid);
+
+    if (!board || board.publishedAt === null) {
+      throw new NotFoundError("Board not found");
+    }
+
+    return this._boardRepository.findPictogramsByBoardId(board.id);
+  }
+
+  async publish(uuid: string, user: AuthenticatedUser): Promise<BoardOutput> {
     const board = await this._boardRepository.findByUuid(uuid);
 
     if (!board) {
       throw new NotFoundError("Board not found");
     }
+
+    this._assertCanManage(board, user);
 
     if (board.publishedAt !== null) {
       return board;
@@ -98,12 +151,14 @@ class BoardService implements IBoardService {
     return this._boardRepository.setPublishedAt(board.id, new Date());
   }
 
-  async unpublish(uuid: string): Promise<BoardOutput> {
+  async unpublish(uuid: string, user: AuthenticatedUser): Promise<BoardOutput> {
     const board = await this._boardRepository.findByUuid(uuid);
 
     if (!board) {
       throw new NotFoundError("Board not found");
     }
+
+    this._assertCanManage(board, user);
 
     if (board.publishedAt === null) {
       return board;
@@ -112,19 +167,30 @@ class BoardService implements IBoardService {
     return this._boardRepository.setPublishedAt(board.id, null);
   }
 
-  async delete(id: number): Promise<void> {
-    await this._boardRepository.delete(id);
+  async delete(uuid: string, user: AuthenticatedUser): Promise<void> {
+    const board = await this._boardRepository.findByUuid(uuid);
+
+    if (!board) {
+      throw new NotFoundError("Board not found");
+    }
+
+    this._assertCanManage(board, user);
+
+    await this._boardRepository.delete(board.id);
   }
 
   async addPictogram(
     boardUuid: string,
     data: BoardPictogramInput,
+    user: AuthenticatedUser,
   ): Promise<void> {
     const board = await this._boardRepository.findByUuid(boardUuid);
 
     if (!board) {
       throw new NotFoundError("Board not found");
     }
+
+    this._assertCanManage(board, user);
 
     const pictogram = await this._pictogramRepository.findByUuid(
       data.pictogramUuid,
@@ -173,12 +239,15 @@ class BoardService implements IBoardService {
   async deleteBoardPictogram(
     boardUuid: string,
     pictogramUuid: string,
+    user: AuthenticatedUser,
   ): Promise<void> {
     const board = await this._boardRepository.findByUuid(boardUuid);
 
     if (!board) {
       throw new NotFoundError("Board not found");
     }
+
+    this._assertCanManage(board, user);
 
     const pictogram = await this._pictogramRepository.findByUuid(pictogramUuid);
 
@@ -191,12 +260,15 @@ class BoardService implements IBoardService {
 
   async findPictogramsByBoardUuid(
     boardUuid: string,
+    user: AuthenticatedUser,
   ): Promise<PictogramOutput[]> {
     const board = await this._boardRepository.findByUuid(boardUuid);
 
     if (!board) {
       throw new NotFoundError("Board not found");
     }
+
+    this._assertCanRead(board, user);
 
     return this._boardRepository.findPictogramsByBoardId(board.id);
   }
@@ -205,12 +277,15 @@ class BoardService implements IBoardService {
     boardUuid: string,
     pictogramUuid: string,
     next: string | null,
+    user: AuthenticatedUser,
   ): Promise<void> {
     const board = await this._boardRepository.findByUuid(boardUuid);
 
     if (!board) {
       throw new NotFoundError("Board not found");
     }
+
+    this._assertCanManage(board, user);
 
     const pictogram = await this._pictogramRepository.findByUuid(pictogramUuid);
 

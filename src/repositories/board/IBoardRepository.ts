@@ -7,6 +7,8 @@ import type { PictogramOutput } from "@/models/types/Pictogram.type.js";
 import type { IRepository } from "@/repositories/IRepository.js";
 
 interface IBoardRepository extends IRepository<BoardOutput> {
+  findAll(filter?: { authorUuid?: string }): Promise<BoardOutput[]>;
+
   create(data: BoardRepositoryInput): Promise<BoardOutput>;
 
   update(
