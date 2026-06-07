@@ -24,8 +24,8 @@ router.post(
 
 router.get(
   "/:uuid",
-  authMiddleware.auth(["super_admin", "admin", "viewer"]),
-  boardController.findById!.bind(boardController),
+  authMiddleware.auth(["super_admin", "admin"]),
+  boardController.findByUuid.bind(boardController),
 );
 
 router.patch(
@@ -54,7 +54,7 @@ router.delete(
 
 router.get(
   "/:uuid/pictograms",
-  authMiddleware.auth(["super_admin", "admin", "viewer"]),
+  authMiddleware.auth(["super_admin", "admin"]),
   boardController.findPictograms.bind(boardController),
 );
 

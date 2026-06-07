@@ -9,11 +9,11 @@ const router = express.Router();
 
 router.get("/", boardController.findAllPublished.bind(boardController));
 
-router.get("/:uuid", boardController.findById!.bind(boardController));
+router.get("/:uuid", boardController.findPublishedByUuid.bind(boardController));
 
 router.get(
   "/:uuid/pictograms",
-  boardController.findPictograms.bind(boardController),
+  boardController.findPictogramsByPublishedBoard.bind(boardController),
 );
 
 export default router;

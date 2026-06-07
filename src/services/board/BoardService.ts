@@ -113,6 +113,28 @@ class BoardService implements IBoardService {
     return this._boardRepository.findAllPublished();
   }
 
+  async findPublishedByUuid(uuid: string): Promise<BoardOutput | null> {
+    const board = await this._boardRepository.findByUuid(uuid);
+
+    if (!board || board.publishedAt === null) {
+      return null;
+    }
+
+    return board;
+  }
+
+  async findPictogramsByPublishedBoardUuid(
+    uuid: string,
+  ): Promise<PictogramOutput[]> {
+    const board = await this._boardRepository.findByUuid(uuid);
+
+    if (!board || board.publishedAt === null) {
+      throw new NotFoundError("Board not found");
+    }
+
+    return this._boardRepository.findPictogramsByBoardId(board.id);
+  }
+
   async publish(uuid: string, user: AuthenticatedUser): Promise<BoardOutput> {
     const board = await this._boardRepository.findByUuid(uuid);
 

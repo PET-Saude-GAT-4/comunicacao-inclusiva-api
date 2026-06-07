@@ -23,6 +23,10 @@ interface IBoardService {
 
   findAllPublished(): Promise<BoardOutput[]>;
 
+  findPublishedByUuid(uuid: string): Promise<BoardOutput | null>;
+
+  findPictogramsByPublishedBoardUuid(uuid: string): Promise<PictogramOutput[]>;
+
   publish(uuid: string, user: AuthenticatedUser): Promise<BoardOutput>;
 
   unpublish(uuid: string, user: AuthenticatedUser): Promise<BoardOutput>;

@@ -99,6 +99,35 @@ class BoardController implements IBoardController {
     });
   }
 
+  async findPublishedByUuid(req: Request, res: Response): Promise<void> {
+    const uuid = req.params.uuid as string;
+
+    const board = await this._boardService.findPublishedByUuid(uuid);
+
+    if (!board) {
+      throw new NotFoundError("Board not found");
+    }
+
+    res.status(200).json({ board: this._toResponse(board) });
+  }
+
+  async findPictogramsByPublishedBoard(
+    req: Request,
+    res: Response,
+  ): Promise<void> {
+    const uuid = req.params.uuid as string;
+
+    const pictograms =
+      await this._boardService.findPictogramsByPublishedBoardUuid(uuid);
+
+    res.status(200).json({
+      pictograms: pictograms.map((p, i) => ({
+        ...this._toPictogramResponse(p),
+        order: i + 1,
+      })),
+    });
+  }
+
   async publish(req: Request, res: Response): Promise<void> {
     const uuid = req.params.uuid as string;
 
@@ -115,7 +144,7 @@ class BoardController implements IBoardController {
     res.status(204).send();
   }
 
-  async findById(req: Request, res: Response): Promise<void> {
+  async findByUuid(req: Request, res: Response): Promise<void> {
     const uuid = req.params.uuid as string;
 
     const board = await this._boardService.findByUuid(uuid, req.user!);
