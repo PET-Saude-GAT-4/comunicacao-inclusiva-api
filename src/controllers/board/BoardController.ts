@@ -33,6 +33,7 @@ class BoardController implements IBoardController {
         createdAt: board.representativePictogram.createdAt,
         updatedAt: board.representativePictogram.updatedAt,
       },
+      pictogramCount: board.pictogramCount,
       publishedAt: board.publishedAt,
       createdAt: board.createdAt,
       updatedAt: board.updatedAt,

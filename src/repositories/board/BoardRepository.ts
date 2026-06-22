@@ -13,6 +13,7 @@ import type { IBoardRepository } from "./IBoardRepository.js";
 const include = {
   representative: { include: { storedFile: true } },
   author: { select: { uuid: true } },
+  _count: { select: { pictograms: true } },
 } as const;
 
 class BoardRepository implements IBoardRepository {
@@ -52,6 +53,7 @@ class BoardRepository implements IBoardRepository {
       createdAt: Date;
       updatedAt: Date;
     };
+    _count: { pictograms: number };
   }): BoardOutput {
     return {
       id: data.id,
@@ -61,6 +63,7 @@ class BoardRepository implements IBoardRepository {
       representativePictogram: this._mapPictogram({
         pictogram: data.representative,
       }),
+      pictogramCount: data._count.pictograms,
       publishedAt: data.publishedAt,
       createdAt: data.createdAt,
       updatedAt: data.updatedAt,
