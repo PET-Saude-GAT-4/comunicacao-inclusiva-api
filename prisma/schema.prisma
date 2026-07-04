@@ -123,8 +123,6 @@ model Speciality {
   @@unique([name, professionId])
 }
 
-//Prisma model: InteractionChain { uuid, triggerBoardUuid, responseBoardUuid, label? }.
-//POST /interaction-chains (admin+), GET /interaction-chains (viewer+), DELETE /interaction-chains/:uuid.
 model Interactionchain {
   id           Int        @id @default(autoincrement())
   uuid         String     @unique @default(uuid())
@@ -135,6 +133,6 @@ model Interactionchain {
   createdAt    DateTime   @default(now())
   updatedAt    DateTime   @updatedAt
 
-  triggerBoard  Board @relation("TriggerChain", fields: [triggerBoardUuid], references: [uuid])
-  responseBoard Board @relation("ResponseChain", fields: [responseBoardUuid], references: [uuid])
+  triggerBoard  Board @relation("TriggerChain", fields: [triggerBoardUuid], references: [uuid], onDelete: Cascade)
+  responseBoard Board @relation("ResponseChain", fields: [responseBoardUuid], references: [uuid], onDelete: Cascade)
 }
