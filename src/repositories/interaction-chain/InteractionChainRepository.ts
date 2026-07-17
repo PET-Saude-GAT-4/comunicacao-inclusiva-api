@@ -100,6 +100,26 @@ export class InteractionChain implements IInteractionChainRepository {
       : null;
   }
 
+  async findByTriggerBoardUuid(
+    uuid: string,
+  ): Promise<InteractionChainOutput[] | null> {
+    const data = await prisma.interactionchain.findMany({
+      where: { triggerBoardUuid: uuid },
+      include,
+    });
+    return data.map((r) =>
+      this._map({
+        id: r.id,
+        uuid: r.uuid,
+        createdAt: r.createdAt,
+        updatedAt: r.updatedAt,
+        triggerBoardUuid: r.triggerBoard.uuid,
+        responseBoardUuid: r.responseBoard.uuid,
+        label: r.label ?? "No Value",
+      }),
+    );
+  }
+
   async create(data: InteractionChainInput): Promise<InteractionChainOutput> {
     if (isEmpty(data)) {
       throw new Error("No fields to create.");

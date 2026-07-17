@@ -35,6 +35,13 @@ router.get(
   (req: Request, res: Response) => interactionChainController.findById!(req, res),
 );
 
+router.get(
+  "/trigger-board/:uuid",
+  authMiddleware.auth(["super_admin", "admin"]),
+  (req: Request, res: Response) => interactionChainController.findByTriggerBoardUuid!(req, res),
+);
+
+
 router.delete(
   "/:id",
   authMiddleware.auth(["super_admin", "admin"]),

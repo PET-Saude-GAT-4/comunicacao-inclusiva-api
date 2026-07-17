@@ -133,6 +133,12 @@ export class InteractionChainService implements IInteractionChainService {
   async findById(id: number): Promise<InteractionChainOutput | null> {
     return await this._interactionChainRepository.findById(id);
   }
+
+  async findByTriggerBoardUuid(
+    uuid: string,
+  ): Promise<InteractionChainOutput[] | null> {
+    return await this._interactionChainRepository.findByTriggerBoardUuid(uuid);
+  }
 }
 
 export default InteractionChainService;

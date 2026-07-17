@@ -97,8 +97,24 @@ export class InteractionChainController implements IInteractionChainController {
       .json({ interactionChain: this._toResponse(interactionChain) });
   }
 
+  async findByTriggerBoardUuid(req: Request, res: Response): Promise<void> {
+    const uuid = req.params.uuid as string;
+
+    const interactionChainList =
+      await this._interactionChainService.findByTriggerBoardUuid(uuid);
+
+    if (!interactionChainList || interactionChainList.length === 0) {
+      res.status(200).json({ interactionChains: [] });
+      return;
+    }
+
+    res
+      .status(200)
+      .json({ interactionChains: interactionChainList.map(this._toResponse) });
+  }
+
   async delete(req: Request, res: Response): Promise<void> {
-     const id = parseInt(req.params.id as string);
+    const id = parseInt(req.params.id as string);
 
     await this._interactionChainService.delete(id, req.user!);
     res.status(204).send();

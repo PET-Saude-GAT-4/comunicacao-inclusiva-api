@@ -3,6 +3,7 @@ import express from "express";
 import AuthRouter from "./AuthRouter.js";
 import BoardRouter from "./BoardRouter.js";
 import FileRouter from "./FileRouter.js";
+import InteractionChainRouter from "./InteractionChainRouter.js";
 import PictogramRouter from "./PictogramRouter.js";
 import ProfessionRouter from "./ProfessionRouter.js";
 import PublicRouter from "./public/index.js";
@@ -21,5 +22,6 @@ router.use("/public", PublicRouter);
 router.use("/roles", RoleRouter);
 router.use("/specialities", SpecialityRouter);
 router.use("/users", UserRouter);
+router.use("/interaction-chains", InteractionChainRouter);
 
 export default router;
