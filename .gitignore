@@ -57,3 +57,5 @@ src/generated/
 
 # app
 /storage
+
+/uploads

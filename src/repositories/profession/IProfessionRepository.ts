@@ -10,6 +10,7 @@ import type { IRepository } from "../IRepository.js";
 interface IProfessionRepository extends IRepository<ProfessionOutput> {
   findByName(name: string): Promise<ProfessionOutput | null>;
   findByCode(code: string): Promise<ProfessionOutput | null>;
+  existsByCode(code: string): Promise<boolean>;
 
   create(data: ProfessionInput): Promise<ProfessionOutput>;
   update(id: number, data: ProfessionUpdate): Promise<ProfessionOutput>;

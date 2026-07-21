@@ -12,6 +12,7 @@ interface ISpecialityRepository extends IRepository<SpecialityOutput> {
     name: string,
     professionId: number,
   ): Promise<SpecialityOutput | null>;
+  findAllByProfessionId(professionId: number): Promise<SpecialityOutput[]>;
 
   create(data: SpecialityRepositoryInput): Promise<SpecialityOutput>;
   update(id: number, data: SpecialityUpdate): Promise<SpecialityOutput>;

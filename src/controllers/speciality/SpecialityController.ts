@@ -47,6 +47,15 @@ class SpecialityController implements ISpecialityController {
     res.status(200).json({ specialities: specialities });
   }
 
+  async findAllByProfessionCode(req: Request, res: Response): Promise<void> {
+    const code = req.params.professionCode as string;
+
+    const specialities =
+      await this._specialityService.findAllByProfessionCode(code);
+
+    res.status(200).json({ specialities: specialities });
+  }
+
   async findById(req: Request, res: Response): Promise<void> {
     const { id } = req.params;
 
