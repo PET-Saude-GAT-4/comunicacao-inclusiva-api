@@ -1,3 +1,4 @@
+import { BadRequestError } from "@/errors/BadRequestError.js";
 import { ForbiddenError } from "@/errors/ForbiddenError.js";
 import { NotFoundError } from "@/errors/NotFoundError.js";
 import type { BoardOutput } from "@/models/types/Board.type.js";
@@ -66,7 +67,8 @@ export class InteractionChainService implements IInteractionChainService {
     const board = await this._boardRepository.findByUuid(uuid);
 
     if (!board) throw new NotFoundError(`${role} board not found`);
-    if (!board.publishedAt) throw new Error(`${role} board must be published`);
+    if (!board.publishedAt)
+      throw new BadRequestError(`${role} board must be published`);
 
     return board;
   }
@@ -85,7 +87,7 @@ export class InteractionChainService implements IInteractionChainService {
     );
 
     if (triggerBoard.id === responseBoard.id) {
-      throw new Error("Trigger and response board must be different");
+      throw new BadRequestError("Trigger and response board must be different");
     }
 
     this._assertCanManage(triggerBoard.authorUuid, user);
@@ -117,6 +119,15 @@ export class InteractionChainService implements IInteractionChainService {
       : undefined;
 
     if (triggerBoard) this._assertCanManage(triggerBoard.authorUuid, user);
+
+    const finalTriggerUuid =
+      data.triggerBoardUuid ?? interactionChain.triggerBoardUuid;
+    const finalResponseUuid =
+      data.responseBoardUuid ?? interactionChain.responseBoardUuid;
+
+    if (finalTriggerUuid === finalResponseUuid) {
+      throw new BadRequestError("Trigger and response board must be different");
+    }
 
     return await this._interactionChainRepository.update(interactionChain.id, {
       triggerBoardId: triggerBoard?.id,

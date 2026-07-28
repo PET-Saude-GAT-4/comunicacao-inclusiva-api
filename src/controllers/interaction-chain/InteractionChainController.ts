@@ -30,16 +30,24 @@ export class InteractionChainController implements IInteractionChainController {
     };
   }
 
+  private _assertOptionalLabel(label: unknown): void {
+    if (label !== undefined && label !== null && typeof label !== "string") {
+      throw new BadRequestError("Label must be a string");
+    }
+  }
+
   async create(req: Request, res: Response): Promise<void> {
     const { triggerBoardUuid, responseBoardUuid, label } = req.body;
 
-    if (!triggerBoardUuid) {
-      throw new BadRequestError("Trigger board is required");
+    if (!triggerBoardUuid || typeof triggerBoardUuid !== "string") {
+      throw new BadRequestError("Trigger board uuid is required");
     }
 
-    if (!responseBoardUuid) {
-      throw new BadRequestError("Response board is required");
+    if (!responseBoardUuid || typeof responseBoardUuid !== "string") {
+      throw new BadRequestError("Response board uuid is required");
     }
+
+    this._assertOptionalLabel(label);
 
     const interactionChain = await this._interactionChainService.create(
       {
@@ -59,6 +67,30 @@ export class InteractionChainController implements IInteractionChainController {
     const uuid = req.params.uuid as string;
 
     const { triggerBoardUuid, responseBoardUuid, label } = req.body;
+
+    if (
+      triggerBoardUuid === undefined &&
+      responseBoardUuid === undefined &&
+      label === undefined
+    ) {
+      throw new BadRequestError("No fields to update");
+    }
+
+    if (
+      triggerBoardUuid !== undefined &&
+      typeof triggerBoardUuid !== "string"
+    ) {
+      throw new BadRequestError("Trigger board uuid must be a string");
+    }
+
+    if (
+      responseBoardUuid !== undefined &&
+      typeof responseBoardUuid !== "string"
+    ) {
+      throw new BadRequestError("Response board uuid must be a string");
+    }
+
+    this._assertOptionalLabel(label);
 
     const interactionChain = await this._interactionChainService.update(
       uuid,
