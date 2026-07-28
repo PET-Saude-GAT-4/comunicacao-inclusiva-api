@@ -87,9 +87,8 @@ model Board {
   createdAt        DateTime         @default(now())
   updatedAt        DateTime         @updatedAt
   pictograms       BoardPictogram[]
-  
-  triggerChains  Interactionchain[] @relation("TriggerChain")
-  responseChains Interactionchain[] @relation("ResponseChain")
+  triggerChains    InteractionChain[] @relation("TriggerChain")
+  responseChains   InteractionChain[] @relation("ResponseChain")
 }
 
 model BoardPictogram {
@@ -123,16 +122,16 @@ model Speciality {
   @@unique([name, professionId])
 }
 
-model Interactionchain {
-  id           Int        @id @default(autoincrement())
-  uuid         String     @unique @default(uuid())
-  triggerBoardUuid String 
-  responseBoardUuid String
+model InteractionChain {
+  id              Int      @id @default(autoincrement())
+  uuid            String   @unique @default(uuid())
+  triggerBoardId  Int
+  triggerBoard    Board    @relation("TriggerChain", fields: [triggerBoardId], references: [id], onDelete: Cascade)
+  responseBoardId Int
+  responseBoard   Board    @relation("ResponseChain", fields: [responseBoardId], references: [id], onDelete: Cascade)
+  label           String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
-  label        String?
-  createdAt    DateTime   @default(now())
-  updatedAt    DateTime   @updatedAt
-
-  triggerBoard  Board @relation("TriggerChain", fields: [triggerBoardUuid], references: [uuid], onDelete: Cascade)
-  responseBoard Board @relation("ResponseChain", fields: [responseBoardUuid], references: [uuid], onDelete: Cascade)
+  @@unique([triggerBoardId, responseBoardId])
 }

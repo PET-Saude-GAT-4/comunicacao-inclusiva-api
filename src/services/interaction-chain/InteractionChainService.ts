@@ -1,5 +1,6 @@
 import { ForbiddenError } from "@/errors/ForbiddenError.js";
 import { NotFoundError } from "@/errors/NotFoundError.js";
+import type { BoardOutput } from "@/models/types/Board.type.js";
 import type {
   InteractionChainInput,
   InteractionChainOutput,
@@ -52,29 +53,40 @@ export class InteractionChainService implements IInteractionChainService {
     throw new ForbiddenError("You are not allowed to access this interaction.");
   }
 
+  private async _requirePublishedBoard(
+    uuid: string,
+    role: "Trigger" | "Response",
+  ): Promise<BoardOutput> {
+    const board = await this._boardRepository.findByUuid(uuid);
+
+    if (!board) throw new NotFoundError(`${role} board not found`);
+    if (!board.publishedAt) throw new Error(`${role} board must be published`);
+
+    return board;
+  }
+
   async create(
     data: InteractionChainInput,
     user: AuthenticatedUser,
   ): Promise<InteractionChainOutput> {
-    const triggerBoard = await this._boardRepository.findByUuid(
+    const triggerBoard = await this._requirePublishedBoard(
       data.triggerBoardUuid,
+      "Trigger",
     );
-    const responseBoard = await this._boardRepository.findByUuid(
+    const responseBoard = await this._requirePublishedBoard(
       data.responseBoardUuid,
+      "Response",
     );
-
-    if (!triggerBoard) throw new NotFoundError("Trigger board not found");
-    if (!responseBoard) throw new NotFoundError("Response board not found");
 
     if (triggerBoard.id === responseBoard.id) {
       throw new Error("Trigger and response board must be different");
     }
 
-    if (!triggerBoard.publishedAt) throw new Error("Board is not published");
-    if (!responseBoard.publishedAt) throw new Error("Board is not published");
-
-    const interactionChain =
-      await this._interactionChainRepository.create(data);
+    const interactionChain = await this._interactionChainRepository.create({
+      triggerBoardId: triggerBoard.id,
+      responseBoardId: responseBoard.id,
+      label: data.label ?? null,
+    });
 
     this._assertCanManage(interactionChain, user);
 
@@ -93,25 +105,18 @@ export class InteractionChainService implements IInteractionChainService {
 
     this._assertCanManage(interactionChain, user);
 
-    const finalTriggerUuid =
-      data.triggerBoardUuid ?? interactionChain.triggerBoardUuid;
-    const finalResponseUuid =
-      data.responseBoardUuid ?? interactionChain.responseBoardUuid;
+    const triggerBoard = data.triggerBoardUuid
+      ? await this._requirePublishedBoard(data.triggerBoardUuid, "Trigger")
+      : undefined;
+    const responseBoard = data.responseBoardUuid
+      ? await this._requirePublishedBoard(data.responseBoardUuid, "Response")
+      : undefined;
 
-    const triggerBoard =
-      await this._boardRepository.findByUuid(finalTriggerUuid);
-    const responseBoard =
-      await this._boardRepository.findByUuid(finalResponseUuid);
-
-    if (!triggerBoard) throw new NotFoundError("Trigger board not found");
-    if (!responseBoard) throw new NotFoundError("Response board not found");
-
-    if (!triggerBoard.publishedAt)
-      throw new Error("Trigger board must be published");
-    if (!responseBoard.publishedAt)
-      throw new Error("Response board must be published");
-
-    return await this._interactionChainRepository.update(id, data);
+    return await this._interactionChainRepository.update(id, {
+      triggerBoardId: triggerBoard?.id,
+      responseBoardId: responseBoard?.id,
+      label: data.label,
+    });
   }
 
   async delete(id: number, user: AuthenticatedUser): Promise<void> {
