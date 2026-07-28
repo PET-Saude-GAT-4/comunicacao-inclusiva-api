@@ -1,21 +1,29 @@
 import type {
   InteractionChainInput,
   InteractionChainOutput,
+  InteractionChainUpdateInput,
 } from "@/models/types/InteractionChain.type.js";
 import type { AuthenticatedUser } from "@/types/user.js";
 
-export interface IInteractionChainService {
+interface IInteractionChainService {
   create(
     data: InteractionChainInput,
     user: AuthenticatedUser,
   ): Promise<InteractionChainOutput>;
+
   update(
-    id: number,
-    data: InteractionChainInput,
+    uuid: string,
+    data: InteractionChainUpdateInput,
     user: AuthenticatedUser,
   ): Promise<InteractionChainOutput>;
-  delete(id: number, user: AuthenticatedUser): Promise<void>;
 
-  
+  delete(uuid: string, user: AuthenticatedUser): Promise<void>;
+
+  findAll(): Promise<InteractionChainOutput[]>;
+
+  findByUuid(uuid: string): Promise<InteractionChainOutput | null>;
+
+  findByTriggerBoardUuid(uuid: string): Promise<InteractionChainOutput[]>;
 }
 
+export type { IInteractionChainService };

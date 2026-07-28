@@ -1,6 +1,6 @@
 import express, { type Request, type Response } from "express";
 
-import type IInteractionChainController from "@/controllers/interaction-chain/IInteractionChainController.js";
+import type { IInteractionChainController } from "@/controllers/interaction-chain/IInteractionChainController.js";
 import { InteractionChainController } from "@/controllers/interaction-chain/InteractionChainController.js";
 import AuthMiddleware from "@/middlewares/AuthMiddleware.js";
 import type { IAuthMiddleware } from "@/middlewares/IAuthMiddleware.js";
@@ -23,27 +23,28 @@ router.post(
   interactionChainController.create.bind(interactionChainController),
 );
 
+router.get(
+  "/trigger-board/:uuid",
+  authMiddleware.auth(["super_admin", "admin"]),
+  interactionChainController.findByTriggerBoardUuid.bind(
+    interactionChainController,
+  ),
+);
+
+router.get(
+  "/:uuid",
+  authMiddleware.auth(["super_admin", "admin"]),
+  interactionChainController.findByUuid.bind(interactionChainController),
+);
+
 router.patch(
-  "/:id",
+  "/:uuid",
   authMiddleware.auth(["super_admin", "admin"]),
   (req: Request, res: Response) => interactionChainController.update!(req, res),
 );
 
-router.get(
-  "/:id",
-  authMiddleware.auth(["super_admin", "admin"]),
-  (req: Request, res: Response) => interactionChainController.findById!(req, res),
-);
-
-router.get(
-  "/trigger-board/:uuid",
-  authMiddleware.auth(["super_admin", "admin"]),
-  (req: Request, res: Response) => interactionChainController.findByTriggerBoardUuid!(req, res),
-);
-
-
 router.delete(
-  "/:id",
+  "/:uuid",
   authMiddleware.auth(["super_admin", "admin"]),
   interactionChainController.delete.bind(interactionChainController),
 );

@@ -89,9 +89,18 @@ class InteractionChainRepository implements IInteractionChainRepository {
     return result ? this._map(result) : null;
   }
 
+  async findByUuid(uuid: string): Promise<InteractionChainOutput | null> {
+    const result = await prisma.interactionChain.findUnique({
+      where: { uuid },
+      include,
+    });
+
+    return result ? this._map(result) : null;
+  }
+
   async findByTriggerBoardUuid(
     uuid: string,
-  ): Promise<InteractionChainOutput[] | null> {
+  ): Promise<InteractionChainOutput[]> {
     const results = await prisma.interactionChain.findMany({
       where: { triggerBoard: { uuid } },
       orderBy: { createdAt: "desc" },

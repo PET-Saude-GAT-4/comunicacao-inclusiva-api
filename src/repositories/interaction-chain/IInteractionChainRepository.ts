@@ -16,7 +16,7 @@ export interface IInteractionChainRepository extends IRepository<InteractionChai
   ): Promise<InteractionChainOutput>;
   delete(id: number): Promise<void>;
 
-  findByTriggerBoardUuid(
-    uuid: string,
-  ): Promise<InteractionChainOutput[] | null>;
+  findByUuid(uuid: string): Promise<InteractionChainOutput | null>;
+
+  findByTriggerBoardUuid(uuid: string): Promise<InteractionChainOutput[]>;
 }

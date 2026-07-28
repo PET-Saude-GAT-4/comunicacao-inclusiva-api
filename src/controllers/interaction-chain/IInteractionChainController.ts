@@ -1,9 +1,12 @@
 import type { Request, Response } from "express";
 
+import type { IController } from "@/controllers/IController.js";
 import type { InteractionChainOutput } from "@/models/types/InteractionChain.type.js";
 
-import type { IController } from "../IController.js";
+interface IInteractionChainController extends IController<InteractionChainOutput> {
+  findByUuid(req: Request, res: Response): Promise<void>;
 
-export default interface IInteractionChainController extends IController<InteractionChainOutput> {
-  findByTriggerBoardUuid?(req: Request, res: Response): Promise<void>;
+  findByTriggerBoardUuid(req: Request, res: Response): Promise<void>;
 }
+
+export type { IInteractionChainController };

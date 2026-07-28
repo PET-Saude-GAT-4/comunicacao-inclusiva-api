@@ -5,7 +5,7 @@ import { NotFoundError } from "@/errors/NotFoundError.js";
 import type { InteractionChainOutput } from "@/models/types/InteractionChain.type.js";
 import InteractionChainService from "@/services/interaction-chain/InteractionChainService.js";
 
-import type IInteractionChainController from "./IInteractionChainController.js";
+import type { IInteractionChainController } from "./IInteractionChainController.js";
 
 type Props = {
   interactionChainService?: InteractionChainService;
@@ -21,15 +21,15 @@ export class InteractionChainController implements IInteractionChainController {
 
   private _toResponse(interactionChain: InteractionChainOutput) {
     return {
-      id: interactionChain.id,
       uuid: interactionChain.uuid,
-      createdAt: interactionChain.createdAt,
-      updatedAt: interactionChain.updatedAt,
       triggerBoardUuid: interactionChain.triggerBoardUuid,
       responseBoardUuid: interactionChain.responseBoardUuid,
       label: interactionChain.label,
+      createdAt: interactionChain.createdAt,
+      updatedAt: interactionChain.updatedAt,
     };
   }
+
   async create(req: Request, res: Response): Promise<void> {
     const { triggerBoardUuid, responseBoardUuid, label } = req.body;
 
@@ -56,12 +56,12 @@ export class InteractionChainController implements IInteractionChainController {
   }
 
   async update(req: Request, res: Response): Promise<void> {
-    const id = parseInt(req.params.id as string);
+    const uuid = req.params.uuid as string;
 
     const { triggerBoardUuid, responseBoardUuid, label } = req.body;
 
     const interactionChain = await this._interactionChainService.update(
-      id,
+      uuid,
       {
         triggerBoardUuid,
         responseBoardUuid,
@@ -83,10 +83,11 @@ export class InteractionChainController implements IInteractionChainController {
     });
   }
 
-  async findById(req: Request, res: Response): Promise<void> {
-    const id = parseInt(req.params.id as string);
+  async findByUuid(req: Request, res: Response): Promise<void> {
+    const uuid = req.params.uuid as string;
 
-    const interactionChain = await this._interactionChainService.findById(id);
+    const interactionChain =
+      await this._interactionChainService.findByUuid(uuid);
 
     if (!interactionChain) {
       throw new NotFoundError("Interaction chain not found");
@@ -100,23 +101,18 @@ export class InteractionChainController implements IInteractionChainController {
   async findByTriggerBoardUuid(req: Request, res: Response): Promise<void> {
     const uuid = req.params.uuid as string;
 
-    const interactionChainList =
+    const interactionChains =
       await this._interactionChainService.findByTriggerBoardUuid(uuid);
 
-    if (!interactionChainList || interactionChainList.length === 0) {
-      res.status(200).json({ interactionChains: [] });
-      return;
-    }
-
-    res
-      .status(200)
-      .json({ interactionChains: interactionChainList.map(this._toResponse) });
+    res.status(200).json({
+      interactionChains: interactionChains.map((ic) => this._toResponse(ic)),
+    });
   }
 
   async delete(req: Request, res: Response): Promise<void> {
-    const id = parseInt(req.params.id as string);
+    const uuid = req.params.uuid as string;
 
-    await this._interactionChainService.delete(id, req.user!);
+    await this._interactionChainService.delete(uuid, req.user!);
     res.status(204).send();
   }
 }

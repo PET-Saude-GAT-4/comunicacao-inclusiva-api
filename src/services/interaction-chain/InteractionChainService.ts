@@ -94,12 +94,12 @@ export class InteractionChainService implements IInteractionChainService {
   }
 
   async update(
-    id: number,
+    uuid: string,
     data: InteractionChainUpdateInput,
     user: AuthenticatedUser,
   ): Promise<InteractionChainOutput> {
     const interactionChain =
-      await this._interactionChainRepository.findById(id);
+      await this._interactionChainRepository.findByUuid(uuid);
     if (!interactionChain)
       throw new NotFoundError("Interaction chain not found");
 
@@ -112,36 +112,36 @@ export class InteractionChainService implements IInteractionChainService {
       ? await this._requirePublishedBoard(data.responseBoardUuid, "Response")
       : undefined;
 
-    return await this._interactionChainRepository.update(id, {
+    return await this._interactionChainRepository.update(interactionChain.id, {
       triggerBoardId: triggerBoard?.id,
       responseBoardId: responseBoard?.id,
       label: data.label,
     });
   }
 
-  async delete(id: number, user: AuthenticatedUser): Promise<void> {
+  async delete(uuid: string, user: AuthenticatedUser): Promise<void> {
     const interactionChain =
-      await this._interactionChainRepository.findById(id);
+      await this._interactionChainRepository.findByUuid(uuid);
 
     if (!interactionChain)
       throw new NotFoundError("Interaction chain not found");
 
     this._assertCanManage(interactionChain, user);
 
-    await this._interactionChainRepository.delete(id);
+    await this._interactionChainRepository.delete(interactionChain.id);
   }
 
   async findAll(): Promise<InteractionChainOutput[]> {
     return await this._interactionChainRepository.findAll();
   }
 
-  async findById(id: number): Promise<InteractionChainOutput | null> {
-    return await this._interactionChainRepository.findById(id);
+  async findByUuid(uuid: string): Promise<InteractionChainOutput | null> {
+    return await this._interactionChainRepository.findByUuid(uuid);
   }
 
   async findByTriggerBoardUuid(
     uuid: string,
-  ): Promise<InteractionChainOutput[] | null> {
+  ): Promise<InteractionChainOutput[]> {
     return await this._interactionChainRepository.findByTriggerBoardUuid(uuid);
   }
 }
