@@ -76,7 +76,9 @@ export class InteractionChainController implements IInteractionChainController {
   }
 
   async findAll(req: Request, res: Response): Promise<void> {
-    const interactionChains = await this._interactionChainService.findAll();
+    const interactionChains = await this._interactionChainService.findAll(
+      req.user!,
+    );
 
     res.status(200).json({
       interactionChains: interactionChains.map((ic) => this._toResponse(ic)),
@@ -86,8 +88,10 @@ export class InteractionChainController implements IInteractionChainController {
   async findByUuid(req: Request, res: Response): Promise<void> {
     const uuid = req.params.uuid as string;
 
-    const interactionChain =
-      await this._interactionChainService.findByUuid(uuid);
+    const interactionChain = await this._interactionChainService.findByUuid(
+      uuid,
+      req.user!,
+    );
 
     if (!interactionChain) {
       throw new NotFoundError("Interaction chain not found");
@@ -102,7 +106,10 @@ export class InteractionChainController implements IInteractionChainController {
     const uuid = req.params.uuid as string;
 
     const interactionChains =
-      await this._interactionChainService.findByTriggerBoardUuid(uuid);
+      await this._interactionChainService.findByTriggerBoardUuid(
+        uuid,
+        req.user!,
+      );
 
     res.status(200).json({
       interactionChains: interactionChains.map((ic) => this._toResponse(ic)),

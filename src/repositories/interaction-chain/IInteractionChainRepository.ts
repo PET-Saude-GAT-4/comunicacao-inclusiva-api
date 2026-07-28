@@ -7,6 +7,10 @@ import type {
 import type { IRepository } from "../IRepository.js";
 
 export interface IInteractionChainRepository extends IRepository<InteractionChainOutput> {
+  findAll(filter?: {
+    triggerBoardAuthorUuid?: string;
+  }): Promise<InteractionChainOutput[]>;
+
   create(
     data: InteractionChainRepositoryInput,
   ): Promise<InteractionChainOutput>;

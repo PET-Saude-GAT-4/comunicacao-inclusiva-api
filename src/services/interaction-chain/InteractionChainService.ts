@@ -36,21 +36,27 @@ export class InteractionChainService implements IInteractionChainService {
   }
 
   private _assertCanManage(
-    interaction: InteractionChainOutput,
+    triggerBoardAuthorUuid: string | null,
     user: AuthenticatedUser,
   ): void {
     if (user.role === "super_admin") return;
-    if (user.role === "admin") return;
-    throw new ForbiddenError("You are not allowed to manage this interaction.");
+    if (user.role === "admin" && triggerBoardAuthorUuid === user.uuid) return;
+    throw new ForbiddenError(
+      "You are not allowed to manage this interaction chain.",
+    );
   }
 
   private _assertCanRead(
-    interaction: InteractionChainOutput,
+    triggerBoardAuthorUuid: string | null,
+    triggerBoardPublishedAt: Date | null,
     user: AuthenticatedUser,
   ): void {
     if (user.role === "super_admin") return;
-    if (user.role === "admin") return;
-    throw new ForbiddenError("You are not allowed to access this interaction.");
+    if (triggerBoardPublishedAt !== null) return;
+    if (user.role === "admin" && triggerBoardAuthorUuid === user.uuid) return;
+    throw new ForbiddenError(
+      "You are not allowed to access this interaction chain.",
+    );
   }
 
   private async _requirePublishedBoard(
@@ -82,15 +88,13 @@ export class InteractionChainService implements IInteractionChainService {
       throw new Error("Trigger and response board must be different");
     }
 
-    const interactionChain = await this._interactionChainRepository.create({
+    this._assertCanManage(triggerBoard.authorUuid, user);
+
+    return await this._interactionChainRepository.create({
       triggerBoardId: triggerBoard.id,
       responseBoardId: responseBoard.id,
       label: data.label ?? null,
     });
-
-    this._assertCanManage(interactionChain, user);
-
-    return interactionChain;
   }
 
   async update(
@@ -103,7 +107,7 @@ export class InteractionChainService implements IInteractionChainService {
     if (!interactionChain)
       throw new NotFoundError("Interaction chain not found");
 
-    this._assertCanManage(interactionChain, user);
+    this._assertCanManage(interactionChain.triggerBoardAuthorUuid, user);
 
     const triggerBoard = data.triggerBoardUuid
       ? await this._requirePublishedBoard(data.triggerBoardUuid, "Trigger")
@@ -111,6 +115,8 @@ export class InteractionChainService implements IInteractionChainService {
     const responseBoard = data.responseBoardUuid
       ? await this._requirePublishedBoard(data.responseBoardUuid, "Response")
       : undefined;
+
+    if (triggerBoard) this._assertCanManage(triggerBoard.authorUuid, user);
 
     return await this._interactionChainRepository.update(interactionChain.id, {
       triggerBoardId: triggerBoard?.id,
@@ -126,22 +132,49 @@ export class InteractionChainService implements IInteractionChainService {
     if (!interactionChain)
       throw new NotFoundError("Interaction chain not found");
 
-    this._assertCanManage(interactionChain, user);
+    this._assertCanManage(interactionChain.triggerBoardAuthorUuid, user);
 
     await this._interactionChainRepository.delete(interactionChain.id);
   }
 
-  async findAll(): Promise<InteractionChainOutput[]> {
-    return await this._interactionChainRepository.findAll();
+  async findAll(user: AuthenticatedUser): Promise<InteractionChainOutput[]> {
+    return await this._interactionChainRepository.findAll(
+      user.role === "admin" ? { triggerBoardAuthorUuid: user.uuid } : undefined,
+    );
   }
 
-  async findByUuid(uuid: string): Promise<InteractionChainOutput | null> {
-    return await this._interactionChainRepository.findByUuid(uuid);
+  async findByUuid(
+    uuid: string,
+    user: AuthenticatedUser,
+  ): Promise<InteractionChainOutput | null> {
+    const interactionChain =
+      await this._interactionChainRepository.findByUuid(uuid);
+
+    if (interactionChain) {
+      this._assertCanRead(
+        interactionChain.triggerBoardAuthorUuid,
+        interactionChain.triggerBoardPublishedAt,
+        user,
+      );
+    }
+
+    return interactionChain;
   }
 
   async findByTriggerBoardUuid(
     uuid: string,
+    user: AuthenticatedUser,
   ): Promise<InteractionChainOutput[]> {
+    const triggerBoard = await this._boardRepository.findByUuid(uuid);
+
+    if (!triggerBoard) throw new NotFoundError("Trigger board not found");
+
+    this._assertCanRead(
+      triggerBoard.authorUuid,
+      triggerBoard.publishedAt,
+      user,
+    );
+
     return await this._interactionChainRepository.findByTriggerBoardUuid(uuid);
   }
 }

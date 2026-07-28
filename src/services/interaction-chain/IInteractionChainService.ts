@@ -19,11 +19,17 @@ interface IInteractionChainService {
 
   delete(uuid: string, user: AuthenticatedUser): Promise<void>;
 
-  findAll(): Promise<InteractionChainOutput[]>;
+  findAll(user: AuthenticatedUser): Promise<InteractionChainOutput[]>;
 
-  findByUuid(uuid: string): Promise<InteractionChainOutput | null>;
+  findByUuid(
+    uuid: string,
+    user: AuthenticatedUser,
+  ): Promise<InteractionChainOutput | null>;
 
-  findByTriggerBoardUuid(uuid: string): Promise<InteractionChainOutput[]>;
+  findByTriggerBoardUuid(
+    uuid: string,
+    user: AuthenticatedUser,
+  ): Promise<InteractionChainOutput[]>;
 }
 
 export type { IInteractionChainService };

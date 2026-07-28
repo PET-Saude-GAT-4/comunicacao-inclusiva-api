@@ -10,7 +10,13 @@ import { isEmpty } from "@/utils/object.js";
 import type { IInteractionChainRepository } from "./IInteractionChainRepository.js";
 
 const include = {
-  triggerBoard: { select: { uuid: true } },
+  triggerBoard: {
+    select: {
+      uuid: true,
+      publishedAt: true,
+      author: { select: { uuid: true } },
+    },
+  },
   responseBoard: { select: { uuid: true } },
 } as const;
 
@@ -18,7 +24,11 @@ class InteractionChainRepository implements IInteractionChainRepository {
   private _map(data: {
     id: number;
     uuid: string;
-    triggerBoard: { uuid: string };
+    triggerBoard: {
+      uuid: string;
+      publishedAt: Date | null;
+      author: { uuid: string } | null;
+    };
     responseBoard: { uuid: string };
     label: string | null;
     createdAt: Date;
@@ -28,6 +38,8 @@ class InteractionChainRepository implements IInteractionChainRepository {
       id: data.id,
       uuid: data.uuid,
       triggerBoardUuid: data.triggerBoard.uuid,
+      triggerBoardAuthorUuid: data.triggerBoard.author?.uuid ?? null,
+      triggerBoardPublishedAt: data.triggerBoard.publishedAt,
       responseBoardUuid: data.responseBoard.uuid,
       label: data.label,
       createdAt: data.createdAt,
@@ -71,8 +83,16 @@ class InteractionChainRepository implements IInteractionChainRepository {
     return this._map(result);
   }
 
-  async findAll(): Promise<InteractionChainOutput[]> {
+  async findAll(filter?: {
+    triggerBoardAuthorUuid?: string;
+  }): Promise<InteractionChainOutput[]> {
     const results = await prisma.interactionChain.findMany({
+      where:
+        filter?.triggerBoardAuthorUuid != null
+          ? {
+              triggerBoard: { author: { uuid: filter.triggerBoardAuthorUuid } },
+            }
+          : Prisma.skip,
       orderBy: { createdAt: "desc" },
       include,
     });

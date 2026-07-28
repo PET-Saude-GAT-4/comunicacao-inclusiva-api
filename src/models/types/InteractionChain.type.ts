@@ -26,6 +26,8 @@ export type InteractionChainOutput = {
   id: number;
   uuid: string;
   triggerBoardUuid: string;
+  triggerBoardAuthorUuid: string | null;
+  triggerBoardPublishedAt: Date | null;
   responseBoardUuid: string;
   label: string | null;
   createdAt: Date;
