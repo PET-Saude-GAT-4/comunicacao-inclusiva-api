@@ -3,16 +3,17 @@ import type { Request, Response } from "express";
 import { BadRequestError } from "@/errors/BadRequestError.js";
 import { NotFoundError } from "@/errors/NotFoundError.js";
 import type { InteractionChainOutput } from "@/models/types/InteractionChain.type.js";
+import type { IInteractionChainService } from "@/services/interaction-chain/IInteractionChainService.js";
 import InteractionChainService from "@/services/interaction-chain/InteractionChainService.js";
 
 import type { IInteractionChainController } from "./IInteractionChainController.js";
 
 type Props = {
-  interactionChainService?: InteractionChainService;
+  interactionChainService?: IInteractionChainService;
 };
 
-export class InteractionChainController implements IInteractionChainController {
-  private _interactionChainService: InteractionChainService;
+class InteractionChainController implements IInteractionChainController {
+  private _interactionChainService: IInteractionChainService;
 
   constructor(props?: Props) {
     this._interactionChainService =

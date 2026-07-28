@@ -1,7 +1,7 @@
 import express, { type Request, type Response } from "express";
 
 import type { IInteractionChainController } from "@/controllers/interaction-chain/IInteractionChainController.js";
-import { InteractionChainController } from "@/controllers/interaction-chain/InteractionChainController.js";
+import InteractionChainController from "@/controllers/interaction-chain/InteractionChainController.js";
 import AuthMiddleware from "@/middlewares/AuthMiddleware.js";
 import type { IAuthMiddleware } from "@/middlewares/IAuthMiddleware.js";
 

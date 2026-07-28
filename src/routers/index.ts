@@ -16,12 +16,12 @@ const router = express.Router();
 router.use("/auth", AuthRouter);
 router.use("/boards", BoardRouter);
 router.use("/files", FileRouter);
+router.use("/interaction-chains", InteractionChainRouter);
 router.use("/pictograms", PictogramRouter);
 router.use("/professions", ProfessionRouter);
 router.use("/public", PublicRouter);
 router.use("/roles", RoleRouter);
 router.use("/specialities", SpecialityRouter);
 router.use("/users", UserRouter);
-router.use("/interaction-chains", InteractionChainRouter);
 
 export default router;

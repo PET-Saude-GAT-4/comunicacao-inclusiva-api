@@ -11,27 +11,21 @@ import BoardRepository from "@/repositories/board/BoardRepository.js";
 import type { IBoardRepository } from "@/repositories/board/IBoardRepository.js";
 import type { IInteractionChainRepository } from "@/repositories/interaction-chain/IInteractionChainRepository.js";
 import InteractionChainRepository from "@/repositories/interaction-chain/InteractionChainRepository.js";
-import type { IPictogramRepository } from "@/repositories/pictogram/IPictogramRepository.js";
-import PictogramRepository from "@/repositories/pictogram/PictogramRepository.js";
 import type { AuthenticatedUser } from "@/types/user.js";
 
 import type { IInteractionChainService } from "./IInteractionChainService.js";
 
 type Props = {
   boardRepository?: IBoardRepository;
-  pictogramRepository?: IPictogramRepository;
   interactionChainRepository?: IInteractionChainRepository;
 };
 
-export class InteractionChainService implements IInteractionChainService {
+class InteractionChainService implements IInteractionChainService {
   private _boardRepository: IBoardRepository;
-  private _pictogramRepository: IPictogramRepository;
   private _interactionChainRepository: IInteractionChainRepository;
 
   constructor(props?: Props) {
     this._boardRepository = props?.boardRepository ?? new BoardRepository();
-    this._pictogramRepository =
-      props?.pictogramRepository ?? new PictogramRepository();
     this._interactionChainRepository =
       props?.interactionChainRepository ?? new InteractionChainRepository();
   }
