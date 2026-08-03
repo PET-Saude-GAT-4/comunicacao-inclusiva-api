@@ -64,6 +64,15 @@ class PictogramRepository implements IPictogramRepository {
     return result ? this._map(result) : null;
   }
 
+  async findManyByUuids(uuids: string[]): Promise<PictogramOutput[]> {
+    const results = await prisma.pictogram.findMany({
+      where: { uuid: { in: uuids } },
+      include: { storedFile: true },
+    });
+
+    return results.map((r) => this._map(r));
+  }
+
   async existsById(id: number): Promise<boolean> {
     const count = await prisma.pictogram.count({ where: { id } });
     return count > 0;
