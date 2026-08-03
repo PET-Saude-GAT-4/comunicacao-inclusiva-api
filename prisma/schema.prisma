@@ -42,6 +42,7 @@ model User {
   updatedAt    DateTime     @updatedAt
   storedFiles  StoredFile[]
   boards       Board[]      @relation("BoardAuthor")
+  phrases      Phrase[]     @relation("PhraseAuthor")
 }
 
 model StoredFile {
@@ -71,7 +72,8 @@ model Pictogram {
   createdAt            DateTime         @default(now())
   updatedAt            DateTime         @updatedAt
   boardPictograms      BoardPictogram[]
-  representativeBoards Board[]          @relation("BoardRepresentative")
+  representativeBoards Board[]           @relation("BoardRepresentative")
+  phrasePictograms     PhrasePictogram[]
 }
 
 model Board {
@@ -134,4 +136,27 @@ model InteractionChain {
   updatedAt       DateTime @updatedAt
 
   @@unique([triggerBoardId, responseBoardId])
+}
+
+model Phrase {
+  id          Int               @id @default(autoincrement())
+  uuid        String            @unique @default(uuid())
+  description String
+  authorId    Int?
+  author      User?             @relation("PhraseAuthor", fields: [authorId], references: [id])
+  publishedAt DateTime?
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+  pictograms  PhrasePictogram[]
+}
+
+model PhrasePictogram {
+  id          Int       @id @default(autoincrement())
+  phraseId    Int
+  pictogramId Int
+  order       Int
+  phrase      Phrase    @relation(fields: [phraseId], references: [id], onDelete: Cascade)
+  pictogram   Pictogram @relation(fields: [pictogramId], references: [id])
+
+  @@unique([phraseId, order])
 }
