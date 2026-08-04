@@ -133,6 +133,23 @@ class BoardController implements IBoardController {
     });
   }
 
+  async findNextBoardsByPublishedBoard(
+    req: Request,
+    res: Response,
+  ): Promise<void> {
+    const uuid = req.params.uuid as string;
+
+    const boards =
+      await this._boardService.findNextBoardsByPublishedBoardUuid(uuid);
+
+    res.status(200).json({
+      boards: boards.map((b, i) => ({
+        ...this._toResponse(b),
+        order: i + 1,
+      })),
+    });
+  }
+
   async publish(req: Request, res: Response): Promise<void> {
     const uuid = req.params.uuid as string;
 

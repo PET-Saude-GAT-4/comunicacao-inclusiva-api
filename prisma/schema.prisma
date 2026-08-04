@@ -131,11 +131,13 @@ model InteractionChain {
   triggerBoard    Board    @relation("TriggerChain", fields: [triggerBoardId], references: [id], onDelete: Cascade)
   responseBoardId Int
   responseBoard   Board    @relation("ResponseChain", fields: [responseBoardId], references: [id], onDelete: Cascade)
+  rank            Int
   label           String?
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
   @@unique([triggerBoardId, responseBoardId])
+  @@index([triggerBoardId, rank])
 }
 
 model Phrase {

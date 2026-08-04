@@ -25,6 +25,7 @@ class InteractionChainController implements IInteractionChainController {
       uuid: interactionChain.uuid,
       triggerBoardUuid: interactionChain.triggerBoardUuid,
       responseBoardUuid: interactionChain.responseBoardUuid,
+      rank: interactionChain.rank,
       label: interactionChain.label,
       createdAt: interactionChain.createdAt,
       updatedAt: interactionChain.updatedAt,
@@ -37,8 +38,16 @@ class InteractionChainController implements IInteractionChainController {
     }
   }
 
+  private _assertOptionalRank(rank: unknown): void {
+    if (rank === undefined) return;
+
+    if (typeof rank !== "number" || !Number.isInteger(rank)) {
+      throw new BadRequestError("Rank must be an integer");
+    }
+  }
+
   async create(req: Request, res: Response): Promise<void> {
-    const { triggerBoardUuid, responseBoardUuid, label } = req.body;
+    const { triggerBoardUuid, responseBoardUuid, rank, label } = req.body;
 
     if (!triggerBoardUuid || typeof triggerBoardUuid !== "string") {
       throw new BadRequestError("Trigger board uuid is required");
@@ -48,12 +57,14 @@ class InteractionChainController implements IInteractionChainController {
       throw new BadRequestError("Response board uuid is required");
     }
 
+    this._assertOptionalRank(rank);
     this._assertOptionalLabel(label);
 
     const interactionChain = await this._interactionChainService.create(
       {
         triggerBoardUuid,
         responseBoardUuid,
+        rank,
         label,
       },
       req.user!,
@@ -67,11 +78,12 @@ class InteractionChainController implements IInteractionChainController {
   async update(req: Request, res: Response): Promise<void> {
     const uuid = req.params.uuid as string;
 
-    const { triggerBoardUuid, responseBoardUuid, label } = req.body;
+    const { triggerBoardUuid, responseBoardUuid, rank, label } = req.body;
 
     if (
       triggerBoardUuid === undefined &&
       responseBoardUuid === undefined &&
+      rank === undefined &&
       label === undefined
     ) {
       throw new BadRequestError("No fields to update");
@@ -91,6 +103,7 @@ class InteractionChainController implements IInteractionChainController {
       throw new BadRequestError("Response board uuid must be a string");
     }
 
+    this._assertOptionalRank(rank);
     this._assertOptionalLabel(label);
 
     const interactionChain = await this._interactionChainService.update(
@@ -98,6 +111,7 @@ class InteractionChainController implements IInteractionChainController {
       {
         triggerBoardUuid,
         responseBoardUuid,
+        rank,
         label,
       },
       req.user!,

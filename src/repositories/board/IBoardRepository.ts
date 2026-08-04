@@ -28,6 +28,8 @@ interface IBoardRepository extends IRepository<BoardOutput> {
 
   findPictogramsByBoardId(boardId: number): Promise<PictogramOutput[]>;
 
+  findNextBoardsByBoardId(boardId: number): Promise<BoardOutput[]>;
+
   existsBoardPictogram(boardId: number, pictogramId: number): Promise<boolean>;
 
   deleteBoardPictogram(boardId: number, pictogramId: number): Promise<void>;
