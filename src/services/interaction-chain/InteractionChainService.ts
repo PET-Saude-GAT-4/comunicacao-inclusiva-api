@@ -89,6 +89,7 @@ class InteractionChainService implements IInteractionChainService {
     return await this._interactionChainRepository.create({
       triggerBoardId: triggerBoard.id,
       responseBoardId: responseBoard.id,
+      rank: data.rank,
       label: data.label ?? null,
     });
   }
@@ -126,6 +127,7 @@ class InteractionChainService implements IInteractionChainService {
     return await this._interactionChainRepository.update(interactionChain.id, {
       triggerBoardId: triggerBoard?.id,
       responseBoardId: responseBoard?.id,
+      rank: data.rank,
       label: data.label,
     });
   }

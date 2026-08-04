@@ -16,4 +16,9 @@ router.get(
   boardController.findPictogramsByPublishedBoard.bind(boardController),
 );
 
+router.get(
+  "/:uuid/next-boards",
+  boardController.findNextBoardsByPublishedBoard.bind(boardController),
+);
+
 export default router;
