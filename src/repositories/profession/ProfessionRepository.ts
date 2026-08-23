@@ -121,6 +121,11 @@ class ProfessionRepository implements IProfessionRepository {
     const count = await prisma.profession.count({ where: { id } });
     return count > 0;
   }
+
+  async existsByCode(code: string): Promise<boolean> {
+    const count = await prisma.profession.count({ where: { code } });
+    return count > 0;
+  }
 }
 
 export default ProfessionRepository;

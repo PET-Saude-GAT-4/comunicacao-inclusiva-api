@@ -59,6 +59,7 @@ class SpecialityService implements ISpecialityService {
       throw new ConflictError("This code already exists");
     }
 
+    console.log(speciality.code);
     return await this._specialityRepository.create({
       code: speciality.code,
       name: speciality.name,
@@ -124,6 +125,19 @@ class SpecialityService implements ISpecialityService {
 
   async findById(id: number): Promise<SpecialityOutput | null> {
     return this._specialityRepository.findById!(id);
+  }
+
+  async findAllByProfessionCode(
+    professionCode: string,
+  ): Promise<SpecialityOutput[]> {
+    const profession =
+      await this._professionRepository.findByCode(professionCode);
+
+    if (!profession) {
+      throw new NotFoundError("This profession does not exist!");
+    }
+
+    return this._specialityRepository.findAllByProfessionId(profession.id);
   }
 }
 

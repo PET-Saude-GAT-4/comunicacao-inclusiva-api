@@ -135,6 +135,27 @@ class SpecialityRepository implements ISpecialityRepository {
       : null;
   }
 
+  async findAllByProfessionId(
+    professionId: number,
+  ): Promise<SpecialityOutput[]> {
+    const data = await prisma.speciality.findMany({
+      where: {
+        professionId,
+      },
+    });
+
+    return data.map((speciality) => {
+      return {
+        id: speciality.id,
+        code: speciality.code,
+        name: speciality.name,
+        professionId: speciality.professionId,
+        createdAt: speciality.createdAt,
+        updatedAt: speciality.updatedAt,
+      };
+    });
+  }
+
   async existsById(id: number): Promise<boolean> {
     const count = await prisma.speciality.count({ where: { id } });
     return count > 0;

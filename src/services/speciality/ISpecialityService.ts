@@ -9,6 +9,7 @@ import type { IService } from "../IService.js";
 interface ISpecialityService extends IService<SpecialityOutput> {
   create(data: SpecialityInput): Promise<SpecialityOutput>;
   update(id: number, data: SpecialityUpdate): Promise<SpecialityOutput>;
+  findAllByProfessionCode(professionCode: string): Promise<SpecialityOutput[]>;
 }
 
 export type { ISpecialityService };
