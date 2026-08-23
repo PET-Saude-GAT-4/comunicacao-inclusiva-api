@@ -12,6 +12,8 @@ interface IBoardController extends IController<BoardOutput> {
 
   findPictogramsByPublishedBoard(req: Request, res: Response): Promise<void>;
 
+  findNextBoardsByPublishedBoard(req: Request, res: Response): Promise<void>;
+
   publish(req: Request, res: Response): Promise<void>;
 
   unpublish(req: Request, res: Response): Promise<void>;

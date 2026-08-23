@@ -42,6 +42,7 @@ model User {
   updatedAt    DateTime     @updatedAt
   storedFiles  StoredFile[]
   boards       Board[]      @relation("BoardAuthor")
+  phrases      Phrase[]     @relation("PhraseAuthor")
 }
 
 model StoredFile {
@@ -71,7 +72,8 @@ model Pictogram {
   createdAt            DateTime         @default(now())
   updatedAt            DateTime         @updatedAt
   boardPictograms      BoardPictogram[]
-  representativeBoards Board[]          @relation("BoardRepresentative")
+  representativeBoards Board[]           @relation("BoardRepresentative")
+  phrasePictograms     PhrasePictogram[]
 }
 
 model Board {
@@ -87,6 +89,8 @@ model Board {
   createdAt        DateTime         @default(now())
   updatedAt        DateTime         @updatedAt
   pictograms       BoardPictogram[]
+  triggerChains    InteractionChain[] @relation("TriggerChain")
+  responseChains   InteractionChain[] @relation("ResponseChain")
 }
 
 model BoardPictogram {
@@ -118,4 +122,43 @@ model Speciality {
   updatedAt    DateTime   @updatedAt
 
   @@unique([name, professionId])
+}
+
+model InteractionChain {
+  id              Int      @id @default(autoincrement())
+  uuid            String   @unique @default(uuid())
+  triggerBoardId  Int
+  triggerBoard    Board    @relation("TriggerChain", fields: [triggerBoardId], references: [id], onDelete: Cascade)
+  responseBoardId Int
+  responseBoard   Board    @relation("ResponseChain", fields: [responseBoardId], references: [id], onDelete: Cascade)
+  rank            Int
+  label           String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([triggerBoardId, responseBoardId])
+  @@index([triggerBoardId, rank])
+}
+
+model Phrase {
+  id          Int               @id @default(autoincrement())
+  uuid        String            @unique @default(uuid())
+  description String
+  authorId    Int?
+  author      User?             @relation("PhraseAuthor", fields: [authorId], references: [id])
+  publishedAt DateTime?
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+  pictograms  PhrasePictogram[]
+}
+
+model PhrasePictogram {
+  id          Int       @id @default(autoincrement())
+  phraseId    Int
+  pictogramId Int
+  order       Int
+  phrase      Phrase    @relation(fields: [phraseId], references: [id], onDelete: Cascade)
+  pictogram   Pictogram @relation(fields: [pictogramId], references: [id])
+
+  @@unique([phraseId, order])
 }

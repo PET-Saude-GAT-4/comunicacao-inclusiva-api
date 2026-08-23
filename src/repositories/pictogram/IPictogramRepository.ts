@@ -9,6 +9,8 @@ interface IPictogramRepository extends IRepository<PictogramOutput> {
 
   findByUuid(uuid: string): Promise<PictogramOutput | null>;
 
+  findManyByUuids(uuids: string[]): Promise<PictogramOutput[]>;
+
   deleteByUuid(uuid: string): Promise<void>;
 }
 
