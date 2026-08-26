@@ -11,6 +11,7 @@ import PublicRouter from "./public/index.js";
 import RoleRouter from "./RoleRouter.js";
 import SignWritingRouter from "./SignWritingRouter.js";
 import SpecialityRouter from "./SpecialityRouter.js";
+import TermRouter from "./TermRouter.js";
 import UserRouter from "./UserRouter.js";
 
 const router = express.Router();
@@ -26,6 +27,7 @@ router.use("/public", PublicRouter);
 router.use("/roles", RoleRouter);
 router.use("/sign-writings", SignWritingRouter);
 router.use("/specialities", SpecialityRouter);
+router.use("/terms", TermRouter);
 router.use("/users", UserRouter);
 
 export default router;
