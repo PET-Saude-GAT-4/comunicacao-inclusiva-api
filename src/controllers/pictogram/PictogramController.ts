@@ -2,12 +2,11 @@ import type { Request, Response } from "express";
 
 import { BadRequestError } from "@/errors/BadRequestError.js";
 import { NotFoundError } from "@/errors/NotFoundError.js";
-import type { PictogramOutput } from "@/models/types/Pictogram.type.js";
 import type { IPictogramService } from "@/services/pictogram/IPictogramService.js";
 import PictogramService from "@/services/pictogram/PictogramService.js";
-import { buildFileUrl } from "@/utils/file.js";
 
 import type { IPictogramController } from "./IPictogramController.js";
+import { toPictogramResponse } from "./PictogramResponse.js";
 
 type Props = {
   pictogramService?: IPictogramService;
@@ -18,16 +17,6 @@ class PictogramController implements IPictogramController {
 
   constructor(props?: Props) {
     this._pictogramService = props?.pictogramService ?? new PictogramService();
-  }
-
-  private _toResponse(pictogram: PictogramOutput): Record<string, unknown> {
-    return {
-      uuid: pictogram.uuid,
-      description: pictogram.description,
-      fileUrl: buildFileUrl(pictogram.fileUuid),
-      createdAt: pictogram.createdAt,
-      updatedAt: pictogram.updatedAt,
-    };
   }
 
   async create(req: Request, res: Response): Promise<void> {
@@ -50,14 +39,14 @@ class PictogramController implements IPictogramController {
       userId: req.user?.id ?? null,
     });
 
-    res.status(201).json({ pictogram: this._toResponse(pictogram) });
+    res.status(201).json({ pictogram: toPictogramResponse(pictogram) });
   }
 
   async findAll(req: Request, res: Response): Promise<void> {
     const pictograms = await this._pictogramService.findAll();
 
     res.status(200).json({
-      pictograms: pictograms.map((p) => this._toResponse(p)),
+      pictograms: pictograms.map((p) => toPictogramResponse(p)),
     });
   }
 
@@ -70,7 +59,7 @@ class PictogramController implements IPictogramController {
       throw new NotFoundError("Pictogram not found");
     }
 
-    res.status(200).json({ pictogram: this._toResponse(pictogram) });
+    res.status(200).json({ pictogram: toPictogramResponse(pictogram) });
   }
 
   async delete(req: Request, res: Response): Promise<void> {

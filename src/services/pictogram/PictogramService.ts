@@ -75,7 +75,7 @@ class PictogramService implements IPictogramService {
       },
     });
 
-    if (owningBoard) {
+    if (owningBoard.length != 0) {
       throw new BadRequestError(
         "You cannot delete a pictogram which represents a board",
       );

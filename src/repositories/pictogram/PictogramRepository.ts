@@ -3,29 +3,11 @@ import type {
   PictogramRepositoryInput,
 } from "@/models/types/Pictogram.type.js";
 import { prisma } from "@/prisma.js";
+import { mapPictogramRow } from "@/repositories/pictogram/PictogramMapper.js";
 
 import type { IPictogramRepository } from "./IPictogramRepository.js";
 
 class PictogramRepository implements IPictogramRepository {
-  private _map(data: {
-    id: number;
-    uuid: string;
-    description: string;
-    storedFileId: number;
-    storedFile: { uuid: string };
-    createdAt: Date;
-    updatedAt: Date;
-  }): PictogramOutput {
-    return {
-      id: data.id,
-      uuid: data.uuid,
-      description: data.description,
-      fileUuid: data.storedFile.uuid,
-      createdAt: data.createdAt,
-      updatedAt: data.updatedAt,
-    };
-  }
-
   async create(data: PictogramRepositoryInput): Promise<PictogramOutput> {
     const result = await prisma.pictogram.create({
       data: {
@@ -35,7 +17,7 @@ class PictogramRepository implements IPictogramRepository {
       include: { storedFile: true },
     });
 
-    return this._map(result);
+    return mapPictogramRow(result);
   }
 
   async findAll(): Promise<PictogramOutput[]> {
@@ -43,7 +25,7 @@ class PictogramRepository implements IPictogramRepository {
       include: { storedFile: true },
     });
 
-    return results.map((r) => this._map(r));
+    return results.map((r) => mapPictogramRow(r));
   }
 
   async findById(id: number): Promise<PictogramOutput | null> {
@@ -52,7 +34,7 @@ class PictogramRepository implements IPictogramRepository {
       include: { storedFile: true },
     });
 
-    return result ? this._map(result) : null;
+    return result ? mapPictogramRow(result) : null;
   }
 
   async findByUuid(uuid: string): Promise<PictogramOutput | null> {
@@ -61,7 +43,7 @@ class PictogramRepository implements IPictogramRepository {
       include: { storedFile: true },
     });
 
-    return result ? this._map(result) : null;
+    return result ? mapPictogramRow(result) : null;
   }
 
   async findManyByUuids(uuids: string[]): Promise<PictogramOutput[]> {
@@ -70,7 +52,7 @@ class PictogramRepository implements IPictogramRepository {
       include: { storedFile: true },
     });
 
-    return results.map((r) => this._map(r));
+    return results.map((r) => mapPictogramRow(r));
   }
 
   async existsById(id: number): Promise<boolean> {

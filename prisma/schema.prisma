@@ -75,6 +75,7 @@ model Pictogram {
   boardPictograms      BoardPictogram[]
   representativeBoards Board[]           @relation("BoardRepresentative")
   phrasePictograms     PhrasePictogram[]
+  terms                Term[]
 }
 
 model SignWriting {
@@ -85,6 +86,21 @@ model SignWriting {
   storedFile   StoredFile @relation(fields: [storedFileId], references: [id])
   createdAt    DateTime   @default(now())
   updatedAt    DateTime   @updatedAt
+  terms        Term[]
+}
+
+model Term {
+  id            Int         @id @default(autoincrement())
+  uuid          String      @unique @default(uuid())
+  description   String
+  pictogramId   Int
+  pictogram     Pictogram   @relation(fields: [pictogramId], references: [id])
+  signWritingId Int
+  signWriting   SignWriting @relation(fields: [signWritingId], references: [id])
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  @@unique([pictogramId, signWritingId])
 }
 
 model Board {

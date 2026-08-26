@@ -3,29 +3,11 @@ import type {
   SignWritingRepositoryInput,
 } from "@/models/types/SignWriting.type.js";
 import { prisma } from "@/prisma.js";
+import { mapSignWritingRow } from "@/repositories/sign-writing/SignWritingMapper.js";
 
 import type { ISignWritingRepository } from "./ISignWritingRepository.js";
 
 class SignWritingRepository implements ISignWritingRepository {
-  private _map(data: {
-    id: number;
-    uuid: string;
-    description: string;
-    storedFileId: number;
-    storedFile: { uuid: string };
-    createdAt: Date;
-    updatedAt: Date;
-  }): SignWritingOutput {
-    return {
-      id: data.id,
-      uuid: data.uuid,
-      description: data.description,
-      fileUuid: data.storedFile.uuid,
-      createdAt: data.createdAt,
-      updatedAt: data.updatedAt,
-    };
-  }
-
   async create(data: SignWritingRepositoryInput): Promise<SignWritingOutput> {
     const result = await prisma.signWriting.create({
       data: {
@@ -35,7 +17,7 @@ class SignWritingRepository implements ISignWritingRepository {
       include: { storedFile: true },
     });
 
-    return this._map(result);
+    return mapSignWritingRow(result);
   }
 
   async findAll(): Promise<SignWritingOutput[]> {
@@ -43,7 +25,7 @@ class SignWritingRepository implements ISignWritingRepository {
       include: { storedFile: true },
     });
 
-    return results.map((r) => this._map(r));
+    return results.map((r) => mapSignWritingRow(r));
   }
 
   async findById(id: number): Promise<SignWritingOutput | null> {
@@ -52,7 +34,7 @@ class SignWritingRepository implements ISignWritingRepository {
       include: { storedFile: true },
     });
 
-    return result ? this._map(result) : null;
+    return result ? mapSignWritingRow(result) : null;
   }
 
   async findByUuid(uuid: string): Promise<SignWritingOutput | null> {
@@ -61,7 +43,7 @@ class SignWritingRepository implements ISignWritingRepository {
       include: { storedFile: true },
     });
 
-    return result ? this._map(result) : null;
+    return result ? mapSignWritingRow(result) : null;
   }
 
   async findManyByUuids(uuids: string[]): Promise<SignWritingOutput[]> {
@@ -70,7 +52,7 @@ class SignWritingRepository implements ISignWritingRepository {
       include: { storedFile: true },
     });
 
-    return results.map((r) => this._map(r));
+    return results.map((r) => mapSignWritingRow(r));
   }
 
   async existsById(id: number): Promise<boolean> {

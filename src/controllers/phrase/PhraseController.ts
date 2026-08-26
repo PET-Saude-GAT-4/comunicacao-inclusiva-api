@@ -1,11 +1,11 @@
 import type { Request, Response } from "express";
 
+import { toPictogramResponse } from "@/controllers/pictogram/PictogramResponse.js";
 import { BadRequestError } from "@/errors/BadRequestError.js";
 import { NotFoundError } from "@/errors/NotFoundError.js";
 import type { PhraseOutput } from "@/models/types/Phrase.type.js";
 import type { IPhraseService } from "@/services/phrase/IPhraseService.js";
 import PhraseService from "@/services/phrase/PhraseService.js";
-import { buildFileUrl } from "@/utils/file.js";
 
 import type { IPhraseController } from "./IPhraseController.js";
 
@@ -27,11 +27,7 @@ class PhraseController implements IPhraseController {
       authorUuid: phrase.authorUuid,
       pictograms: phrase.pictograms.map((pictogram, index) => ({
         order: index + 1,
-        uuid: pictogram.uuid,
-        description: pictogram.description,
-        fileUrl: buildFileUrl(pictogram.fileUuid),
-        createdAt: pictogram.createdAt,
-        updatedAt: pictogram.updatedAt,
+        ...toPictogramResponse(pictogram),
       })),
       publishedAt: phrase.publishedAt,
       createdAt: phrase.createdAt,
