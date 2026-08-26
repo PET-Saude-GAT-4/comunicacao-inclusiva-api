@@ -6,6 +6,7 @@ import type {
 import type { BoardPictogramRepositoryInput } from "@/models/types/BoardPictogram.type.js";
 import type { PictogramOutput } from "@/models/types/Pictogram.type.js";
 import { prisma } from "@/prisma.js";
+import { mapPictogramRow } from "@/repositories/pictogram/PictogramMapper.js";
 import { isEmpty } from "@/utils/object.js";
 
 import type { IBoardRepository } from "./IBoardRepository.js";
@@ -17,26 +18,6 @@ const include = {
 } as const;
 
 class BoardRepository implements IBoardRepository {
-  private _mapPictogram(data: {
-    pictogram: {
-      id: number;
-      uuid: string;
-      description: string;
-      storedFile: { uuid: string };
-      createdAt: Date;
-      updatedAt: Date;
-    };
-  }): PictogramOutput {
-    return {
-      id: data.pictogram.id,
-      uuid: data.pictogram.uuid,
-      description: data.pictogram.description,
-      fileUuid: data.pictogram.storedFile.uuid,
-      createdAt: data.pictogram.createdAt,
-      updatedAt: data.pictogram.updatedAt,
-    };
-  }
-
   private _map(data: {
     id: number;
     uuid: string;
@@ -60,9 +41,7 @@ class BoardRepository implements IBoardRepository {
       uuid: data.uuid,
       title: data.title,
       authorUuid: data.author?.uuid ?? null,
-      representativePictogram: this._mapPictogram({
-        pictogram: data.representative,
-      }),
+      representativePictogram: mapPictogramRow(data.representative),
       pictogramCount: data._count.pictograms,
       publishedAt: data.publishedAt,
       createdAt: data.createdAt,
@@ -275,7 +254,7 @@ class BoardRepository implements IBoardRepository {
     while (currentId !== null) {
       const node = map.get(currentId);
       if (!node) break;
-      ordered.push(this._mapPictogram(node));
+      ordered.push(mapPictogramRow(node.pictogram));
       currentId = node.next;
     }
     return ordered;

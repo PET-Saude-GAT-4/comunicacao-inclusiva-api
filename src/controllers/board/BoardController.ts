@@ -1,12 +1,11 @@
 import type { Request, Response } from "express";
 
+import { toPictogramResponse } from "@/controllers/pictogram/PictogramResponse.js";
 import { BadRequestError } from "@/errors/BadRequestError.js";
 import { NotFoundError } from "@/errors/NotFoundError.js";
 import type { BoardOutput } from "@/models/types/Board.type.js";
-import type { PictogramOutput } from "@/models/types/Pictogram.type.js";
 import BoardService from "@/services/board/BoardService.js";
 import type { IBoardService } from "@/services/board/IBoardService.js";
-import { buildFileUrl } from "@/utils/file.js";
 
 import type { IBoardController } from "./IBoardController.js";
 
@@ -26,27 +25,13 @@ class BoardController implements IBoardController {
       uuid: board.uuid,
       title: board.title,
       authorUuid: board.authorUuid,
-      representativePictogram: {
-        uuid: board.representativePictogram.uuid,
-        description: board.representativePictogram.description,
-        fileUrl: buildFileUrl(board.representativePictogram.fileUuid),
-        createdAt: board.representativePictogram.createdAt,
-        updatedAt: board.representativePictogram.updatedAt,
-      },
+      representativePictogram: toPictogramResponse(
+        board.representativePictogram,
+      ),
       pictogramCount: board.pictogramCount,
       publishedAt: board.publishedAt,
       createdAt: board.createdAt,
       updatedAt: board.updatedAt,
-    };
-  }
-
-  private _toPictogramResponse(pictogram: PictogramOutput) {
-    return {
-      uuid: pictogram.uuid,
-      description: pictogram.description,
-      fileUrl: buildFileUrl(pictogram.fileUuid),
-      createdAt: pictogram.createdAt,
-      updatedAt: pictogram.updatedAt,
     };
   }
 
@@ -127,7 +112,7 @@ class BoardController implements IBoardController {
 
     res.status(200).json({
       pictograms: pictograms.map((p, i) => ({
-        ...this._toPictogramResponse(p),
+        ...toPictogramResponse(p),
         order: i + 1,
       })),
     });
@@ -237,7 +222,7 @@ class BoardController implements IBoardController {
 
     res.status(200).json({
       pictograms: pictograms.map((p, i) => ({
-        ...this._toPictogramResponse(p),
+        ...toPictogramResponse(p),
         order: i + 1,
       })),
     });

@@ -4,8 +4,8 @@ import type {
   PhraseRepositoryInput,
   PhraseRepositoryUpdateInput,
 } from "@/models/types/Phrase.type.js";
-import type { PictogramOutput } from "@/models/types/Pictogram.type.js";
 import { prisma } from "@/prisma.js";
+import { mapPictogramRow } from "@/repositories/pictogram/PictogramMapper.js";
 import { isEmpty } from "@/utils/object.js";
 
 import type { IPhraseRepository } from "./IPhraseRepository.js";
@@ -19,26 +19,6 @@ const include = {
 } as const;
 
 class PhraseRepository implements IPhraseRepository {
-  private _mapPictogram(data: {
-    pictogram: {
-      id: number;
-      uuid: string;
-      description: string;
-      storedFile: { uuid: string };
-      createdAt: Date;
-      updatedAt: Date;
-    };
-  }): PictogramOutput {
-    return {
-      id: data.pictogram.id,
-      uuid: data.pictogram.uuid,
-      description: data.pictogram.description,
-      fileUuid: data.pictogram.storedFile.uuid,
-      createdAt: data.pictogram.createdAt,
-      updatedAt: data.pictogram.updatedAt,
-    };
-  }
-
   private _map(data: {
     id: number;
     uuid: string;
@@ -63,7 +43,7 @@ class PhraseRepository implements IPhraseRepository {
       uuid: data.uuid,
       description: data.description,
       authorUuid: data.author?.uuid ?? null,
-      pictograms: data.pictograms.map((p) => this._mapPictogram(p)),
+      pictograms: data.pictograms.map((p) => mapPictogramRow(p.pictogram)),
       publishedAt: data.publishedAt,
       createdAt: data.createdAt,
       updatedAt: data.updatedAt,
