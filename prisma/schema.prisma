@@ -61,6 +61,7 @@ model StoredFile {
   createdAt    DateTime   @default(now())
   updatedAt    DateTime   @updatedAt
   pictogram    Pictogram?
+  signWriting  SignWriting?
 }
 
 model Pictogram {
@@ -74,6 +75,16 @@ model Pictogram {
   boardPictograms      BoardPictogram[]
   representativeBoards Board[]           @relation("BoardRepresentative")
   phrasePictograms     PhrasePictogram[]
+}
+
+model SignWriting {
+  id           Int        @id @default(autoincrement())
+  uuid         String     @unique @default(uuid())
+  description  String
+  storedFileId Int        @unique
+  storedFile   StoredFile @relation(fields: [storedFileId], references: [id])
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
 }
 
 model Board {

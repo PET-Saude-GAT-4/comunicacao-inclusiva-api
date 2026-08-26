@@ -9,6 +9,7 @@ import PictogramRouter from "./PictogramRouter.js";
 import ProfessionRouter from "./ProfessionRouter.js";
 import PublicRouter from "./public/index.js";
 import RoleRouter from "./RoleRouter.js";
+import SignWritingRouter from "./SignWritingRouter.js";
 import SpecialityRouter from "./SpecialityRouter.js";
 import UserRouter from "./UserRouter.js";
 
@@ -23,6 +24,7 @@ router.use("/pictograms", PictogramRouter);
 router.use("/professions", ProfessionRouter);
 router.use("/public", PublicRouter);
 router.use("/roles", RoleRouter);
+router.use("/sign-writings", SignWritingRouter);
 router.use("/specialities", SpecialityRouter);
 router.use("/users", UserRouter);
 
