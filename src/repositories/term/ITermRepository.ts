@@ -9,7 +9,11 @@ interface ITermRepository extends IRepository<TermOutput> {
 
   findByUuid(uuid: string): Promise<TermOutput | null>;
 
+  findManyByUuids(uuids: string[]): Promise<TermOutput[]>;
+
   existsPair(pictogramId: number, signWritingId: number): Promise<boolean>;
+
+  isInUse(termId: number): Promise<boolean>;
 
   deleteByUuid(uuid: string): Promise<void>;
 }

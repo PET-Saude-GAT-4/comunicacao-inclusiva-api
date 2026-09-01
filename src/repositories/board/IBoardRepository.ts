@@ -2,8 +2,10 @@ import type {
   BoardOutput,
   BoardRepositoryInput,
 } from "@/models/types/Board.type.js";
-import type { BoardPictogramRepositoryInput } from "@/models/types/BoardPictogram.type.js";
-import type { PictogramOutput } from "@/models/types/Pictogram.type.js";
+import type {
+  BoardItemOutput,
+  BoardItemRepositoryInput,
+} from "@/models/types/BoardItem.type.js";
 import type { IRepository } from "@/repositories/IRepository.js";
 
 interface IBoardRepository extends IRepository<BoardOutput> {
@@ -24,19 +26,21 @@ interface IBoardRepository extends IRepository<BoardOutput> {
 
   existsByUuid(uuid: string): Promise<boolean>;
 
-  addPictogram(data: BoardPictogramRepositoryInput): Promise<void>;
+  addItem(data: BoardItemRepositoryInput): Promise<void>;
 
-  findPictogramsByBoardId(boardId: number): Promise<PictogramOutput[]>;
+  findItemsByBoardId(boardId: number): Promise<BoardItemOutput[]>;
 
   findNextBoardsByBoardId(boardId: number): Promise<BoardOutput[]>;
 
-  existsBoardPictogram(boardId: number, pictogramId: number): Promise<boolean>;
+  existsBoardItem(boardId: number, termId: number): Promise<boolean>;
 
-  deleteBoardPictogram(boardId: number, pictogramId: number): Promise<void>;
+  findItemByUuid(boardId: number, uuid: string): Promise<{ id: number } | null>;
 
-  reorderPictogram(
+  deleteBoardItem(boardId: number, boardItemId: number): Promise<void>;
+
+  reorderItem(
     boardId: number,
-    pictogramId: number,
+    boardItemId: number,
     next: number | null,
   ): Promise<void>;
 }

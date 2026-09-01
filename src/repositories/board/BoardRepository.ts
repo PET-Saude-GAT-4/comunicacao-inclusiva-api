@@ -3,10 +3,13 @@ import type {
   BoardOutput,
   BoardRepositoryInput,
 } from "@/models/types/Board.type.js";
-import type { BoardPictogramRepositoryInput } from "@/models/types/BoardPictogram.type.js";
-import type { PictogramOutput } from "@/models/types/Pictogram.type.js";
+import type {
+  BoardItemOutput,
+  BoardItemRepositoryInput,
+} from "@/models/types/BoardItem.type.js";
 import { prisma } from "@/prisma.js";
 import { mapPictogramRow } from "@/repositories/pictogram/PictogramMapper.js";
+import { mapTermRow, termInclude } from "@/repositories/term/TermMapper.js";
 import { isEmpty } from "@/utils/object.js";
 
 import type { IBoardRepository } from "./IBoardRepository.js";
@@ -14,7 +17,7 @@ import type { IBoardRepository } from "./IBoardRepository.js";
 const include = {
   representative: { include: { storedFile: true } },
   author: { select: { uuid: true } },
-  _count: { select: { pictograms: true } },
+  _count: { select: { terms: true } },
 } as const;
 
 class BoardRepository implements IBoardRepository {
@@ -34,7 +37,7 @@ class BoardRepository implements IBoardRepository {
       createdAt: Date;
       updatedAt: Date;
     };
-    _count: { pictograms: number };
+    _count: { terms: number };
   }): BoardOutput {
     return {
       id: data.id,
@@ -42,7 +45,7 @@ class BoardRepository implements IBoardRepository {
       title: data.title,
       authorUuid: data.author?.uuid ?? null,
       representativePictogram: mapPictogramRow(data.representative),
-      pictogramCount: data._count.pictograms,
+      itemCount: data._count.terms,
       publishedAt: data.publishedAt,
       createdAt: data.createdAt,
       updatedAt: data.updatedAt,
@@ -143,7 +146,7 @@ class BoardRepository implements IBoardRepository {
     await prisma.board.deleteMany({ where: { id } });
   }
 
-  async addPictogram(data: BoardPictogramRepositoryInput): Promise<void> {
+  async addItem(data: BoardItemRepositoryInput): Promise<void> {
     await prisma.$transaction(async (tx) => {
       const board = await tx.board.findUniqueOrThrow({
         where: { id: data.boardId },
@@ -152,25 +155,19 @@ class BoardRepository implements IBoardRepository {
 
       const isHead = data.next === board.first;
 
-      let predecessorPictogramId: number | null = null;
+      // With `next` null this finds the tail, which is the predecessor of an append.
+      let predecessorId: number | null = null;
       if (!isHead) {
-        if (data.next === null) {
-          const tail = await tx.boardPictogram.findFirst({
-            where: { boardId: data.boardId, next: null },
-          });
-          predecessorPictogramId = tail?.pictogramId ?? null;
-        } else {
-          const predecessor = await tx.boardPictogram.findFirst({
-            where: { boardId: data.boardId, next: data.next },
-          });
-          predecessorPictogramId = predecessor?.pictogramId ?? null;
-        }
+        const predecessor = await tx.boardItem.findFirst({
+          where: { boardId: data.boardId, next: data.next },
+        });
+        predecessorId = predecessor?.id ?? null;
       }
 
-      await tx.boardPictogram.create({
+      const created = await tx.boardItem.create({
         data: {
           boardId: data.boardId,
-          pictogramId: data.pictogramId,
+          termId: data.termId,
           next: data.next,
         },
       });
@@ -178,29 +175,21 @@ class BoardRepository implements IBoardRepository {
       if (isHead) {
         await tx.board.update({
           where: { id: data.boardId },
-          data: { first: data.pictogramId },
+          data: { first: created.id },
         });
-      } else if (predecessorPictogramId !== null) {
-        await tx.boardPictogram.update({
-          where: {
-            boardId_pictogramId: {
-              boardId: data.boardId,
-              pictogramId: predecessorPictogramId,
-            },
-          },
-          data: { next: data.pictogramId },
+      } else if (predecessorId !== null) {
+        await tx.boardItem.update({
+          where: { id: predecessorId },
+          data: { next: created.id },
         });
       }
     });
   }
 
-  async deleteBoardPictogram(
-    boardId: number,
-    pictogramId: number,
-  ): Promise<void> {
+  async deleteBoardItem(boardId: number, boardItemId: number): Promise<void> {
     await prisma.$transaction(async (tx) => {
-      const node = await tx.boardPictogram.findUniqueOrThrow({
-        where: { boardId_pictogramId: { boardId, pictogramId } },
+      const node = await tx.boardItem.findUniqueOrThrow({
+        where: { id: boardItemId },
         select: { next: true },
       });
 
@@ -209,52 +198,47 @@ class BoardRepository implements IBoardRepository {
         select: { first: true },
       });
 
-      if (board.first === pictogramId) {
+      if (board.first === boardItemId) {
         await tx.board.update({
           where: { id: boardId },
           data: { first: node.next },
         });
       } else {
-        const predecessor = await tx.boardPictogram.findFirst({
-          where: { boardId, next: pictogramId },
+        const predecessor = await tx.boardItem.findFirst({
+          where: { boardId, next: boardItemId },
         });
         if (predecessor) {
-          await tx.boardPictogram.update({
-            where: {
-              boardId_pictogramId: {
-                boardId,
-                pictogramId: predecessor.pictogramId,
-              },
-            },
+          await tx.boardItem.update({
+            where: { id: predecessor.id },
             data: { next: node.next },
           });
         }
       }
 
-      await tx.boardPictogram.delete({
-        where: { boardId_pictogramId: { boardId, pictogramId } },
-      });
+      await tx.boardItem.delete({ where: { id: boardItemId } });
     });
   }
 
-  async findPictogramsByBoardId(boardId: number): Promise<PictogramOutput[]> {
+  async findItemsByBoardId(boardId: number): Promise<BoardItemOutput[]> {
     const board = await prisma.board.findUniqueOrThrow({
       where: { id: boardId },
       select: {
         first: true,
-        pictograms: {
-          include: { pictogram: { include: { storedFile: true } } },
-        },
+        terms: { include: { item: { include: termInclude } } },
       },
     });
 
-    const map = new Map(board.pictograms.map((bp) => [bp.pictogramId, bp]));
-    const ordered: PictogramOutput[] = [];
+    const map = new Map(board.terms.map((bi) => [bi.id, bi]));
+    const ordered: BoardItemOutput[] = [];
     let currentId = board.first;
     while (currentId !== null) {
       const node = map.get(currentId);
       if (!node) break;
-      ordered.push(mapPictogramRow(node.pictogram));
+      ordered.push({
+        id: node.id,
+        uuid: node.uuid,
+        term: mapTermRow(node.item),
+      });
       currentId = node.next;
     }
     return ordered;
@@ -273,24 +257,31 @@ class BoardRepository implements IBoardRepository {
     return results.map((r) => this._map(r.responseBoard));
   }
 
-  async existsBoardPictogram(
-    boardId: number,
-    pictogramId: number,
-  ): Promise<boolean> {
-    const count = await prisma.boardPictogram.count({
-      where: { boardId, pictogramId },
+  async existsBoardItem(boardId: number, termId: number): Promise<boolean> {
+    const count = await prisma.boardItem.count({
+      where: { boardId, termId },
     });
     return count > 0;
   }
 
-  async reorderPictogram(
+  async findItemByUuid(
     boardId: number,
-    pictogramId: number,
+    uuid: string,
+  ): Promise<{ id: number } | null> {
+    return prisma.boardItem.findFirst({
+      where: { boardId, uuid },
+      select: { id: true },
+    });
+  }
+
+  async reorderItem(
+    boardId: number,
+    boardItemId: number,
     next: number | null,
   ): Promise<void> {
     await prisma.$transaction(async (tx) => {
-      const node = await tx.boardPictogram.findUniqueOrThrow({
-        where: { boardId_pictogramId: { boardId, pictogramId } },
+      const node = await tx.boardItem.findUniqueOrThrow({
+        where: { id: boardItemId },
         select: { next: true },
       });
 
@@ -302,23 +293,18 @@ class BoardRepository implements IBoardRepository {
       });
 
       // Detach from current position
-      if (board.first === pictogramId) {
+      if (board.first === boardItemId) {
         await tx.board.update({
           where: { id: boardId },
           data: { first: node.next },
         });
       } else {
-        const currentPredecessor = await tx.boardPictogram.findFirst({
-          where: { boardId, next: pictogramId },
+        const currentPredecessor = await tx.boardItem.findFirst({
+          where: { boardId, next: boardItemId },
         });
         if (currentPredecessor) {
-          await tx.boardPictogram.update({
-            where: {
-              boardId_pictogramId: {
-                boardId,
-                pictogramId: currentPredecessor.pictogramId,
-              },
-            },
+          await tx.boardItem.update({
+            where: { id: currentPredecessor.id },
             data: { next: node.next },
           });
         }
@@ -333,40 +319,28 @@ class BoardRepository implements IBoardRepository {
       // Reattach at new position
       const isNewHead = next === updatedBoard.first;
 
-      let newPredecessorPictogramId: number | null = null;
+      let newPredecessorId: number | null = null;
       if (!isNewHead) {
-        if (next === null) {
-          const tail = await tx.boardPictogram.findFirst({
-            where: { boardId, next: null, pictogramId: { not: pictogramId } },
-          });
-          newPredecessorPictogramId = tail?.pictogramId ?? null;
-        } else {
-          const predecessor = await tx.boardPictogram.findFirst({
-            where: { boardId, next, pictogramId: { not: pictogramId } },
-          });
-          newPredecessorPictogramId = predecessor?.pictogramId ?? null;
-        }
+        const predecessor = await tx.boardItem.findFirst({
+          where: { boardId, next, id: { not: boardItemId } },
+        });
+        newPredecessorId = predecessor?.id ?? null;
       }
 
-      await tx.boardPictogram.update({
-        where: { boardId_pictogramId: { boardId, pictogramId } },
+      await tx.boardItem.update({
+        where: { id: boardItemId },
         data: { next },
       });
 
       if (isNewHead) {
         await tx.board.update({
           where: { id: boardId },
-          data: { first: pictogramId },
+          data: { first: boardItemId },
         });
-      } else if (newPredecessorPictogramId !== null) {
-        await tx.boardPictogram.update({
-          where: {
-            boardId_pictogramId: {
-              boardId,
-              pictogramId: newPredecessorPictogramId,
-            },
-          },
-          data: { next: pictogramId },
+      } else if (newPredecessorId !== null) {
+        await tx.boardItem.update({
+          where: { id: newPredecessorId },
+          data: { next: boardItemId },
         });
       }
     });

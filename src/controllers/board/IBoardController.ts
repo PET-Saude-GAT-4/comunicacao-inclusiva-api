@@ -10,7 +10,7 @@ interface IBoardController extends IController<BoardOutput> {
 
   findPublishedByUuid(req: Request, res: Response): Promise<void>;
 
-  findPictogramsByPublishedBoard(req: Request, res: Response): Promise<void>;
+  findItemsByPublishedBoard(req: Request, res: Response): Promise<void>;
 
   findNextBoardsByPublishedBoard(req: Request, res: Response): Promise<void>;
 
@@ -18,13 +18,13 @@ interface IBoardController extends IController<BoardOutput> {
 
   unpublish(req: Request, res: Response): Promise<void>;
 
-  addPictogram(req: Request, res: Response): Promise<void>;
+  addItem(req: Request, res: Response): Promise<void>;
 
-  deleteBoardPictogram(req: Request, res: Response): Promise<void>;
+  deleteBoardItem(req: Request, res: Response): Promise<void>;
 
-  findPictograms(req: Request, res: Response): Promise<void>;
+  findItems(req: Request, res: Response): Promise<void>;
 
-  reorderPictogram(req: Request, res: Response): Promise<void>;
+  reorderItem(req: Request, res: Response): Promise<void>;
 }
 
 export type { IBoardController };

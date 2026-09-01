@@ -53,27 +53,27 @@ router.delete(
 );
 
 router.get(
-  "/:uuid/pictograms",
+  "/:uuid/terms",
   authMiddleware.auth(["super_admin", "admin"]),
-  boardController.findPictograms.bind(boardController),
+  boardController.findItems.bind(boardController),
 );
 
 router.post(
-  "/:uuid/pictograms",
+  "/:uuid/terms",
   authMiddleware.auth(["super_admin", "admin"]),
-  boardController.addPictogram.bind(boardController),
+  boardController.addItem.bind(boardController),
 );
 
 router.delete(
-  "/:uuid/pictograms/:pictogramUuid",
+  "/:uuid/terms/:boardItemUuid",
   authMiddleware.auth(["super_admin", "admin"]),
-  boardController.deleteBoardPictogram.bind(boardController),
+  boardController.deleteBoardItem.bind(boardController),
 );
 
 router.patch(
-  "/:uuid/pictograms/:pictogramUuid/order",
+  "/:uuid/terms/:boardItemUuid/order",
   authMiddleware.auth(["super_admin", "admin"]),
-  boardController.reorderPictogram.bind(boardController),
+  boardController.reorderItem.bind(boardController),
 );
 
 export default router;
