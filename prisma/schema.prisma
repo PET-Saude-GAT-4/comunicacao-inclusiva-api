@@ -73,7 +73,6 @@ model Pictogram {
   createdAt            DateTime         @default(now())
   updatedAt            DateTime         @updatedAt
   representativeBoards Board[]           @relation("BoardRepresentative")
-  phrasePictograms     PhrasePictogram[]
   terms                Term[]
 }
 
@@ -99,6 +98,7 @@ model Term {
   createdAt     DateTime    @default(now())
   updatedAt     DateTime    @updatedAt
   boardItems    BoardItem[]
+  phraseItems   PhraseItem[]
 
   @@unique([pictogramId, signWritingId])
 }
@@ -181,16 +181,17 @@ model Phrase {
   publishedAt DateTime?
   createdAt   DateTime          @default(now())
   updatedAt   DateTime          @updatedAt
-  pictograms  PhrasePictogram[]
+  terms       PhraseItem[]
 }
 
-model PhrasePictogram {
-  id          Int       @id @default(autoincrement())
-  phraseId    Int
-  pictogramId Int
-  order       Int
-  phrase      Phrase    @relation(fields: [phraseId], references: [id], onDelete: Cascade)
-  pictogram   Pictogram @relation(fields: [pictogramId], references: [id])
+model PhraseItem {
+  id       Int    @id @default(autoincrement())
+  uuid     String @unique @default(uuid())
+  phraseId Int
+  phrase   Phrase @relation(fields: [phraseId], references: [id], onDelete: Cascade)
+  termId   Int
+  item     Term   @relation(fields: [termId], references: [id])
+  order    Int
 
   @@unique([phraseId, order])
 }

@@ -7,25 +7,24 @@ import type {
 } from "@/models/types/Phrase.type.js";
 import type { IPhraseRepository } from "@/repositories/phrase/IPhraseRepository.js";
 import PhraseRepository from "@/repositories/phrase/PhraseRepository.js";
-import type { IPictogramRepository } from "@/repositories/pictogram/IPictogramRepository.js";
-import PictogramRepository from "@/repositories/pictogram/PictogramRepository.js";
+import type { ITermRepository } from "@/repositories/term/ITermRepository.js";
+import TermRepository from "@/repositories/term/TermRepository.js";
 import type { AuthenticatedUser } from "@/types/user.js";
 
 import type { IPhraseService } from "./IPhraseService.js";
 
 type Props = {
   phraseRepository?: IPhraseRepository;
-  pictogramRepository?: IPictogramRepository;
+  termRepository?: ITermRepository;
 };
 
 class PhraseService implements IPhraseService {
   private _phraseRepository: IPhraseRepository;
-  private _pictogramRepository: IPictogramRepository;
+  private _termRepository: ITermRepository;
 
   constructor(props?: Props) {
     this._phraseRepository = props?.phraseRepository ?? new PhraseRepository();
-    this._pictogramRepository =
-      props?.pictogramRepository ?? new PictogramRepository();
+    this._termRepository = props?.termRepository ?? new TermRepository();
   }
 
   private _assertCanManage(
@@ -44,17 +43,17 @@ class PhraseService implements IPhraseService {
     throw new ForbiddenError("You are not allowed to access this phrase.");
   }
 
-  private async _resolvePictogramIds(uuids: string[]): Promise<number[]> {
-    const found = await this._pictogramRepository.findManyByUuids([
+  private async _resolveTermIds(uuids: string[]): Promise<number[]> {
+    const found = await this._termRepository.findManyByUuids([
       ...new Set(uuids),
     ]);
 
-    const idByUuid = new Map(found.map((p) => [p.uuid, p.id]));
+    const idByUuid = new Map(found.map((t) => [t.uuid, t.id]));
 
     return uuids.map((uuid) => {
       const id = idByUuid.get(uuid);
       if (id === undefined) {
-        throw new NotFoundError("Pictogram not found");
+        throw new NotFoundError("Term not found");
       }
       return id;
     });
@@ -74,12 +73,12 @@ class PhraseService implements IPhraseService {
     data: PhraseInput,
     user: AuthenticatedUser,
   ): Promise<PhraseOutput> {
-    const pictogramIds = await this._resolvePictogramIds(data.pictogramUuids);
+    const termIds = await this._resolveTermIds(data.termUuids);
 
     return this._phraseRepository.create({
       description: data.description,
       authorId: user.id,
-      pictogramIds,
+      termIds,
     });
   }
 
@@ -92,14 +91,14 @@ class PhraseService implements IPhraseService {
 
     this._assertCanManage(phrase, user);
 
-    let pictogramIds: number[] | undefined;
-    if (data.pictogramUuids !== undefined) {
-      pictogramIds = await this._resolvePictogramIds(data.pictogramUuids);
+    let termIds: number[] | undefined;
+    if (data.termUuids !== undefined) {
+      termIds = await this._resolveTermIds(data.termUuids);
     }
 
     return this._phraseRepository.update(phrase.id, {
       description: data.description,
-      pictogramIds,
+      termIds,
     });
   }
 

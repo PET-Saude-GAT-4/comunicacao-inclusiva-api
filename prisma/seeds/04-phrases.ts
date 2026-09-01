@@ -9,6 +9,16 @@ async function getPictogramByFileUuid(prisma: PrismaClient, fileUuid: string) {
   });
 }
 
+async function getTermByPictogramFileUuid(
+  prisma: PrismaClient,
+  fileUuid: string,
+) {
+  const pictogram = await getPictogramByFileUuid(prisma, fileUuid);
+  return prisma.term.findFirstOrThrow({
+    where: { pictogramId: pictogram.id },
+  });
+}
+
 type PhraseDef = {
   description: string;
   pictogramFileUuids: string[];
@@ -63,9 +73,9 @@ const PHRASE_DEFS: PhraseDef[] = [
 
 export async function seedPhrases(prisma: PrismaClient): Promise<void> {
   for (const def of PHRASE_DEFS) {
-    const pictograms = await Promise.all(
+    const terms = await Promise.all(
       def.pictogramFileUuids.map((uuid) =>
-        getPictogramByFileUuid(prisma, uuid),
+        getTermByPictogramFileUuid(prisma, uuid),
       ),
     );
 
@@ -89,12 +99,12 @@ export async function seedPhrases(prisma: PrismaClient): Promise<void> {
 
     // The sequence is rebuilt from scratch so re-running the seed converges on
     // the definition above.
-    await prisma.phrasePictogram.deleteMany({ where: { phraseId: phrase.id } });
+    await prisma.phraseItem.deleteMany({ where: { phraseId: phrase.id } });
 
-    await prisma.phrasePictogram.createMany({
-      data: pictograms.map((pictogram, index) => ({
+    await prisma.phraseItem.createMany({
+      data: terms.map((term, index) => ({
         phraseId: phrase.id,
-        pictogramId: pictogram.id,
+        termId: term.id,
         order: index + 1,
       })),
     });

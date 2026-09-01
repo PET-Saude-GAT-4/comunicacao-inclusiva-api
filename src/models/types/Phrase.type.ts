@@ -1,24 +1,24 @@
-import type { PictogramOutput } from "@/models/types/Pictogram.type.js";
+import type { PhraseItemOutput } from "@/models/types/PhraseItem.type.js";
 
 export type PhraseInput = {
   description: string;
-  pictogramUuids: string[];
+  termUuids: string[];
 };
 
 export type PhraseUpdateInput = {
   description?: string | undefined;
-  pictogramUuids?: string[] | undefined;
+  termUuids?: string[] | undefined;
 };
 
 export type PhraseRepositoryInput = {
   description: string;
   authorId: number | null;
-  pictogramIds: number[];
+  termIds: number[];
 };
 
 export type PhraseRepositoryUpdateInput = {
   description: string | undefined;
-  pictogramIds: number[] | undefined;
+  termIds: number[] | undefined;
 };
 
 export type PhraseOutput = {
@@ -26,7 +26,7 @@ export type PhraseOutput = {
   uuid: string;
   description: string;
   authorUuid: string | null;
-  pictograms: PictogramOutput[];
+  terms: PhraseItemOutput[];
   publishedAt: Date | null;
   createdAt: Date;
   updatedAt: Date;
