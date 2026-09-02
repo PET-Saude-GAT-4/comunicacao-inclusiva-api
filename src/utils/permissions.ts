@@ -11,19 +11,17 @@ export const ROLE_HIERARCHY: Record<string, number> = {
  *
  * Regras:
  * - Super admin tem controle total.
- * - Demais cargos só podem gerenciar cargos com nível estritamente menor que o seu.
+ * - Admin pode criar, atualizar e deletar admin e viewer, mas não pode gerenciar ou atribuir super_admin.
+ * - Viewer não pode gerenciar ninguém.
  */
 export function canManageRole(actorRole: string, targetRole: string): boolean {
-  const actorLevel = ROLE_HIERARCHY[actorRole] ?? 0;
-  const targetLevel = ROLE_HIERARCHY[targetRole] ?? 0;
-
-  if (actorLevel === 0 || targetLevel === 0) {
-    return false;
-  }
-
   if (actorRole === RoleEnum.SUPER_ADMIN) {
     return true;
   }
 
-  return actorLevel > targetLevel;
+  if (actorRole === RoleEnum.ADMIN) {
+    return targetRole !== RoleEnum.SUPER_ADMIN;
+  }
+
+  return false;
 }

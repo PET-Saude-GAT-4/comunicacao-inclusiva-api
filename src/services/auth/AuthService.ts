@@ -3,6 +3,7 @@ import jwt from "jsonwebtoken";
 
 import { env } from "@/config/env.js";
 import { ConflictError } from "@/errors/ConflictError.js";
+import { ForbiddenError } from "@/errors/ForbiddenError.js";
 import { NotFoundError } from "@/errors/NotFoundError.js";
 import { UnauthorizedError } from "@/errors/UnauthorizedError.js";
 import type { UserOutput } from "@/models/types/User.type.js";
@@ -10,6 +11,7 @@ import type { IRoleRepository } from "@/repositories/role/IRoleRepository.js";
 import RoleRepository from "@/repositories/role/RoleRepository.js";
 import type { IUserRepository } from "@/repositories/user/IUserRepository.js";
 import UserRepository from "@/repositories/user/UserRepository.js";
+import { canManageRole } from "@/utils/permissions.js";
 
 import type { IAuthService } from "./IAuthService.js";
 
@@ -65,6 +67,7 @@ class AuthService implements IAuthService {
     email: string,
     password: string,
     role: string,
+    currentUser?: { role: string },
   ): Promise<UserOutput> {
     const exists = await this._userRepository.existsByEmail(email);
 
@@ -76,6 +79,12 @@ class AuthService implements IAuthService {
 
     if (!roleRecord) {
       throw new NotFoundError("Role not found.");
+    }
+
+    if (currentUser && !canManageRole(currentUser.role, roleRecord.name)) {
+      throw new ForbiddenError(
+        "You do not have permission to assign this role.",
+      );
     }
 
     const passwordHash = await bcrypt.hash(password, 12);

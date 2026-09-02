@@ -16,8 +16,10 @@ router.post("/login", (req: Request, res: Response) =>
   authController.login(req, res),
 );
 
-router.post("/register", (req: Request, res: Response) =>
-  authController.register(req, res),
+router.post(
+  "/register",
+  authMiddleware.auth(["super_admin", "admin"]),
+  (req: Request, res: Response) => authController.register(req, res),
 );
 
 // Protected routes

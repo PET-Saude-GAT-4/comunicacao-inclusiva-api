@@ -51,7 +51,12 @@ class AuthController implements IAuthController {
       throw new BadRequestError("Email, password and role are required");
     }
 
-    const user = await this._authService.register(email, password, role);
+    const user = await this._authService.register(
+      email,
+      password,
+      role,
+      req.user ? { role: req.user.role } : undefined,
+    );
     res.status(201).json({ user });
   }
 }

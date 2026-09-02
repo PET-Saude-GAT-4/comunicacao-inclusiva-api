@@ -2,12 +2,14 @@ import bcrypt from "bcryptjs";
 
 import { BadRequestError } from "@/errors/BadRequestError.js";
 import { ConflictError } from "@/errors/ConflictError.js";
+import { ForbiddenError } from "@/errors/ForbiddenError.js";
 import { NotFoundError } from "@/errors/NotFoundError.js";
 import type { UserOutput, UserUpdateInput } from "@/models/types/User.type.js";
 import type { IRoleRepository } from "@/repositories/role/IRoleRepository.js";
 import RoleRepository from "@/repositories/role/RoleRepository.js";
 import type { IUserRepository } from "@/repositories/user/IUserRepository.js";
 import UserRepository from "@/repositories/user/UserRepository.js";
+import { canManageRole } from "@/utils/permissions.js";
 
 import type { IUserService } from "./IUserService.js";
 
@@ -33,13 +35,20 @@ class UserService implements IUserService {
     email: string,
     password: string,
     roleId: number,
+    currentUser?: { role: string },
   ): Promise<UserOutput> {
     const existsByUserEmail = await this._userRepository.existsByEmail(email);
 
-    const existsByRoleId = await this._roleRepository.existsById(roleId);
+    const targetRole = await this._roleRepository.findById(roleId);
 
-    if (!existsByRoleId) {
+    if (!targetRole) {
       throw new NotFoundError("Role not found");
+    }
+
+    if (currentUser && !canManageRole(currentUser.role, targetRole.name)) {
+      throw new ForbiddenError(
+        "You do not have permission to assign this role.",
+      );
     }
 
     if (existsByUserEmail) {
@@ -58,15 +67,43 @@ class UserService implements IUserService {
     return this._userRepository.findAll();
   }
 
-  async update(id: number, data: UserUpdateInput): Promise<UserOutput> {
+  async update(
+    id: number,
+    data: UserUpdateInput,
+    currentUser: { id: number; role: string },
+  ): Promise<UserOutput> {
     const query: Partial<UserUpdateInput> = {};
 
     const userUpdate = data;
 
-    const existsById = await this._userRepository.existsById(id);
+    const targetUser = await this._userRepository.findById(id);
 
-    if(!existsById){
-      throw new NotFoundError();
+    if (!targetUser) {
+      throw new NotFoundError("User not found");
+    }
+
+    if (!canManageRole(currentUser.role, targetUser.role.name)) {
+      throw new ForbiddenError(
+        "You do not have permission to modify a user with higher or equal privileges.",
+      );
+    }
+
+    if (data.roleId !== undefined && currentUser.id === id) {
+      throw new ForbiddenError("Users cannot change their own role.");
+    }
+
+    if (data.roleId !== undefined) {
+      const targetRole = await this._roleRepository.findById(data.roleId);
+
+      if (!targetRole) {
+        throw new NotFoundError("Role not found");
+      }
+
+      if (!canManageRole(currentUser.role, targetRole.name)) {
+        throw new ForbiddenError(
+          "You do not have permission to assign this role.",
+        );
+      }
     }
 
     if (userUpdate.password != undefined) {
@@ -92,11 +129,23 @@ class UserService implements IUserService {
     if (userUpdate.roleId != undefined) {
       query.roleId = userUpdate.roleId;
     }
-    
+
     return this._userRepository.update(id, query);
   }
 
-  async delete(id: number): Promise<void> {
+  async delete(id: number, currentUser: { role: string }): Promise<void> {
+    const targetUser = await this._userRepository.findById(id);
+
+    if (!targetUser) {
+      throw new NotFoundError("User not found");
+    }
+
+    if (!canManageRole(currentUser.role, targetUser.role.name)) {
+      throw new ForbiddenError(
+        "You do not have permission to delete a user with higher or equal privileges.",
+      );
+    }
+
     await this._userRepository.delete(id);
   }
 }
