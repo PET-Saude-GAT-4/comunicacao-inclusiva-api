@@ -3,13 +3,17 @@ import { ConflictError } from "@/errors/ConflictError.js";
 import { ForbiddenError } from "@/errors/ForbiddenError.js";
 import { NotFoundError } from "@/errors/NotFoundError.js";
 import type { BoardInput, BoardOutput } from "@/models/types/Board.type.js";
-import type { BoardPictogramInput } from "@/models/types/BoardPictogram.type.js";
-import type { PictogramOutput } from "@/models/types/Pictogram.type.js";
+import type {
+  BoardTermInput,
+  BoardTermOutput,
+} from "@/models/types/BoardTerm.type.js";
 import { RoleEnum } from "@/models/types/Role.type.js";
 import BoardRepository from "@/repositories/board/BoardRepository.js";
 import type { IBoardRepository } from "@/repositories/board/IBoardRepository.js";
 import type { IPictogramRepository } from "@/repositories/pictogram/IPictogramRepository.js";
 import PictogramRepository from "@/repositories/pictogram/PictogramRepository.js";
+import type { ITermRepository } from "@/repositories/term/ITermRepository.js";
+import TermRepository from "@/repositories/term/TermRepository.js";
 import type { AuthenticatedUser } from "@/types/user.js";
 
 import type { IBoardService } from "./IBoardService.js";
@@ -17,16 +21,20 @@ import type { IBoardService } from "./IBoardService.js";
 type Props = {
   boardRepository?: IBoardRepository;
   pictogramRepository?: IPictogramRepository;
+  termRepository?: ITermRepository;
 };
 
 class BoardService implements IBoardService {
   private _boardRepository: IBoardRepository;
   private _pictogramRepository: IPictogramRepository;
+  private _termRepository: ITermRepository;
 
   constructor(props?: Props) {
     this._boardRepository = props?.boardRepository ?? new BoardRepository();
+    // Still needed for Board.representative, which stays a plain Pictogram FK.
     this._pictogramRepository =
       props?.pictogramRepository ?? new PictogramRepository();
+    this._termRepository = props?.termRepository ?? new TermRepository();
   }
 
   private _assertCanManage(board: BoardOutput, user: AuthenticatedUser): void {
@@ -124,16 +132,16 @@ class BoardService implements IBoardService {
     return board;
   }
 
-  async findPictogramsByPublishedBoardUuid(
+  async findTermsByPublishedBoardUuid(
     uuid: string,
-  ): Promise<PictogramOutput[]> {
+  ): Promise<BoardTermOutput[]> {
     const board = await this._boardRepository.findByUuid(uuid);
 
     if (!board || board.publishedAt === null) {
       throw new NotFoundError("Board not found");
     }
 
-    return this._boardRepository.findPictogramsByBoardId(board.id);
+    return this._boardRepository.findTermsByBoardId(board.id);
   }
 
   async findNextBoardsByPublishedBoardUuid(
@@ -192,9 +200,27 @@ class BoardService implements IBoardService {
     await this._boardRepository.delete(board.id);
   }
 
-  async addPictogram(
+  // A BoardTerm uuid is already scoped to its board, so one lookup answers both
+  // "does it exist" and "is it on this board".
+  private async _resolveNextBoardTermId(
+    boardId: number,
+    next: string,
+  ): Promise<number> {
+    const nextBoardTerm = await this._boardRepository.findBoardTermByUuid(
+      boardId,
+      next,
+    );
+
+    if (!nextBoardTerm) {
+      throw new BadRequestError("Next term is not associated with this board");
+    }
+
+    return nextBoardTerm.id;
+  }
+
+  async addTerm(
     boardUuid: string,
-    data: BoardPictogramInput,
+    data: BoardTermInput,
     user: AuthenticatedUser,
   ): Promise<void> {
     const board = await this._boardRepository.findByUuid(boardUuid);
@@ -205,53 +231,36 @@ class BoardService implements IBoardService {
 
     this._assertCanManage(board, user);
 
-    const pictogram = await this._pictogramRepository.findByUuid(
-      data.pictogramUuid,
-    );
+    const term = await this._termRepository.findByUuid(data.termUuid);
 
-    if (!pictogram) {
-      throw new NotFoundError("Pictogram not found");
+    if (!term) {
+      throw new NotFoundError("Term not found");
     }
 
-    const alreadyExists = await this._boardRepository.existsBoardPictogram(
+    const alreadyExists = await this._boardRepository.existsBoardTerm(
       board.id,
-      pictogram.id,
+      term.id,
     );
 
     if (alreadyExists) {
-      throw new ConflictError("This pictogram is already in the board");
+      throw new ConflictError("This term is already in the board");
     }
 
-    let nextPictogramId: number | null = null;
-    if (data.next != null) {
-      const nextPictogram = await this._pictogramRepository.findByUuid(
-        data.next,
-      );
-      if (!nextPictogram) {
-        throw new BadRequestError("Next pictogram not found");
-      }
-      const nextInBoard = await this._boardRepository.existsBoardPictogram(
-        board.id,
-        nextPictogram.id,
-      );
-      if (!nextInBoard) {
-        throw new BadRequestError(
-          "Next pictogram is not associated with this board",
-        );
-      }
-      nextPictogramId = nextPictogram.id;
-    }
+    const nextBoardTermId =
+      data.next != null
+        ? await this._resolveNextBoardTermId(board.id, data.next)
+        : null;
 
-    await this._boardRepository.addPictogram({
+    await this._boardRepository.addTerm({
       boardId: board.id,
-      pictogramId: pictogram.id,
-      next: nextPictogramId,
+      termId: term.id,
+      next: nextBoardTermId,
     });
   }
 
-  async deleteBoardPictogram(
+  async deleteBoardTerm(
     boardUuid: string,
-    pictogramUuid: string,
+    boardTermUuid: string,
     user: AuthenticatedUser,
   ): Promise<void> {
     const board = await this._boardRepository.findByUuid(boardUuid);
@@ -262,19 +271,22 @@ class BoardService implements IBoardService {
 
     this._assertCanManage(board, user);
 
-    const pictogram = await this._pictogramRepository.findByUuid(pictogramUuid);
+    const boardTerm = await this._boardRepository.findBoardTermByUuid(
+      board.id,
+      boardTermUuid,
+    );
 
-    if (!pictogram) {
-      throw new NotFoundError("Pictogram not found");
+    if (!boardTerm) {
+      throw new NotFoundError("Term is not associated with this board");
     }
 
-    await this._boardRepository.deleteBoardPictogram(board.id, pictogram.id);
+    await this._boardRepository.deleteBoardTerm(board.id, boardTerm.id);
   }
 
-  async findPictogramsByBoardUuid(
+  async findTermsByBoardUuid(
     boardUuid: string,
     user: AuthenticatedUser,
-  ): Promise<PictogramOutput[]> {
+  ): Promise<BoardTermOutput[]> {
     const board = await this._boardRepository.findByUuid(boardUuid);
 
     if (!board) {
@@ -283,12 +295,12 @@ class BoardService implements IBoardService {
 
     this._assertCanRead(board, user);
 
-    return this._boardRepository.findPictogramsByBoardId(board.id);
+    return this._boardRepository.findTermsByBoardId(board.id);
   }
 
-  async reorderPictogram(
+  async reorderTerm(
     boardUuid: string,
-    pictogramUuid: string,
+    boardTermUuid: string,
     next: string | null,
     user: AuthenticatedUser,
   ): Promise<void> {
@@ -300,48 +312,29 @@ class BoardService implements IBoardService {
 
     this._assertCanManage(board, user);
 
-    const pictogram = await this._pictogramRepository.findByUuid(pictogramUuid);
-
-    if (!pictogram) {
-      throw new NotFoundError("Pictogram not found");
-    }
-
-    const pictogramInBoard = await this._boardRepository.existsBoardPictogram(
+    const boardTerm = await this._boardRepository.findBoardTermByUuid(
       board.id,
-      pictogram.id,
+      boardTermUuid,
     );
 
-    if (!pictogramInBoard) {
-      throw new NotFoundError("Pictogram is not associated with this board");
+    if (!boardTerm) {
+      throw new NotFoundError("Term is not associated with this board");
     }
 
-    let nextPictogramId: number | null = null;
+    let nextBoardTermId: number | null = null;
     if (next != null) {
-      if (next === pictogramUuid) {
+      if (next === boardTermUuid) {
         throw new BadRequestError(
-          "Next pictogram must not be the same as the pictogram being moved",
+          "Next term must not be the same as the term being moved",
         );
       }
-      const nextPictogram = await this._pictogramRepository.findByUuid(next);
-      if (!nextPictogram) {
-        throw new BadRequestError("Next pictogram not found");
-      }
-      const nextInBoard = await this._boardRepository.existsBoardPictogram(
-        board.id,
-        nextPictogram.id,
-      );
-      if (!nextInBoard) {
-        throw new BadRequestError(
-          "Next pictogram is not associated with this board",
-        );
-      }
-      nextPictogramId = nextPictogram.id;
+      nextBoardTermId = await this._resolveNextBoardTermId(board.id, next);
     }
 
-    await this._boardRepository.reorderPictogram(
+    await this._boardRepository.reorderTerm(
       board.id,
-      pictogram.id,
-      nextPictogramId,
+      boardTerm.id,
+      nextBoardTermId,
     );
   }
 }

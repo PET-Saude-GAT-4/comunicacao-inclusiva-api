@@ -1,3 +1,4 @@
+import { BadRequestError } from "@/errors/BadRequestError.js";
 import { ConflictError } from "@/errors/ConflictError.js";
 import { NotFoundError } from "@/errors/NotFoundError.js";
 import type { TermInput, TermOutput } from "@/models/types/Term.type.js";
@@ -76,12 +77,20 @@ class TermService implements ITermService {
     return this._termRepository.findByUuid(uuid);
   }
 
+  private async _assertNotInUse(termId: number): Promise<void> {
+    if (await this._termRepository.isInUse(termId)) {
+      throw new BadRequestError("You cannot delete a term which is in use");
+    }
+  }
+
   async delete(id: number): Promise<void> {
     const term = await this._termRepository.findById(id);
 
     if (!term) {
       throw new NotFoundError("Term not found");
     }
+
+    await this._assertNotInUse(term.id);
 
     await this._termRepository.delete(term.id);
   }
@@ -92,6 +101,8 @@ class TermService implements ITermService {
     if (!term) {
       throw new NotFoundError("Term not found");
     }
+
+    await this._assertNotInUse(term.id);
 
     await this._termRepository.delete(term.id);
   }

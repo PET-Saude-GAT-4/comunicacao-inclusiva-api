@@ -18,7 +18,7 @@ export type BoardOutput = {
   title: string;
   authorUuid: string | null;
   representativePictogram: PictogramOutput;
-  pictogramCount: number;
+  termCount: number;
   publishedAt: Date | null;
   createdAt: Date;
   updatedAt: Date;

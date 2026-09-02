@@ -12,8 +12,8 @@ router.get("/", boardController.findAllPublished.bind(boardController));
 router.get("/:uuid", boardController.findPublishedByUuid.bind(boardController));
 
 router.get(
-  "/:uuid/pictograms",
-  boardController.findPictogramsByPublishedBoard.bind(boardController),
+  "/:uuid/terms",
+  boardController.findTermsByPublishedBoard.bind(boardController),
 );
 
 router.get(

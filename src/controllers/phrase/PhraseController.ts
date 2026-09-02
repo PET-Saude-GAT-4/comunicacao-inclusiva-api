@@ -1,6 +1,6 @@
 import type { Request, Response } from "express";
 
-import { toPictogramResponse } from "@/controllers/pictogram/PictogramResponse.js";
+import { toPlacementResponse } from "@/controllers/term/TermResponse.js";
 import { BadRequestError } from "@/errors/BadRequestError.js";
 import { NotFoundError } from "@/errors/NotFoundError.js";
 import type { PhraseOutput } from "@/models/types/Phrase.type.js";
@@ -25,9 +25,9 @@ class PhraseController implements IPhraseController {
       uuid: phrase.uuid,
       description: phrase.description,
       authorUuid: phrase.authorUuid,
-      pictograms: phrase.pictograms.map((pictogram, index) => ({
+      terms: phrase.terms.map((phraseTerm, index) => ({
         order: index + 1,
-        ...toPictogramResponse(pictogram),
+        ...toPlacementResponse(phraseTerm.uuid, phraseTerm.term),
       })),
       publishedAt: phrase.publishedAt,
       createdAt: phrase.createdAt,
@@ -35,20 +35,20 @@ class PhraseController implements IPhraseController {
     };
   }
 
-  private _parsePictogramUuids(value: unknown): string[] {
+  private _parseTermUuids(value: unknown): string[] {
     if (!Array.isArray(value) || value.length === 0) {
-      throw new BadRequestError("At least one pictogram is required");
+      throw new BadRequestError("At least one term is required");
     }
 
     if (value.some((uuid) => !uuid || typeof uuid !== "string")) {
-      throw new BadRequestError("Pictogram uuids must be strings");
+      throw new BadRequestError("Term uuids must be strings");
     }
 
     return value as string[];
   }
 
   async create(req: Request, res: Response): Promise<void> {
-    const { description, pictogramUuids } = req.body;
+    const { description, termUuids } = req.body;
 
     if (!description || typeof description !== "string") {
       throw new BadRequestError("Description is required");
@@ -57,7 +57,7 @@ class PhraseController implements IPhraseController {
     const phrase = await this._phraseService.create(
       {
         description,
-        pictogramUuids: this._parsePictogramUuids(pictogramUuids),
+        termUuids: this._parseTermUuids(termUuids),
       },
       req.user!,
     );
@@ -68,9 +68,9 @@ class PhraseController implements IPhraseController {
   async update(req: Request, res: Response): Promise<void> {
     const uuid = req.params.uuid as string;
 
-    const { description, pictogramUuids } = req.body;
+    const { description, termUuids } = req.body;
 
-    if (description === undefined && pictogramUuids === undefined) {
+    if (description === undefined && termUuids === undefined) {
       throw new BadRequestError("No fields to update");
     }
 
@@ -85,10 +85,8 @@ class PhraseController implements IPhraseController {
       uuid,
       {
         description,
-        pictogramUuids:
-          pictogramUuids === undefined
-            ? undefined
-            : this._parsePictogramUuids(pictogramUuids),
+        termUuids:
+          termUuids === undefined ? undefined : this._parseTermUuids(termUuids),
       },
       req.user!,
     );

@@ -1,14 +1,12 @@
 import type { Request, Response } from "express";
 
-import { toPictogramResponse } from "@/controllers/pictogram/PictogramResponse.js";
-import { toSignWritingResponse } from "@/controllers/sign-writing/SignWritingResponse.js";
 import { BadRequestError } from "@/errors/BadRequestError.js";
 import { NotFoundError } from "@/errors/NotFoundError.js";
-import type { TermOutput } from "@/models/types/Term.type.js";
 import type { ITermService } from "@/services/term/ITermService.js";
 import TermService from "@/services/term/TermService.js";
 
 import type { ITermController } from "./ITermController.js";
+import { toTermResponse } from "./TermResponse.js";
 
 type Props = {
   termService?: ITermService;
@@ -19,17 +17,6 @@ class TermController implements ITermController {
 
   constructor(props?: Props) {
     this._termService = props?.termService ?? new TermService();
-  }
-
-  private _toResponse(term: TermOutput): Record<string, unknown> {
-    return {
-      uuid: term.uuid,
-      description: term.description,
-      pictogram: toPictogramResponse(term.pictogram),
-      signWriting: toSignWritingResponse(term.signWriting),
-      createdAt: term.createdAt,
-      updatedAt: term.updatedAt,
-    };
   }
 
   async create(req: Request, res: Response): Promise<void> {
@@ -53,14 +40,14 @@ class TermController implements ITermController {
       description,
     });
 
-    res.status(201).json({ term: this._toResponse(term) });
+    res.status(201).json({ term: toTermResponse(term) });
   }
 
   async findAll(req: Request, res: Response): Promise<void> {
     const terms = await this._termService.findAll();
 
     res.status(200).json({
-      terms: terms.map((t) => this._toResponse(t)),
+      terms: terms.map((t) => toTermResponse(t)),
     });
   }
 
@@ -73,7 +60,7 @@ class TermController implements ITermController {
       throw new NotFoundError("Term not found");
     }
 
-    res.status(200).json({ term: this._toResponse(term) });
+    res.status(200).json({ term: toTermResponse(term) });
   }
 
   async delete(req: Request, res: Response): Promise<void> {

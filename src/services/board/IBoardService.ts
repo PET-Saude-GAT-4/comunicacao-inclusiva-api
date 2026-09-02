@@ -1,6 +1,8 @@
 import type { BoardInput, BoardOutput } from "@/models/types/Board.type.js";
-import type { BoardPictogramInput } from "@/models/types/BoardPictogram.type.js";
-import type { PictogramOutput } from "@/models/types/Pictogram.type.js";
+import type {
+  BoardTermInput,
+  BoardTermOutput,
+} from "@/models/types/BoardTerm.type.js";
 import type { AuthenticatedUser } from "@/types/user.js";
 
 interface IBoardService {
@@ -25,7 +27,7 @@ interface IBoardService {
 
   findPublishedByUuid(uuid: string): Promise<BoardOutput | null>;
 
-  findPictogramsByPublishedBoardUuid(uuid: string): Promise<PictogramOutput[]>;
+  findTermsByPublishedBoardUuid(uuid: string): Promise<BoardTermOutput[]>;
 
   findNextBoardsByPublishedBoardUuid(uuid: string): Promise<BoardOutput[]>;
 
@@ -35,26 +37,26 @@ interface IBoardService {
 
   delete(uuid: string, user: AuthenticatedUser): Promise<void>;
 
-  addPictogram(
+  addTerm(
     boardUuid: string,
-    data: BoardPictogramInput,
+    data: BoardTermInput,
     user: AuthenticatedUser,
   ): Promise<void>;
 
-  deleteBoardPictogram(
+  deleteBoardTerm(
     boardUuid: string,
-    pictogramUuid: string,
+    boardTermUuid: string,
     user: AuthenticatedUser,
   ): Promise<void>;
 
-  findPictogramsByBoardUuid(
+  findTermsByBoardUuid(
     boardUuid: string,
     user: AuthenticatedUser,
-  ): Promise<PictogramOutput[]>;
+  ): Promise<BoardTermOutput[]>;
 
-  reorderPictogram(
+  reorderTerm(
     boardUuid: string,
-    pictogramUuid: string,
+    boardTermUuid: string,
     next: string | null,
     user: AuthenticatedUser,
   ): Promise<void>;

@@ -9,6 +9,16 @@ async function getPictogramByFileUuid(prisma: PrismaClient, fileUuid: string) {
   });
 }
 
+async function getTermByPictogramFileUuid(
+  prisma: PrismaClient,
+  fileUuid: string,
+) {
+  const pictogram = await getPictogramByFileUuid(prisma, fileUuid);
+  return prisma.term.findFirstOrThrow({
+    where: { pictogramId: pictogram.id },
+  });
+}
+
 type BoardDef = {
   title: string;
   representativeFileUuid: string;
@@ -81,9 +91,9 @@ export async function seedBoards(prisma: PrismaClient): Promise<void> {
       def.representativeFileUuid,
     );
 
-    const pictograms = await Promise.all(
+    const terms = await Promise.all(
       def.pictogramFileUuids.map((uuid) =>
-        getPictogramByFileUuid(prisma, uuid),
+        getTermByPictogramFileUuid(prisma, uuid),
       ),
     );
 
@@ -93,7 +103,6 @@ export async function seedBoards(prisma: PrismaClient): Promise<void> {
         data: {
           title: def.title,
           representativeId: representative.id,
-          first: pictograms[0].id,
           publishedAt: new Date(),
         },
       });
@@ -101,29 +110,36 @@ export async function seedBoards(prisma: PrismaClient): Promise<void> {
       await prisma.board.update({
         where: { id: board.id },
         data: {
-          first: pictograms[0].id,
           representativeId: representative.id,
           publishedAt: board.publishedAt ?? new Date(),
         },
       });
     }
 
-    for (let i = 0; i < pictograms.length; i++) {
-      const nextId = i + 1 < pictograms.length ? pictograms[i + 1].id : null;
-      await prisma.boardPictogram.upsert({
-        where: {
-          boardId_pictogramId: {
-            boardId: board.id,
-            pictogramId: pictograms[i].id,
-          },
-        },
-        update: { next: nextId },
-        create: {
-          boardId: board.id,
-          pictogramId: pictograms[i].id,
-          next: nextId,
-        },
+    // The chain is rebuilt from scratch so re-running the seed converges on the
+    // definition above. Terms are created one at a time because the linked list
+    // needs the generated ids, which createMany does not return.
+    await prisma.boardTerm.deleteMany({ where: { boardId: board.id } });
+
+    const boardTerms = [];
+    for (const term of terms) {
+      boardTerms.push(
+        await prisma.boardTerm.create({
+          data: { boardId: board.id, termId: term.id },
+        }),
+      );
+    }
+
+    for (let i = 0; i < boardTerms.length; i++) {
+      await prisma.boardTerm.update({
+        where: { id: boardTerms[i].id },
+        data: { next: i + 1 < boardTerms.length ? boardTerms[i + 1].id : null },
       });
     }
+
+    await prisma.board.update({
+      where: { id: board.id },
+      data: { first: boardTerms[0]?.id ?? null },
+    });
   }
 }

@@ -54,27 +54,27 @@ router.delete(
 );
 
 router.get(
-  "/:uuid/pictograms",
+  "/:uuid/terms",
   authMiddleware.auth([RoleEnum.SUPER_ADMIN, RoleEnum.ADMIN]),
-  boardController.findPictograms.bind(boardController),
+  boardController.findTerms.bind(boardController),
 );
 
 router.post(
-  "/:uuid/pictograms",
+  "/:uuid/terms",
   authMiddleware.auth([RoleEnum.SUPER_ADMIN, RoleEnum.ADMIN]),
-  boardController.addPictogram.bind(boardController),
+  boardController.addTerm.bind(boardController),
 );
 
 router.delete(
-  "/:uuid/pictograms/:pictogramUuid",
+  "/:uuid/terms/:boardTermUuid",
   authMiddleware.auth([RoleEnum.SUPER_ADMIN, RoleEnum.ADMIN]),
-  boardController.deleteBoardPictogram.bind(boardController),
+  boardController.deleteBoardTerm.bind(boardController),
 );
 
 router.patch(
-  "/:uuid/pictograms/:pictogramUuid/order",
+  "/:uuid/terms/:boardTermUuid/order",
   authMiddleware.auth([RoleEnum.SUPER_ADMIN, RoleEnum.ADMIN]),
-  boardController.reorderPictogram.bind(boardController),
+  boardController.reorderTerm.bind(boardController),
 );
 
 export default router;
