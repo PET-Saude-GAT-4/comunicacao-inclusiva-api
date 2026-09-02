@@ -72,9 +72,7 @@ model Pictogram {
   storedFile           StoredFile       @relation(fields: [storedFileId], references: [id])
   createdAt            DateTime         @default(now())
   updatedAt            DateTime         @updatedAt
-  boardPictograms      BoardPictogram[]
   representativeBoards Board[]           @relation("BoardRepresentative")
-  phrasePictograms     PhrasePictogram[]
   terms                Term[]
 }
 
@@ -99,6 +97,8 @@ model Term {
   signWriting   SignWriting @relation(fields: [signWritingId], references: [id])
   createdAt     DateTime    @default(now())
   updatedAt     DateTime    @updatedAt
+  boardTerms    BoardTerm[]
+  phraseTerms   PhraseTerm[]
 
   @@unique([pictogramId, signWritingId])
 }
@@ -111,23 +111,27 @@ model Board {
   author           User?            @relation("BoardAuthor", fields: [authorId], references: [id])
   representativeId Int
   representative   Pictogram        @relation("BoardRepresentative", fields: [representativeId], references: [id])
+  /// A BoardTerm.id, the head of the linked list.
   first            Int?
   publishedAt      DateTime?
   createdAt        DateTime         @default(now())
   updatedAt        DateTime         @updatedAt
-  pictograms       BoardPictogram[]
+  terms            BoardTerm[]
   triggerChains    InteractionChain[] @relation("TriggerChain")
   responseChains   InteractionChain[] @relation("ResponseChain")
 }
 
-model BoardPictogram {
-  boardId     Int
-  pictogramId Int
-  next        Int?
-  board       Board     @relation(fields: [boardId], references: [id], onDelete: Cascade)
-  pictogram   Pictogram @relation(fields: [pictogramId], references: [id])
+model BoardTerm {
+  id      Int    @id @default(autoincrement())
+  uuid    String @unique @default(uuid())
+  boardId Int
+  board   Board  @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  termId  Int
+  term    Term   @relation(fields: [termId], references: [id])
+  next    Int?
 
-  @@id([boardId, pictogramId])
+  @@unique([boardId, termId])
+  @@index([boardId])
 }
 
 model Profession {
@@ -176,16 +180,17 @@ model Phrase {
   publishedAt DateTime?
   createdAt   DateTime          @default(now())
   updatedAt   DateTime          @updatedAt
-  pictograms  PhrasePictogram[]
+  terms       PhraseTerm[]
 }
 
-model PhrasePictogram {
-  id          Int       @id @default(autoincrement())
-  phraseId    Int
-  pictogramId Int
-  order       Int
-  phrase      Phrase    @relation(fields: [phraseId], references: [id], onDelete: Cascade)
-  pictogram   Pictogram @relation(fields: [pictogramId], references: [id])
+model PhraseTerm {
+  id       Int    @id @default(autoincrement())
+  uuid     String @unique @default(uuid())
+  phraseId Int
+  phrase   Phrase @relation(fields: [phraseId], references: [id], onDelete: Cascade)
+  termId   Int
+  term     Term   @relation(fields: [termId], references: [id])
+  order    Int
 
   @@unique([phraseId, order])
 }

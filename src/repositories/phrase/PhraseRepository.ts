@@ -5,16 +5,17 @@ import type {
   PhraseRepositoryUpdateInput,
 } from "@/models/types/Phrase.type.js";
 import { prisma } from "@/prisma.js";
-import { mapPictogramRow } from "@/repositories/pictogram/PictogramMapper.js";
+import type { TermRow } from "@/repositories/term/TermMapper.js";
+import { mapTermRow, termInclude } from "@/repositories/term/TermMapper.js";
 import { isEmpty } from "@/utils/object.js";
 
 import type { IPhraseRepository } from "./IPhraseRepository.js";
 
 const include = {
   author: { select: { uuid: true } },
-  pictograms: {
+  terms: {
     orderBy: { order: "asc" },
-    include: { pictogram: { include: { storedFile: true } } },
+    include: { term: { include: termInclude } },
   },
 } as const;
 
@@ -27,23 +28,18 @@ class PhraseRepository implements IPhraseRepository {
     publishedAt: Date | null;
     createdAt: Date;
     updatedAt: Date;
-    pictograms: {
-      pictogram: {
-        id: number;
-        uuid: string;
-        description: string;
-        storedFile: { uuid: string };
-        createdAt: Date;
-        updatedAt: Date;
-      };
-    }[];
+    terms: { id: number; uuid: string; term: TermRow }[];
   }): PhraseOutput {
     return {
       id: data.id,
       uuid: data.uuid,
       description: data.description,
       authorUuid: data.author?.uuid ?? null,
-      pictograms: data.pictograms.map((p) => mapPictogramRow(p.pictogram)),
+      terms: data.terms.map((t) => ({
+        id: t.id,
+        uuid: t.uuid,
+        term: mapTermRow(t.term),
+      })),
       publishedAt: data.publishedAt,
       createdAt: data.createdAt,
       updatedAt: data.updatedAt,
@@ -55,9 +51,9 @@ class PhraseRepository implements IPhraseRepository {
       data: {
         description: data.description,
         authorId: data.authorId,
-        pictograms: {
-          create: data.pictogramIds.map((pictogramId, index) => ({
-            pictogramId,
+        terms: {
+          create: data.termIds.map((termId, index) => ({
+            termId,
             order: index + 1,
           })),
         },
@@ -77,15 +73,15 @@ class PhraseRepository implements IPhraseRepository {
     }
 
     const result = await prisma.$transaction(async (tx) => {
-      const pictogramIds = data.pictogramIds;
+      const termIds = data.termIds;
 
-      if (pictogramIds !== undefined) {
-        await tx.phrasePictogram.deleteMany({ where: { phraseId: id } });
+      if (termIds !== undefined) {
+        await tx.phraseTerm.deleteMany({ where: { phraseId: id } });
 
-        await tx.phrasePictogram.createMany({
-          data: pictogramIds.map((pictogramId, index) => ({
+        await tx.phraseTerm.createMany({
+          data: termIds.map((termId, index) => ({
             phraseId: id,
-            pictogramId,
+            termId,
             order: index + 1,
           })),
         });
