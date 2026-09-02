@@ -69,8 +69,8 @@ class TermRepository implements ITermRepository {
 
   async isInUse(termId: number): Promise<boolean> {
     const [onBoards, inPhrases] = await Promise.all([
-      prisma.boardItem.count({ where: { termId } }),
-      prisma.phraseItem.count({ where: { termId } }),
+      prisma.boardTerm.count({ where: { termId } }),
+      prisma.phraseTerm.count({ where: { termId } }),
     ]);
     return onBoards > 0 || inPhrases > 0;
   }

@@ -4,9 +4,9 @@ import { ForbiddenError } from "@/errors/ForbiddenError.js";
 import { NotFoundError } from "@/errors/NotFoundError.js";
 import type { BoardInput, BoardOutput } from "@/models/types/Board.type.js";
 import type {
-  BoardItemInput,
-  BoardItemOutput,
-} from "@/models/types/BoardItem.type.js";
+  BoardTermInput,
+  BoardTermOutput,
+} from "@/models/types/BoardTerm.type.js";
 import BoardRepository from "@/repositories/board/BoardRepository.js";
 import type { IBoardRepository } from "@/repositories/board/IBoardRepository.js";
 import type { IPictogramRepository } from "@/repositories/pictogram/IPictogramRepository.js";
@@ -131,16 +131,16 @@ class BoardService implements IBoardService {
     return board;
   }
 
-  async findItemsByPublishedBoardUuid(
+  async findTermsByPublishedBoardUuid(
     uuid: string,
-  ): Promise<BoardItemOutput[]> {
+  ): Promise<BoardTermOutput[]> {
     const board = await this._boardRepository.findByUuid(uuid);
 
     if (!board || board.publishedAt === null) {
       throw new NotFoundError("Board not found");
     }
 
-    return this._boardRepository.findItemsByBoardId(board.id);
+    return this._boardRepository.findTermsByBoardId(board.id);
   }
 
   async findNextBoardsByPublishedBoardUuid(
@@ -199,24 +199,27 @@ class BoardService implements IBoardService {
     await this._boardRepository.delete(board.id);
   }
 
-  // A BoardItem uuid is already scoped to its board, so one lookup answers both
+  // A BoardTerm uuid is already scoped to its board, so one lookup answers both
   // "does it exist" and "is it on this board".
-  private async _resolveNextItemId(
+  private async _resolveNextBoardTermId(
     boardId: number,
     next: string,
   ): Promise<number> {
-    const nextItem = await this._boardRepository.findItemByUuid(boardId, next);
+    const nextBoardTerm = await this._boardRepository.findBoardTermByUuid(
+      boardId,
+      next,
+    );
 
-    if (!nextItem) {
-      throw new BadRequestError("Next item is not associated with this board");
+    if (!nextBoardTerm) {
+      throw new BadRequestError("Next term is not associated with this board");
     }
 
-    return nextItem.id;
+    return nextBoardTerm.id;
   }
 
-  async addItem(
+  async addTerm(
     boardUuid: string,
-    data: BoardItemInput,
+    data: BoardTermInput,
     user: AuthenticatedUser,
   ): Promise<void> {
     const board = await this._boardRepository.findByUuid(boardUuid);
@@ -233,7 +236,7 @@ class BoardService implements IBoardService {
       throw new NotFoundError("Term not found");
     }
 
-    const alreadyExists = await this._boardRepository.existsBoardItem(
+    const alreadyExists = await this._boardRepository.existsBoardTerm(
       board.id,
       term.id,
     );
@@ -242,21 +245,21 @@ class BoardService implements IBoardService {
       throw new ConflictError("This term is already in the board");
     }
 
-    const nextItemId =
+    const nextBoardTermId =
       data.next != null
-        ? await this._resolveNextItemId(board.id, data.next)
+        ? await this._resolveNextBoardTermId(board.id, data.next)
         : null;
 
-    await this._boardRepository.addItem({
+    await this._boardRepository.addTerm({
       boardId: board.id,
       termId: term.id,
-      next: nextItemId,
+      next: nextBoardTermId,
     });
   }
 
-  async deleteBoardItem(
+  async deleteBoardTerm(
     boardUuid: string,
-    boardItemUuid: string,
+    boardTermUuid: string,
     user: AuthenticatedUser,
   ): Promise<void> {
     const board = await this._boardRepository.findByUuid(boardUuid);
@@ -267,22 +270,22 @@ class BoardService implements IBoardService {
 
     this._assertCanManage(board, user);
 
-    const item = await this._boardRepository.findItemByUuid(
+    const boardTerm = await this._boardRepository.findBoardTermByUuid(
       board.id,
-      boardItemUuid,
+      boardTermUuid,
     );
 
-    if (!item) {
-      throw new NotFoundError("Item is not associated with this board");
+    if (!boardTerm) {
+      throw new NotFoundError("Term is not associated with this board");
     }
 
-    await this._boardRepository.deleteBoardItem(board.id, item.id);
+    await this._boardRepository.deleteBoardTerm(board.id, boardTerm.id);
   }
 
-  async findItemsByBoardUuid(
+  async findTermsByBoardUuid(
     boardUuid: string,
     user: AuthenticatedUser,
-  ): Promise<BoardItemOutput[]> {
+  ): Promise<BoardTermOutput[]> {
     const board = await this._boardRepository.findByUuid(boardUuid);
 
     if (!board) {
@@ -291,12 +294,12 @@ class BoardService implements IBoardService {
 
     this._assertCanRead(board, user);
 
-    return this._boardRepository.findItemsByBoardId(board.id);
+    return this._boardRepository.findTermsByBoardId(board.id);
   }
 
-  async reorderItem(
+  async reorderTerm(
     boardUuid: string,
-    boardItemUuid: string,
+    boardTermUuid: string,
     next: string | null,
     user: AuthenticatedUser,
   ): Promise<void> {
@@ -308,26 +311,30 @@ class BoardService implements IBoardService {
 
     this._assertCanManage(board, user);
 
-    const item = await this._boardRepository.findItemByUuid(
+    const boardTerm = await this._boardRepository.findBoardTermByUuid(
       board.id,
-      boardItemUuid,
+      boardTermUuid,
     );
 
-    if (!item) {
-      throw new NotFoundError("Item is not associated with this board");
+    if (!boardTerm) {
+      throw new NotFoundError("Term is not associated with this board");
     }
 
-    let nextItemId: number | null = null;
+    let nextBoardTermId: number | null = null;
     if (next != null) {
-      if (next === boardItemUuid) {
+      if (next === boardTermUuid) {
         throw new BadRequestError(
-          "Next item must not be the same as the item being moved",
+          "Next term must not be the same as the term being moved",
         );
       }
-      nextItemId = await this._resolveNextItemId(board.id, next);
+      nextBoardTermId = await this._resolveNextBoardTermId(board.id, next);
     }
 
-    await this._boardRepository.reorderItem(board.id, item.id, nextItemId);
+    await this._boardRepository.reorderTerm(
+      board.id,
+      boardTerm.id,
+      nextBoardTermId,
+    );
   }
 }
 

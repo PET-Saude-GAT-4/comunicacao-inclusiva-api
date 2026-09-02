@@ -10,7 +10,7 @@ interface IBoardController extends IController<BoardOutput> {
 
   findPublishedByUuid(req: Request, res: Response): Promise<void>;
 
-  findItemsByPublishedBoard(req: Request, res: Response): Promise<void>;
+  findTermsByPublishedBoard(req: Request, res: Response): Promise<void>;
 
   findNextBoardsByPublishedBoard(req: Request, res: Response): Promise<void>;
 
@@ -18,13 +18,13 @@ interface IBoardController extends IController<BoardOutput> {
 
   unpublish(req: Request, res: Response): Promise<void>;
 
-  addItem(req: Request, res: Response): Promise<void>;
+  addTerm(req: Request, res: Response): Promise<void>;
 
-  deleteBoardItem(req: Request, res: Response): Promise<void>;
+  deleteBoardTerm(req: Request, res: Response): Promise<void>;
 
-  findItems(req: Request, res: Response): Promise<void>;
+  findTerms(req: Request, res: Response): Promise<void>;
 
-  reorderItem(req: Request, res: Response): Promise<void>;
+  reorderTerm(req: Request, res: Response): Promise<void>;
 }
 
 export type { IBoardController };

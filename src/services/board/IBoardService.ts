@@ -1,8 +1,8 @@
 import type { BoardInput, BoardOutput } from "@/models/types/Board.type.js";
 import type {
-  BoardItemInput,
-  BoardItemOutput,
-} from "@/models/types/BoardItem.type.js";
+  BoardTermInput,
+  BoardTermOutput,
+} from "@/models/types/BoardTerm.type.js";
 import type { AuthenticatedUser } from "@/types/user.js";
 
 interface IBoardService {
@@ -27,7 +27,7 @@ interface IBoardService {
 
   findPublishedByUuid(uuid: string): Promise<BoardOutput | null>;
 
-  findItemsByPublishedBoardUuid(uuid: string): Promise<BoardItemOutput[]>;
+  findTermsByPublishedBoardUuid(uuid: string): Promise<BoardTermOutput[]>;
 
   findNextBoardsByPublishedBoardUuid(uuid: string): Promise<BoardOutput[]>;
 
@@ -37,26 +37,26 @@ interface IBoardService {
 
   delete(uuid: string, user: AuthenticatedUser): Promise<void>;
 
-  addItem(
+  addTerm(
     boardUuid: string,
-    data: BoardItemInput,
+    data: BoardTermInput,
     user: AuthenticatedUser,
   ): Promise<void>;
 
-  deleteBoardItem(
+  deleteBoardTerm(
     boardUuid: string,
-    boardItemUuid: string,
+    boardTermUuid: string,
     user: AuthenticatedUser,
   ): Promise<void>;
 
-  findItemsByBoardUuid(
+  findTermsByBoardUuid(
     boardUuid: string,
     user: AuthenticatedUser,
-  ): Promise<BoardItemOutput[]>;
+  ): Promise<BoardTermOutput[]>;
 
-  reorderItem(
+  reorderTerm(
     boardUuid: string,
-    boardItemUuid: string,
+    boardTermUuid: string,
     next: string | null,
     user: AuthenticatedUser,
   ): Promise<void>;

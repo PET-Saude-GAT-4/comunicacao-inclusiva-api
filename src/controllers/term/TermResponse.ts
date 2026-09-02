@@ -15,9 +15,9 @@ export function toTermResponse(term: TermOutput) {
 
 // A placement of a Term on a board or in a phrase. `uuid` addresses the placement
 // (what you reorder or delete), `termUuid` the vocabulary entry.
-export function toItemResponse(itemUuid: string, term: TermOutput) {
+export function toPlacementResponse(placementUuid: string, term: TermOutput) {
   return {
-    uuid: itemUuid,
+    uuid: placementUuid,
     termUuid: term.uuid,
     description: term.description,
     pictogram: toPictogramResponse(term.pictogram),

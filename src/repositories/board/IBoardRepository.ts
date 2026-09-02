@@ -3,9 +3,9 @@ import type {
   BoardRepositoryInput,
 } from "@/models/types/Board.type.js";
 import type {
-  BoardItemOutput,
-  BoardItemRepositoryInput,
-} from "@/models/types/BoardItem.type.js";
+  BoardTermOutput,
+  BoardTermRepositoryInput,
+} from "@/models/types/BoardTerm.type.js";
 import type { IRepository } from "@/repositories/IRepository.js";
 
 interface IBoardRepository extends IRepository<BoardOutput> {
@@ -26,21 +26,24 @@ interface IBoardRepository extends IRepository<BoardOutput> {
 
   existsByUuid(uuid: string): Promise<boolean>;
 
-  addItem(data: BoardItemRepositoryInput): Promise<void>;
+  addTerm(data: BoardTermRepositoryInput): Promise<void>;
 
-  findItemsByBoardId(boardId: number): Promise<BoardItemOutput[]>;
+  findTermsByBoardId(boardId: number): Promise<BoardTermOutput[]>;
 
   findNextBoardsByBoardId(boardId: number): Promise<BoardOutput[]>;
 
-  existsBoardItem(boardId: number, termId: number): Promise<boolean>;
+  existsBoardTerm(boardId: number, termId: number): Promise<boolean>;
 
-  findItemByUuid(boardId: number, uuid: string): Promise<{ id: number } | null>;
-
-  deleteBoardItem(boardId: number, boardItemId: number): Promise<void>;
-
-  reorderItem(
+  findBoardTermByUuid(
     boardId: number,
-    boardItemId: number,
+    uuid: string,
+  ): Promise<{ id: number } | null>;
+
+  deleteBoardTerm(boardId: number, boardTermId: number): Promise<void>;
+
+  reorderTerm(
+    boardId: number,
+    boardTermId: number,
     next: number | null,
   ): Promise<void>;
 }

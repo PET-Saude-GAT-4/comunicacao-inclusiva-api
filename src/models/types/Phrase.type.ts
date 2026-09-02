@@ -1,4 +1,4 @@
-import type { PhraseItemOutput } from "@/models/types/PhraseItem.type.js";
+import type { PhraseTermOutput } from "@/models/types/PhraseTerm.type.js";
 
 export type PhraseInput = {
   description: string;
@@ -26,7 +26,7 @@ export type PhraseOutput = {
   uuid: string;
   description: string;
   authorUuid: string | null;
-  terms: PhraseItemOutput[];
+  terms: PhraseTermOutput[];
   publishedAt: Date | null;
   createdAt: Date;
   updatedAt: Date;

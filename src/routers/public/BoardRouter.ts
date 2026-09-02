@@ -13,7 +13,7 @@ router.get("/:uuid", boardController.findPublishedByUuid.bind(boardController));
 
 router.get(
   "/:uuid/terms",
-  boardController.findItemsByPublishedBoard.bind(boardController),
+  boardController.findTermsByPublishedBoard.bind(boardController),
 );
 
 router.get(

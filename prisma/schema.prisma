@@ -97,8 +97,8 @@ model Term {
   signWriting   SignWriting @relation(fields: [signWritingId], references: [id])
   createdAt     DateTime    @default(now())
   updatedAt     DateTime    @updatedAt
-  boardItems    BoardItem[]
-  phraseItems   PhraseItem[]
+  boardTerms    BoardTerm[]
+  phraseTerms   PhraseTerm[]
 
   @@unique([pictogramId, signWritingId])
 }
@@ -111,24 +111,23 @@ model Board {
   author           User?            @relation("BoardAuthor", fields: [authorId], references: [id])
   representativeId Int
   representative   Pictogram        @relation("BoardRepresentative", fields: [representativeId], references: [id])
-  /// A BoardItem.id, the head of the linked list.
+  /// A BoardTerm.id, the head of the linked list.
   first            Int?
   publishedAt      DateTime?
   createdAt        DateTime         @default(now())
   updatedAt        DateTime         @updatedAt
-  terms            BoardItem[]
+  terms            BoardTerm[]
   triggerChains    InteractionChain[] @relation("TriggerChain")
   responseChains   InteractionChain[] @relation("ResponseChain")
 }
 
-/// The placement of a Term on a board, carrying the linked-list position.
-model BoardItem {
+model BoardTerm {
   id      Int    @id @default(autoincrement())
   uuid    String @unique @default(uuid())
   boardId Int
   board   Board  @relation(fields: [boardId], references: [id], onDelete: Cascade)
   termId  Int
-  item    Term   @relation(fields: [termId], references: [id])
+  term    Term   @relation(fields: [termId], references: [id])
   next    Int?
 
   @@unique([boardId, termId])
@@ -181,16 +180,16 @@ model Phrase {
   publishedAt DateTime?
   createdAt   DateTime          @default(now())
   updatedAt   DateTime          @updatedAt
-  terms       PhraseItem[]
+  terms       PhraseTerm[]
 }
 
-model PhraseItem {
+model PhraseTerm {
   id       Int    @id @default(autoincrement())
   uuid     String @unique @default(uuid())
   phraseId Int
   phrase   Phrase @relation(fields: [phraseId], references: [id], onDelete: Cascade)
   termId   Int
-  item     Term   @relation(fields: [termId], references: [id])
+  term     Term   @relation(fields: [termId], references: [id])
   order    Int
 
   @@unique([phraseId, order])

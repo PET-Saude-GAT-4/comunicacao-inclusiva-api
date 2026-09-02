@@ -4,9 +4,9 @@ import type {
   BoardRepositoryInput,
 } from "@/models/types/Board.type.js";
 import type {
-  BoardItemOutput,
-  BoardItemRepositoryInput,
-} from "@/models/types/BoardItem.type.js";
+  BoardTermOutput,
+  BoardTermRepositoryInput,
+} from "@/models/types/BoardTerm.type.js";
 import { prisma } from "@/prisma.js";
 import { mapPictogramRow } from "@/repositories/pictogram/PictogramMapper.js";
 import { mapTermRow, termInclude } from "@/repositories/term/TermMapper.js";
@@ -45,7 +45,7 @@ class BoardRepository implements IBoardRepository {
       title: data.title,
       authorUuid: data.author?.uuid ?? null,
       representativePictogram: mapPictogramRow(data.representative),
-      itemCount: data._count.terms,
+      termCount: data._count.terms,
       publishedAt: data.publishedAt,
       createdAt: data.createdAt,
       updatedAt: data.updatedAt,
@@ -146,7 +146,7 @@ class BoardRepository implements IBoardRepository {
     await prisma.board.deleteMany({ where: { id } });
   }
 
-  async addItem(data: BoardItemRepositoryInput): Promise<void> {
+  async addTerm(data: BoardTermRepositoryInput): Promise<void> {
     await prisma.$transaction(async (tx) => {
       const board = await tx.board.findUniqueOrThrow({
         where: { id: data.boardId },
@@ -158,13 +158,13 @@ class BoardRepository implements IBoardRepository {
       // With `next` null this finds the tail, which is the predecessor of an append.
       let predecessorId: number | null = null;
       if (!isHead) {
-        const predecessor = await tx.boardItem.findFirst({
+        const predecessor = await tx.boardTerm.findFirst({
           where: { boardId: data.boardId, next: data.next },
         });
         predecessorId = predecessor?.id ?? null;
       }
 
-      const created = await tx.boardItem.create({
+      const created = await tx.boardTerm.create({
         data: {
           boardId: data.boardId,
           termId: data.termId,
@@ -178,7 +178,7 @@ class BoardRepository implements IBoardRepository {
           data: { first: created.id },
         });
       } else if (predecessorId !== null) {
-        await tx.boardItem.update({
+        await tx.boardTerm.update({
           where: { id: predecessorId },
           data: { next: created.id },
         });
@@ -186,10 +186,10 @@ class BoardRepository implements IBoardRepository {
     });
   }
 
-  async deleteBoardItem(boardId: number, boardItemId: number): Promise<void> {
+  async deleteBoardTerm(boardId: number, boardTermId: number): Promise<void> {
     await prisma.$transaction(async (tx) => {
-      const node = await tx.boardItem.findUniqueOrThrow({
-        where: { id: boardItemId },
+      const node = await tx.boardTerm.findUniqueOrThrow({
+        where: { id: boardTermId },
         select: { next: true },
       });
 
@@ -198,38 +198,38 @@ class BoardRepository implements IBoardRepository {
         select: { first: true },
       });
 
-      if (board.first === boardItemId) {
+      if (board.first === boardTermId) {
         await tx.board.update({
           where: { id: boardId },
           data: { first: node.next },
         });
       } else {
-        const predecessor = await tx.boardItem.findFirst({
-          where: { boardId, next: boardItemId },
+        const predecessor = await tx.boardTerm.findFirst({
+          where: { boardId, next: boardTermId },
         });
         if (predecessor) {
-          await tx.boardItem.update({
+          await tx.boardTerm.update({
             where: { id: predecessor.id },
             data: { next: node.next },
           });
         }
       }
 
-      await tx.boardItem.delete({ where: { id: boardItemId } });
+      await tx.boardTerm.delete({ where: { id: boardTermId } });
     });
   }
 
-  async findItemsByBoardId(boardId: number): Promise<BoardItemOutput[]> {
+  async findTermsByBoardId(boardId: number): Promise<BoardTermOutput[]> {
     const board = await prisma.board.findUniqueOrThrow({
       where: { id: boardId },
       select: {
         first: true,
-        terms: { include: { item: { include: termInclude } } },
+        terms: { include: { term: { include: termInclude } } },
       },
     });
 
     const map = new Map(board.terms.map((bi) => [bi.id, bi]));
-    const ordered: BoardItemOutput[] = [];
+    const ordered: BoardTermOutput[] = [];
     let currentId = board.first;
     while (currentId !== null) {
       const node = map.get(currentId);
@@ -237,7 +237,7 @@ class BoardRepository implements IBoardRepository {
       ordered.push({
         id: node.id,
         uuid: node.uuid,
-        term: mapTermRow(node.item),
+        term: mapTermRow(node.term),
       });
       currentId = node.next;
     }
@@ -257,31 +257,31 @@ class BoardRepository implements IBoardRepository {
     return results.map((r) => this._map(r.responseBoard));
   }
 
-  async existsBoardItem(boardId: number, termId: number): Promise<boolean> {
-    const count = await prisma.boardItem.count({
+  async existsBoardTerm(boardId: number, termId: number): Promise<boolean> {
+    const count = await prisma.boardTerm.count({
       where: { boardId, termId },
     });
     return count > 0;
   }
 
-  async findItemByUuid(
+  async findBoardTermByUuid(
     boardId: number,
     uuid: string,
   ): Promise<{ id: number } | null> {
-    return prisma.boardItem.findFirst({
+    return prisma.boardTerm.findFirst({
       where: { boardId, uuid },
       select: { id: true },
     });
   }
 
-  async reorderItem(
+  async reorderTerm(
     boardId: number,
-    boardItemId: number,
+    boardTermId: number,
     next: number | null,
   ): Promise<void> {
     await prisma.$transaction(async (tx) => {
-      const node = await tx.boardItem.findUniqueOrThrow({
-        where: { id: boardItemId },
+      const node = await tx.boardTerm.findUniqueOrThrow({
+        where: { id: boardTermId },
         select: { next: true },
       });
 
@@ -293,17 +293,17 @@ class BoardRepository implements IBoardRepository {
       });
 
       // Detach from current position
-      if (board.first === boardItemId) {
+      if (board.first === boardTermId) {
         await tx.board.update({
           where: { id: boardId },
           data: { first: node.next },
         });
       } else {
-        const currentPredecessor = await tx.boardItem.findFirst({
-          where: { boardId, next: boardItemId },
+        const currentPredecessor = await tx.boardTerm.findFirst({
+          where: { boardId, next: boardTermId },
         });
         if (currentPredecessor) {
-          await tx.boardItem.update({
+          await tx.boardTerm.update({
             where: { id: currentPredecessor.id },
             data: { next: node.next },
           });
@@ -321,26 +321,26 @@ class BoardRepository implements IBoardRepository {
 
       let newPredecessorId: number | null = null;
       if (!isNewHead) {
-        const predecessor = await tx.boardItem.findFirst({
-          where: { boardId, next, id: { not: boardItemId } },
+        const predecessor = await tx.boardTerm.findFirst({
+          where: { boardId, next, id: { not: boardTermId } },
         });
         newPredecessorId = predecessor?.id ?? null;
       }
 
-      await tx.boardItem.update({
-        where: { id: boardItemId },
+      await tx.boardTerm.update({
+        where: { id: boardTermId },
         data: { next },
       });
 
       if (isNewHead) {
         await tx.board.update({
           where: { id: boardId },
-          data: { first: boardItemId },
+          data: { first: boardTermId },
         });
       } else if (newPredecessorId !== null) {
-        await tx.boardItem.update({
+        await tx.boardTerm.update({
           where: { id: newPredecessorId },
-          data: { next: boardItemId },
+          data: { next: boardTermId },
         });
       }
     });

@@ -55,25 +55,25 @@ router.delete(
 router.get(
   "/:uuid/terms",
   authMiddleware.auth(["super_admin", "admin"]),
-  boardController.findItems.bind(boardController),
+  boardController.findTerms.bind(boardController),
 );
 
 router.post(
   "/:uuid/terms",
   authMiddleware.auth(["super_admin", "admin"]),
-  boardController.addItem.bind(boardController),
+  boardController.addTerm.bind(boardController),
 );
 
 router.delete(
-  "/:uuid/terms/:boardItemUuid",
+  "/:uuid/terms/:boardTermUuid",
   authMiddleware.auth(["super_admin", "admin"]),
-  boardController.deleteBoardItem.bind(boardController),
+  boardController.deleteBoardTerm.bind(boardController),
 );
 
 router.patch(
-  "/:uuid/terms/:boardItemUuid/order",
+  "/:uuid/terms/:boardTermUuid/order",
   authMiddleware.auth(["super_admin", "admin"]),
-  boardController.reorderItem.bind(boardController),
+  boardController.reorderTerm.bind(boardController),
 );
 
 export default router;

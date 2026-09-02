@@ -15,7 +15,7 @@ const include = {
   author: { select: { uuid: true } },
   terms: {
     orderBy: { order: "asc" },
-    include: { item: { include: termInclude } },
+    include: { term: { include: termInclude } },
   },
 } as const;
 
@@ -28,7 +28,7 @@ class PhraseRepository implements IPhraseRepository {
     publishedAt: Date | null;
     createdAt: Date;
     updatedAt: Date;
-    terms: { id: number; uuid: string; item: TermRow }[];
+    terms: { id: number; uuid: string; term: TermRow }[];
   }): PhraseOutput {
     return {
       id: data.id,
@@ -38,7 +38,7 @@ class PhraseRepository implements IPhraseRepository {
       terms: data.terms.map((t) => ({
         id: t.id,
         uuid: t.uuid,
-        term: mapTermRow(t.item),
+        term: mapTermRow(t.term),
       })),
       publishedAt: data.publishedAt,
       createdAt: data.createdAt,
@@ -76,9 +76,9 @@ class PhraseRepository implements IPhraseRepository {
       const termIds = data.termIds;
 
       if (termIds !== undefined) {
-        await tx.phraseItem.deleteMany({ where: { phraseId: id } });
+        await tx.phraseTerm.deleteMany({ where: { phraseId: id } });
 
-        await tx.phraseItem.createMany({
+        await tx.phraseTerm.createMany({
           data: termIds.map((termId, index) => ({
             phraseId: id,
             termId,

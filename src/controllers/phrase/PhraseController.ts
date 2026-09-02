@@ -1,6 +1,6 @@
 import type { Request, Response } from "express";
 
-import { toItemResponse } from "@/controllers/term/TermResponse.js";
+import { toPlacementResponse } from "@/controllers/term/TermResponse.js";
 import { BadRequestError } from "@/errors/BadRequestError.js";
 import { NotFoundError } from "@/errors/NotFoundError.js";
 import type { PhraseOutput } from "@/models/types/Phrase.type.js";
@@ -25,9 +25,9 @@ class PhraseController implements IPhraseController {
       uuid: phrase.uuid,
       description: phrase.description,
       authorUuid: phrase.authorUuid,
-      terms: phrase.terms.map((item, index) => ({
+      terms: phrase.terms.map((phraseTerm, index) => ({
         order: index + 1,
-        ...toItemResponse(item.uuid, item.term),
+        ...toPlacementResponse(phraseTerm.uuid, phraseTerm.term),
       })),
       publishedAt: phrase.publishedAt,
       createdAt: phrase.createdAt,

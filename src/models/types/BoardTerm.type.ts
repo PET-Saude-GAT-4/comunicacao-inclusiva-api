@@ -1,18 +1,18 @@
 import type { TermOutput } from "@/models/types/Term.type.js";
 
-export type BoardItemInput = {
+export type BoardTermInput = {
   termUuid: string;
-  // A BoardItem uuid: the placement this one goes before, or null to append.
+  // A BoardTerm uuid: the placement this one goes before, or null to append.
   next?: string | null;
 };
 
-export type BoardItemRepositoryInput = {
+export type BoardTermRepositoryInput = {
   boardId: number;
   termId: number;
   next: number | null;
 };
 
-export type BoardItemOutput = {
+export type BoardTermOutput = {
   id: number;
   uuid: string;
   term: TermOutput;

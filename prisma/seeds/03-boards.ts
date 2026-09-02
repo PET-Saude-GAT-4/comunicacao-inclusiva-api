@@ -117,29 +117,29 @@ export async function seedBoards(prisma: PrismaClient): Promise<void> {
     }
 
     // The chain is rebuilt from scratch so re-running the seed converges on the
-    // definition above. Items are created one at a time because the linked list
+    // definition above. Terms are created one at a time because the linked list
     // needs the generated ids, which createMany does not return.
-    await prisma.boardItem.deleteMany({ where: { boardId: board.id } });
+    await prisma.boardTerm.deleteMany({ where: { boardId: board.id } });
 
-    const items = [];
+    const boardTerms = [];
     for (const term of terms) {
-      items.push(
-        await prisma.boardItem.create({
+      boardTerms.push(
+        await prisma.boardTerm.create({
           data: { boardId: board.id, termId: term.id },
         }),
       );
     }
 
-    for (let i = 0; i < items.length; i++) {
-      await prisma.boardItem.update({
-        where: { id: items[i].id },
-        data: { next: i + 1 < items.length ? items[i + 1].id : null },
+    for (let i = 0; i < boardTerms.length; i++) {
+      await prisma.boardTerm.update({
+        where: { id: boardTerms[i].id },
+        data: { next: i + 1 < boardTerms.length ? boardTerms[i + 1].id : null },
       });
     }
 
     await prisma.board.update({
       where: { id: board.id },
-      data: { first: items[0]?.id ?? null },
+      data: { first: boardTerms[0]?.id ?? null },
     });
   }
 }

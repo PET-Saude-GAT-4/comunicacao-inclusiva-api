@@ -99,9 +99,9 @@ export async function seedPhrases(prisma: PrismaClient): Promise<void> {
 
     // The sequence is rebuilt from scratch so re-running the seed converges on
     // the definition above.
-    await prisma.phraseItem.deleteMany({ where: { phraseId: phrase.id } });
+    await prisma.phraseTerm.deleteMany({ where: { phraseId: phrase.id } });
 
-    await prisma.phraseItem.createMany({
+    await prisma.phraseTerm.createMany({
       data: terms.map((term, index) => ({
         phraseId: phrase.id,
         termId: term.id,

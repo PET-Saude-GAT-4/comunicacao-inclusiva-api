@@ -1,11 +1,11 @@
 import type { Request, Response } from "express";
 
 import { toPictogramResponse } from "@/controllers/pictogram/PictogramResponse.js";
-import { toItemResponse } from "@/controllers/term/TermResponse.js";
+import { toPlacementResponse } from "@/controllers/term/TermResponse.js";
 import { BadRequestError } from "@/errors/BadRequestError.js";
 import { NotFoundError } from "@/errors/NotFoundError.js";
 import type { BoardOutput } from "@/models/types/Board.type.js";
-import type { BoardItemOutput } from "@/models/types/BoardItem.type.js";
+import type { BoardTermOutput } from "@/models/types/BoardTerm.type.js";
 import BoardService from "@/services/board/BoardService.js";
 import type { IBoardService } from "@/services/board/IBoardService.js";
 
@@ -22,8 +22,11 @@ class BoardController implements IBoardController {
     this._boardService = props?.boardService ?? new BoardService();
   }
 
-  private _toBoardItemResponse(item: BoardItemOutput, index: number) {
-    return { ...toItemResponse(item.uuid, item.term), order: index + 1 };
+  private _toBoardTermResponse(boardTerm: BoardTermOutput, index: number) {
+    return {
+      ...toPlacementResponse(boardTerm.uuid, boardTerm.term),
+      order: index + 1,
+    };
   }
 
   private _toResponse(board: BoardOutput) {
@@ -34,7 +37,7 @@ class BoardController implements IBoardController {
       representativePictogram: toPictogramResponse(
         board.representativePictogram,
       ),
-      itemCount: board.itemCount,
+      termCount: board.termCount,
       publishedAt: board.publishedAt,
       createdAt: board.createdAt,
       updatedAt: board.updatedAt,
@@ -107,13 +110,16 @@ class BoardController implements IBoardController {
     res.status(200).json({ board: this._toResponse(board) });
   }
 
-  async findItemsByPublishedBoard(req: Request, res: Response): Promise<void> {
+  async findTermsByPublishedBoard(req: Request, res: Response): Promise<void> {
     const uuid = req.params.uuid as string;
 
-    const items = await this._boardService.findItemsByPublishedBoardUuid(uuid);
+    const boardTerms =
+      await this._boardService.findTermsByPublishedBoardUuid(uuid);
 
     res.status(200).json({
-      terms: items.map((item, i) => this._toBoardItemResponse(item, i)),
+      terms: boardTerms.map((boardTerm, i) =>
+        this._toBoardTermResponse(boardTerm, i),
+      ),
     });
   }
 
@@ -169,7 +175,7 @@ class BoardController implements IBoardController {
     res.status(204).send();
   }
 
-  async addItem(req: Request, res: Response): Promise<void> {
+  async addTerm(req: Request, res: Response): Promise<void> {
     const boardUuid = req.params.uuid as string;
     const { termUuid, next } = req.body;
 
@@ -177,7 +183,7 @@ class BoardController implements IBoardController {
       throw new BadRequestError("Term is required");
     }
 
-    await this._boardService.addItem(
+    await this._boardService.addTerm(
       boardUuid,
       {
         termUuid,
@@ -189,8 +195,8 @@ class BoardController implements IBoardController {
     res.status(204).send();
   }
 
-  async deleteBoardItem(req: Request, res: Response): Promise<void> {
-    const { uuid: boardUuid, boardItemUuid } = req.params as Record<
+  async deleteBoardTerm(req: Request, res: Response): Promise<void> {
+    const { uuid: boardUuid, boardTermUuid } = req.params as Record<
       string,
       string
     >;
@@ -199,39 +205,41 @@ class BoardController implements IBoardController {
       throw new BadRequestError("'boardUuid' is required");
     }
 
-    if (!boardItemUuid) {
-      throw new BadRequestError("'boardItemUuid' is required");
+    if (!boardTermUuid) {
+      throw new BadRequestError("'boardTermUuid' is required");
     }
 
-    await this._boardService.deleteBoardItem(
+    await this._boardService.deleteBoardTerm(
       boardUuid,
-      boardItemUuid,
+      boardTermUuid,
       req.user!,
     );
     res.status(204).send();
   }
 
-  async findItems(req: Request, res: Response): Promise<void> {
+  async findTerms(req: Request, res: Response): Promise<void> {
     const boardUuid = req.params.uuid as string;
 
-    const items = await this._boardService.findItemsByBoardUuid(
+    const boardTerms = await this._boardService.findTermsByBoardUuid(
       boardUuid,
       req.user!,
     );
 
     res.status(200).json({
-      terms: items.map((item, i) => this._toBoardItemResponse(item, i)),
+      terms: boardTerms.map((boardTerm, i) =>
+        this._toBoardTermResponse(boardTerm, i),
+      ),
     });
   }
 
-  async reorderItem(req: Request, res: Response): Promise<void> {
+  async reorderTerm(req: Request, res: Response): Promise<void> {
     const boardUuid = req.params.uuid as string;
-    const boardItemUuid = req.params.boardItemUuid as string;
+    const boardTermUuid = req.params.boardTermUuid as string;
     const { next } = req.body;
 
-    await this._boardService.reorderItem(
+    await this._boardService.reorderTerm(
       boardUuid,
-      boardItemUuid,
+      boardTermUuid,
       next ?? null,
       req.user!,
     );
