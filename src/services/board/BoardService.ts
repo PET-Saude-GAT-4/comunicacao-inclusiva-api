@@ -5,6 +5,7 @@ import { NotFoundError } from "@/errors/NotFoundError.js";
 import type { BoardInput, BoardOutput } from "@/models/types/Board.type.js";
 import type { BoardPictogramInput } from "@/models/types/BoardPictogram.type.js";
 import type { PictogramOutput } from "@/models/types/Pictogram.type.js";
+import { RoleEnum } from "@/models/types/Role.type.js";
 import BoardRepository from "@/repositories/board/BoardRepository.js";
 import type { IBoardRepository } from "@/repositories/board/IBoardRepository.js";
 import type { IPictogramRepository } from "@/repositories/pictogram/IPictogramRepository.js";
@@ -29,15 +30,15 @@ class BoardService implements IBoardService {
   }
 
   private _assertCanManage(board: BoardOutput, user: AuthenticatedUser): void {
-    if (user.role === "super_admin") return;
-    if (user.role === "admin" && board.authorUuid === user.uuid) return;
+    if (user.role === RoleEnum.SUPER_ADMIN) return;
+    if (user.role === RoleEnum.ADMIN && board.authorUuid === user.uuid) return;
     throw new ForbiddenError("You are not allowed to manage this board.");
   }
 
   private _assertCanRead(board: BoardOutput, user: AuthenticatedUser): void {
-    if (user.role === "super_admin") return;
+    if (user.role === RoleEnum.SUPER_ADMIN) return;
     if (board.publishedAt !== null) return;
-    if (user.role === "admin" && board.authorUuid === user.uuid) return;
+    if (user.role === RoleEnum.ADMIN && board.authorUuid === user.uuid) return;
     throw new ForbiddenError("You are not allowed to access this board.");
   }
 

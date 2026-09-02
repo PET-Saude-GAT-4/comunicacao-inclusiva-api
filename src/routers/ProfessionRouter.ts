@@ -6,6 +6,7 @@ import type { ISpecialityController } from "@/controllers/speciality/ISpeciality
 import SpecialityController from "@/controllers/speciality/SpecialityController.js";
 import AuthMiddleware from "@/middlewares/AuthMiddleware.js";
 import type { IAuthMiddleware } from "@/middlewares/IAuthMiddleware.js";
+import { RoleEnum } from "@/models/types/Role.type.js";
 
 const authMiddleware: IAuthMiddleware = new AuthMiddleware();
 
@@ -17,38 +18,38 @@ const router = express.Router();
 
 router.post(
   "/",
-  authMiddleware.auth(["super_admin", "admin"]),
+  authMiddleware.auth([RoleEnum.SUPER_ADMIN, RoleEnum.ADMIN]),
   professionController.create.bind(professionController),
 );
 
 router.get(
   "/",
-  authMiddleware.auth(["super_admin", "admin"]),
+  authMiddleware.auth([RoleEnum.SUPER_ADMIN, RoleEnum.ADMIN]),
   professionController.findAll.bind(professionController),
 );
 
 router.get(
   "/:id",
-  authMiddleware.auth(["super_admin", "admin"]),
+  authMiddleware.auth([RoleEnum.SUPER_ADMIN, RoleEnum.ADMIN]),
   professionController.findById!.bind(professionController),
 );
 
 router.patch(
   "/:id",
-  authMiddleware.auth(["super_admin", "admin"]),
+  authMiddleware.auth([RoleEnum.SUPER_ADMIN, RoleEnum.ADMIN]),
   professionController.update!.bind(professionController),
 );
 
 router.delete(
   "/:id",
-  authMiddleware.auth(["super_admin", "admin"]),
+  authMiddleware.auth([RoleEnum.SUPER_ADMIN, RoleEnum.ADMIN]),
   professionController.delete.bind(professionController),
 );
 
 //Rota aninhada para criar specialities
 router.post(
   "/:professionCode/specialities",
-  authMiddleware.auth(["super_admin", "admin"]),
+  authMiddleware.auth([RoleEnum.SUPER_ADMIN, RoleEnum.ADMIN]),
   specialityController.create.bind(specialityController),
 );
 

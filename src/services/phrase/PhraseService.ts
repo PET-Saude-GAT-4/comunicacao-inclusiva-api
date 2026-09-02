@@ -5,6 +5,7 @@ import type {
   PhraseOutput,
   PhraseUpdateInput,
 } from "@/models/types/Phrase.type.js";
+import { RoleEnum } from "@/models/types/Role.type.js";
 import type { IPhraseRepository } from "@/repositories/phrase/IPhraseRepository.js";
 import PhraseRepository from "@/repositories/phrase/PhraseRepository.js";
 import type { IPictogramRepository } from "@/repositories/pictogram/IPictogramRepository.js";
@@ -32,15 +33,15 @@ class PhraseService implements IPhraseService {
     phrase: PhraseOutput,
     user: AuthenticatedUser,
   ): void {
-    if (user.role === "super_admin") return;
-    if (user.role === "admin" && phrase.authorUuid === user.uuid) return;
+    if (user.role === RoleEnum.SUPER_ADMIN) return;
+    if (user.role === RoleEnum.ADMIN && phrase.authorUuid === user.uuid) return;
     throw new ForbiddenError("You are not allowed to manage this phrase.");
   }
 
   private _assertCanRead(phrase: PhraseOutput, user: AuthenticatedUser): void {
-    if (user.role === "super_admin") return;
+    if (user.role === RoleEnum.SUPER_ADMIN) return;
     if (phrase.publishedAt !== null) return;
-    if (user.role === "admin" && phrase.authorUuid === user.uuid) return;
+    if (user.role === RoleEnum.ADMIN && phrase.authorUuid === user.uuid) return;
     throw new ForbiddenError("You are not allowed to access this phrase.");
   }
 

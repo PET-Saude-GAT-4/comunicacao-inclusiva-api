@@ -4,6 +4,7 @@ import type { IInteractionChainController } from "@/controllers/interaction-chai
 import InteractionChainController from "@/controllers/interaction-chain/InteractionChainController.js";
 import AuthMiddleware from "@/middlewares/AuthMiddleware.js";
 import type { IAuthMiddleware } from "@/middlewares/IAuthMiddleware.js";
+import { RoleEnum } from "@/models/types/Role.type.js";
 
 const authMiddleware: IAuthMiddleware = new AuthMiddleware();
 const interactionChainController: IInteractionChainController =
@@ -13,19 +14,19 @@ const router = express.Router();
 
 router.get(
   "/",
-  authMiddleware.auth(["super_admin", "admin"]),
+  authMiddleware.auth([RoleEnum.SUPER_ADMIN, RoleEnum.ADMIN]),
   interactionChainController.findAll.bind(interactionChainController),
 );
 
 router.post(
   "/",
-  authMiddleware.auth(["super_admin", "admin"]),
+  authMiddleware.auth([RoleEnum.SUPER_ADMIN, RoleEnum.ADMIN]),
   interactionChainController.create.bind(interactionChainController),
 );
 
 router.get(
   "/trigger-board/:uuid",
-  authMiddleware.auth(["super_admin", "admin"]),
+  authMiddleware.auth([RoleEnum.SUPER_ADMIN, RoleEnum.ADMIN]),
   interactionChainController.findByTriggerBoardUuid.bind(
     interactionChainController,
   ),
@@ -33,19 +34,19 @@ router.get(
 
 router.get(
   "/:uuid",
-  authMiddleware.auth(["super_admin", "admin"]),
+  authMiddleware.auth([RoleEnum.SUPER_ADMIN, RoleEnum.ADMIN]),
   interactionChainController.findByUuid.bind(interactionChainController),
 );
 
 router.patch(
   "/:uuid",
-  authMiddleware.auth(["super_admin", "admin"]),
+  authMiddleware.auth([RoleEnum.SUPER_ADMIN, RoleEnum.ADMIN]),
   (req: Request, res: Response) => interactionChainController.update!(req, res),
 );
 
 router.delete(
   "/:uuid",
-  authMiddleware.auth(["super_admin", "admin"]),
+  authMiddleware.auth([RoleEnum.SUPER_ADMIN, RoleEnum.ADMIN]),
   interactionChainController.delete.bind(interactionChainController),
 );
 

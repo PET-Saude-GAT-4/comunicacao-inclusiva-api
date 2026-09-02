@@ -16,4 +16,3 @@ export type RoleOutput = {
   createdAt: Date;
   updatedAt: Date;
 };
-

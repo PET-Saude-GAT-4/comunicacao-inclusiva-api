@@ -7,6 +7,7 @@ import type {
   InteractionChainOutput,
   InteractionChainUpdateInput,
 } from "@/models/types/InteractionChain.type.js";
+import { RoleEnum } from "@/models/types/Role.type.js";
 import BoardRepository from "@/repositories/board/BoardRepository.js";
 import type { IBoardRepository } from "@/repositories/board/IBoardRepository.js";
 import type { IInteractionChainRepository } from "@/repositories/interaction-chain/IInteractionChainRepository.js";
@@ -34,8 +35,9 @@ class InteractionChainService implements IInteractionChainService {
     triggerBoardAuthorUuid: string | null,
     user: AuthenticatedUser,
   ): void {
-    if (user.role === "super_admin") return;
-    if (user.role === "admin" && triggerBoardAuthorUuid === user.uuid) return;
+    if (user.role === RoleEnum.SUPER_ADMIN) return;
+    if (user.role === RoleEnum.ADMIN && triggerBoardAuthorUuid === user.uuid)
+      return;
     throw new ForbiddenError(
       "You are not allowed to manage this interaction chain.",
     );
@@ -46,9 +48,10 @@ class InteractionChainService implements IInteractionChainService {
     triggerBoardPublishedAt: Date | null,
     user: AuthenticatedUser,
   ): void {
-    if (user.role === "super_admin") return;
+    if (user.role === RoleEnum.SUPER_ADMIN) return;
     if (triggerBoardPublishedAt !== null) return;
-    if (user.role === "admin" && triggerBoardAuthorUuid === user.uuid) return;
+    if (user.role === RoleEnum.ADMIN && triggerBoardAuthorUuid === user.uuid)
+      return;
     throw new ForbiddenError(
       "You are not allowed to access this interaction chain.",
     );
