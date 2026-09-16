@@ -1,6 +1,7 @@
 import bcrypt from "bcryptjs";
 
 import type { PrismaClient } from "../../src/generated/prisma/client.js";
+import { RoleEnum } from "../../src/models/types/Role.type.js";
 
 export async function seedRolesAndUsers(prisma: PrismaClient): Promise<void> {
   const adminPassword = process.env.ADMIN_PASSWORD;
@@ -10,7 +11,7 @@ export async function seedRolesAndUsers(prisma: PrismaClient): Promise<void> {
   }
 
   const roles = [];
-  for (const role of ["super_admin", "admin", "viewer"]) {
+  for (const role of Object.values(RoleEnum)) {
     const r = await prisma.role.upsert({
       where: { name: role },
       update: {},
@@ -20,7 +21,9 @@ export async function seedRolesAndUsers(prisma: PrismaClient): Promise<void> {
     roles.push(r);
   }
 
-  const superAdminRole = roles.find((role) => role.name === "super_admin")!;
+  const superAdminRole = roles.find(
+    (role) => role.name === RoleEnum.SUPER_ADMIN,
+  )!;
 
   const passwordHash = await bcrypt.hash(adminPassword, 12);
 

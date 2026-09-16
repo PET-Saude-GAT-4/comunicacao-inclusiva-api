@@ -4,6 +4,7 @@ import AuthController from "@/controllers/auth/AuthController.js";
 import type { IAuthController } from "@/controllers/auth/IAuthController.js";
 import AuthMiddleware from "@/middlewares/AuthMiddleware.js";
 import type { IAuthMiddleware } from "@/middlewares/IAuthMiddleware.js";
+import { RoleEnum } from "@/models/types/Role.type.js";
 
 const authMiddleware: IAuthMiddleware = new AuthMiddleware();
 
@@ -16,8 +17,10 @@ router.post("/login", (req: Request, res: Response) =>
   authController.login(req, res),
 );
 
-router.post("/register", (req: Request, res: Response) =>
-  authController.register(req, res),
+router.post(
+  "/register",
+  authMiddleware.auth([RoleEnum.SUPER_ADMIN, RoleEnum.ADMIN]),
+  (req: Request, res: Response) => authController.register(req, res),
 );
 
 // Protected routes

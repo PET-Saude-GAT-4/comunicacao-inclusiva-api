@@ -25,7 +25,12 @@ class UserController implements IUserController {
       throw new BadRequestError("Email, password, and role ID are required");
     }
 
-    const user = await this._userService.create(email, password, roleId);
+    const user = await this._userService.create(
+      email,
+      password,
+      roleId,
+      req.user ? { role: req.user.role } : undefined,
+    );
     res.status(201).json({ user });
   }
 
@@ -48,18 +53,21 @@ class UserController implements IUserController {
   async update(req: Request, res: Response): Promise<void> {
     const id = Number(req.params.id);
     const { email, password, roleId } = req.body;
-
-    const user = await this._userService.update(id, {
-      email,
-      password,
-      roleId,
-    });
+    const user = await this._userService.update(
+      id,
+      {
+        email,
+        password,
+        roleId,
+      },
+      { id: req.user!.id, role: req.user!.role },
+    );
     res.status(200).json({ user });
   }
 
   async delete(req: Request, res: Response): Promise<void> {
     const id = Number(req.params.id);
-    await this._userService.delete(id);
+    await this._userService.delete(id, { role: req.user!.role });
     res.status(204).send();
   }
 }
