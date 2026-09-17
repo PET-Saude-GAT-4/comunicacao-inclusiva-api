@@ -24,6 +24,7 @@ class UserRepository implements IUserRepository {
       uuid: user.uuid,
       email: user.email,
       role: user.role,
+      confirmedAt: user.confirmedAt,
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
     };
@@ -36,6 +37,7 @@ class UserRepository implements IUserRepository {
       uuid: user.uuid,
       email: user.email,
       role: user.role,
+      confirmedAt: user.confirmedAt,
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
     }));
@@ -58,7 +60,8 @@ class UserRepository implements IUserRepository {
     const user = await prisma.user.create({
       data: {
         email: data.email,
-        passwordHash: data.passwordHash,
+        passwordHash: data.passwordHash ?? null,
+        confirmedAt: data.confirmedAt ?? null,
         role: { connect: { id: data.roleId } },
       },
       include: { role: true },
@@ -68,18 +71,23 @@ class UserRepository implements IUserRepository {
       uuid: user.uuid,
       email: user.email,
       role: user.role,
+      confirmedAt: user.confirmedAt,
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
     };
   }
 
   async update(id: number, data: UserUpdateInput): Promise<UserOutput> {
+    const { password, passwordHash, ...rest } = data;
     const user = await prisma.user.update({
       where: {
         id,
       },
       data: {
-        ...data,
+        ...rest,
+        ...(password !== undefined || passwordHash !== undefined
+          ? { passwordHash: passwordHash ?? password }
+          : {}),
       },
       include: { role: true },
     });
@@ -88,6 +96,7 @@ class UserRepository implements IUserRepository {
       uuid: user.uuid,
       email: user.email,
       role: user.role,
+      confirmedAt: user.confirmedAt,
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
     };
@@ -108,6 +117,7 @@ class UserRepository implements IUserRepository {
       uuid: user.uuid,
       email: user.email,
       role: user.role,
+      confirmedAt: user.confirmedAt,
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
     };
@@ -116,7 +126,7 @@ class UserRepository implements IUserRepository {
   async findByUuid(uuid: string): Promise<UserOutput | null> {
     const user = await prisma.user.findUnique({
       where: {
-        uuid: uuid,
+        uuid,
       },
       include: { role: true },
     });
@@ -128,6 +138,7 @@ class UserRepository implements IUserRepository {
       uuid: user.uuid,
       email: user.email,
       role: user.role,
+      confirmedAt: user.confirmedAt,
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
     };

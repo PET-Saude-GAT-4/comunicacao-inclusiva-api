@@ -87,6 +87,7 @@ class RoleRepository implements IRoleRepository {
       uuid: user.uuid,
       email: user.email,
       role: user.role,
+      confirmedAt: user.confirmedAt,
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
     }));
