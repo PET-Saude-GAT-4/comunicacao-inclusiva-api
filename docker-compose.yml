@@ -20,6 +20,18 @@ services:
       timeout: 5s
       retries: 5
 
+  mailpit:
+    profiles: ["dev"]
+    image: axllent/mailpit
+    container_name: comunicacao_mailpit
+    restart: unless-stopped
+    ports:
+      - "1025:1025" # SMTP
+      - "8025:8025" # UI Web
+    environment:
+      MP_SMTP_AUTH_ACCEPT_ANY: 1
+      MP_SMTP_AUTH_ALLOW_INSECURE: 1
+
   api-dev:
     profiles: ["dev"]
     build:
