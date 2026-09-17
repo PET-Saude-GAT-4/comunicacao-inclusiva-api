@@ -32,17 +32,31 @@ model Role {
 }
 
 model User {
-  id           Int          @id @default(autoincrement())
-  uuid         String       @unique @default(uuid())
-  email        String       @unique
-  passwordHash String
-  roleId       Int
-  role         Role         @relation(fields: [roleId], references: [id])
-  createdAt    DateTime     @default(now())
-  updatedAt    DateTime     @updatedAt
-  storedFiles  StoredFile[]
-  boards       Board[]      @relation("BoardAuthor")
-  phrases      Phrase[]     @relation("PhraseAuthor")
+  id               Int               @id @default(autoincrement())
+  uuid             String            @unique @default(uuid())
+  email            String            @unique
+  passwordHash     String?
+  confirmedAt      DateTime?
+  roleId           Int
+  role             Role              @relation(fields: [roleId], references: [id])
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  storedFiles      StoredFile[]
+  boards           Board[]           @relation("BoardAuthor")
+  phrases          Phrase[]          @relation("PhraseAuthor")
+  invitationTokens InvitationToken[]
+}
+
+model InvitationToken {
+  id        Int       @id @default(autoincrement())
+  token     String    @unique
+  userId    Int
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId])
 }
 
 model StoredFile {
