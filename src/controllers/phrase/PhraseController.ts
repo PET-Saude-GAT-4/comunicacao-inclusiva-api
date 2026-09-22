@@ -1,5 +1,6 @@
 import type { Request, Response } from "express";
 
+import { toBoardResponse } from "@/controllers/board/BoardResponse.js";
 import { toPlacementResponse } from "@/controllers/term/TermResponse.js";
 import { BadRequestError } from "@/errors/BadRequestError.js";
 import { NotFoundError } from "@/errors/NotFoundError.js";
@@ -30,6 +31,7 @@ class PhraseController implements IPhraseController {
         ...toPlacementResponse(phraseTerm.uuid, phraseTerm.term),
       })),
       publishedAt: phrase.publishedAt,
+      listedInLibrary: phrase.listedInLibrary,
       createdAt: phrase.createdAt,
       updatedAt: phrase.updatedAt,
     };
@@ -47,8 +49,18 @@ class PhraseController implements IPhraseController {
     return value as string[];
   }
 
+  private _parseListedInLibrary(value: unknown): boolean | undefined {
+    if (value === undefined) return undefined;
+
+    if (typeof value !== "boolean") {
+      throw new BadRequestError("listedInLibrary must be a boolean");
+    }
+
+    return value;
+  }
+
   async create(req: Request, res: Response): Promise<void> {
-    const { description, termUuids } = req.body;
+    const { description, termUuids, listedInLibrary } = req.body;
 
     if (!description || typeof description !== "string") {
       throw new BadRequestError("Description is required");
@@ -58,6 +70,7 @@ class PhraseController implements IPhraseController {
       {
         description,
         termUuids: this._parseTermUuids(termUuids),
+        listedInLibrary: this._parseListedInLibrary(listedInLibrary),
       },
       req.user!,
     );
@@ -68,9 +81,13 @@ class PhraseController implements IPhraseController {
   async update(req: Request, res: Response): Promise<void> {
     const uuid = req.params.uuid as string;
 
-    const { description, termUuids } = req.body;
+    const { description, termUuids, listedInLibrary } = req.body;
 
-    if (description === undefined && termUuids === undefined) {
+    if (
+      description === undefined &&
+      termUuids === undefined &&
+      listedInLibrary === undefined
+    ) {
       throw new BadRequestError("No fields to update");
     }
 
@@ -87,6 +104,7 @@ class PhraseController implements IPhraseController {
         description,
         termUuids:
           termUuids === undefined ? undefined : this._parseTermUuids(termUuids),
+        listedInLibrary: this._parseListedInLibrary(listedInLibrary),
       },
       req.user!,
     );
@@ -132,6 +150,23 @@ class PhraseController implements IPhraseController {
     }
 
     res.status(200).json({ phrase: this._toResponse(phrase) });
+  }
+
+  async findNextBoardsByPublishedPhrase(
+    req: Request,
+    res: Response,
+  ): Promise<void> {
+    const uuid = req.params.uuid as string;
+
+    const boards =
+      await this._phraseService.findNextBoardsByPublishedPhraseUuid(uuid);
+
+    res.status(200).json({
+      boards: boards.map((b, i) => ({
+        ...toBoardResponse(b),
+        order: i + 1,
+      })),
+    });
   }
 
   async publish(req: Request, res: Response): Promise<void> {

@@ -1,4 +1,5 @@
 import type {
+  ChainTrigger,
   InteractionChainInput,
   InteractionChainOutput,
   InteractionChainUpdateInput,
@@ -26,8 +27,8 @@ interface IInteractionChainService {
     user: AuthenticatedUser,
   ): Promise<InteractionChainOutput | null>;
 
-  findByTriggerBoardUuid(
-    uuid: string,
+  findByTrigger(
+    trigger: ChainTrigger,
     user: AuthenticatedUser,
   ): Promise<InteractionChainOutput[]>;
 }

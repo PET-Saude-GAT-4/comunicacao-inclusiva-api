@@ -22,6 +22,9 @@ async function getTermByPictogramFileUuid(
 type PhraseDef = {
   description: string;
   pictogramFileUuids: string[];
+  // Omitted means listed. Only a phrase that exists purely to carry board
+  // recommendations sets this to false.
+  listedInLibrary?: boolean;
 };
 
 // Store phrases are seeded without an author, so only a super_admin can manage
@@ -69,6 +72,15 @@ const PHRASE_DEFS: PhraseDef[] = [
       "ec4d11e0-46da-4b17-aef6-fa9de793ebd8", // bathroom
     ],
   },
+  // Reaches devices but stays out of the library: naming the body part alone is
+  // a step towards a phrase, not a phrase someone would browse for.
+  {
+    description: "Dor de cabeça",
+    pictogramFileUuids: [
+      "f55a4706-5c57-433f-a022-7abfe781fb1a", // head
+    ],
+    listedInLibrary: false,
+  },
 ];
 
 export async function seedPhrases(prisma: PrismaClient): Promise<void> {
@@ -83,17 +95,23 @@ export async function seedPhrases(prisma: PrismaClient): Promise<void> {
       where: { description: def.description },
     });
 
+    const listedInLibrary = def.listedInLibrary ?? true;
+
     if (!phrase) {
       phrase = await prisma.phrase.create({
         data: {
           description: def.description,
           publishedAt: new Date(),
+          listedInLibrary,
         },
       });
     } else {
       await prisma.phrase.update({
         where: { id: phrase.id },
-        data: { publishedAt: phrase.publishedAt ?? new Date() },
+        data: {
+          publishedAt: phrase.publishedAt ?? new Date(),
+          listedInLibrary,
+        },
       });
     }
 

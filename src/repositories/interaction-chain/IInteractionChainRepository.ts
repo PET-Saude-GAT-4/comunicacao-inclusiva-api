@@ -1,14 +1,16 @@
 import type {
+  ChainTrigger,
   InteractionChainOutput,
   InteractionChainRepositoryInput,
   InteractionChainRepositoryUpdateInput,
+  TriggerRef,
 } from "@/models/types/InteractionChain.type.js";
 
 import type { IRepository } from "../IRepository.js";
 
 export interface IInteractionChainRepository extends IRepository<InteractionChainOutput> {
   findAll(filter?: {
-    triggerBoardAuthorUuid?: string;
+    triggerAuthorUuid?: string;
   }): Promise<InteractionChainOutput[]>;
 
   create(
@@ -22,5 +24,10 @@ export interface IInteractionChainRepository extends IRepository<InteractionChai
 
   findByUuid(uuid: string): Promise<InteractionChainOutput | null>;
 
-  findByTriggerBoardUuid(uuid: string): Promise<InteractionChainOutput[]>;
+  findByTrigger(trigger: ChainTrigger): Promise<InteractionChainOutput[]>;
+
+  findByTriggerAndResponse(
+    trigger: TriggerRef,
+    responseBoardId: number,
+  ): Promise<InteractionChainOutput | null>;
 }

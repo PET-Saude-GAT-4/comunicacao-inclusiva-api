@@ -26,6 +26,7 @@ class PhraseRepository implements IPhraseRepository {
     description: string;
     author: { uuid: string } | null;
     publishedAt: Date | null;
+    listedInLibrary: boolean;
     createdAt: Date;
     updatedAt: Date;
     terms: { id: number; uuid: string; term: TermRow }[];
@@ -41,6 +42,7 @@ class PhraseRepository implements IPhraseRepository {
         term: mapTermRow(t.term),
       })),
       publishedAt: data.publishedAt,
+      listedInLibrary: data.listedInLibrary,
       createdAt: data.createdAt,
       updatedAt: data.updatedAt,
     };
@@ -51,6 +53,7 @@ class PhraseRepository implements IPhraseRepository {
       data: {
         description: data.description,
         authorId: data.authorId,
+        listedInLibrary: data.listedInLibrary ?? Prisma.skip,
         terms: {
           create: data.termIds.map((termId, index) => ({
             termId,
@@ -89,7 +92,10 @@ class PhraseRepository implements IPhraseRepository {
 
       return tx.phrase.update({
         where: { id },
-        data: { description: data.description ?? Prisma.skip },
+        data: {
+          description: data.description ?? Prisma.skip,
+          listedInLibrary: data.listedInLibrary ?? Prisma.skip,
+        },
         include,
       });
     });
