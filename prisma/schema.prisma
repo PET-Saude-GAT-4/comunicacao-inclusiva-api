@@ -155,11 +155,19 @@ model Speciality {
   @@unique([name, professionId])
 }
 
+/// Exactly one of triggerBoardId and triggerPhraseId is set: an exclusive arc.
+/// That rule and the per-trigger uniqueness are a CHECK and two partial unique
+/// indexes Prisma cannot express, so they live only in
+/// migrations/20260918120000_add_phrase_trigger_and_listed_in_library and this
+/// model does not fully describe the table. The arc costs a column per trigger
+/// kind.
 model InteractionChain {
   id              Int      @id @default(autoincrement())
   uuid            String   @unique @default(uuid())
-  triggerBoardId  Int
-  triggerBoard    Board    @relation("TriggerChain", fields: [triggerBoardId], references: [id], onDelete: Cascade)
+  triggerBoardId  Int?
+  triggerBoard    Board?   @relation("TriggerChain", fields: [triggerBoardId], references: [id], onDelete: Cascade)
+  triggerPhraseId Int?
+  triggerPhrase   Phrase?  @relation("TriggerPhraseChain", fields: [triggerPhraseId], references: [id], onDelete: Cascade)
   responseBoardId Int
   responseBoard   Board    @relation("ResponseChain", fields: [responseBoardId], references: [id], onDelete: Cascade)
   rank            Int
@@ -167,8 +175,8 @@ model InteractionChain {
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
-  @@unique([triggerBoardId, responseBoardId])
   @@index([triggerBoardId, rank])
+  @@index([triggerPhraseId, rank])
 }
 
 model Phrase {
@@ -178,9 +186,14 @@ model Phrase {
   authorId    Int?
   author      User?             @relation("PhraseAuthor", fields: [authorId], references: [id])
   publishedAt DateTime?
+  // publishedAt decides whether the phrase reaches devices; this decides
+  // whether it is browsable there. An unlisted phrase still syncs, so it can
+  // carry board recommendations without cluttering the library.
+  listedInLibrary Boolean       @default(true)
   createdAt   DateTime          @default(now())
   updatedAt   DateTime          @updatedAt
-  terms       PhraseTerm[]
+  terms         PhraseTerm[]
+  triggerChains InteractionChain[] @relation("TriggerPhraseChain")
 }
 
 model PhraseTerm {

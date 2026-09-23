@@ -1,3 +1,4 @@
+import type { BoardOutput } from "@/models/types/Board.type.js";
 import type {
   PhraseInput,
   PhraseOutput,
@@ -26,6 +27,8 @@ interface IPhraseService {
   findAllPublished(): Promise<PhraseOutput[]>;
 
   findPublishedByUuid(uuid: string): Promise<PhraseOutput | null>;
+
+  findNextBoardsByPublishedPhraseUuid(uuid: string): Promise<BoardOutput[]>;
 
   publish(uuid: string, user: AuthenticatedUser): Promise<PhraseOutput>;
 

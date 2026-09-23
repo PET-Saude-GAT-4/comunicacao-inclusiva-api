@@ -1,11 +1,14 @@
 import { ForbiddenError } from "@/errors/ForbiddenError.js";
 import { NotFoundError } from "@/errors/NotFoundError.js";
+import type { BoardOutput } from "@/models/types/Board.type.js";
 import type {
   PhraseInput,
   PhraseOutput,
   PhraseUpdateInput,
 } from "@/models/types/Phrase.type.js";
 import { RoleEnum } from "@/models/types/Role.type.js";
+import BoardRepository from "@/repositories/board/BoardRepository.js";
+import type { IBoardRepository } from "@/repositories/board/IBoardRepository.js";
 import type { IPhraseRepository } from "@/repositories/phrase/IPhraseRepository.js";
 import PhraseRepository from "@/repositories/phrase/PhraseRepository.js";
 import type { ITermRepository } from "@/repositories/term/ITermRepository.js";
@@ -17,15 +20,18 @@ import type { IPhraseService } from "./IPhraseService.js";
 type Props = {
   phraseRepository?: IPhraseRepository;
   termRepository?: ITermRepository;
+  boardRepository?: IBoardRepository;
 };
 
 class PhraseService implements IPhraseService {
   private _phraseRepository: IPhraseRepository;
   private _termRepository: ITermRepository;
+  private _boardRepository: IBoardRepository;
 
   constructor(props?: Props) {
     this._phraseRepository = props?.phraseRepository ?? new PhraseRepository();
     this._termRepository = props?.termRepository ?? new TermRepository();
+    this._boardRepository = props?.boardRepository ?? new BoardRepository();
   }
 
   private _assertCanManage(
@@ -80,6 +86,7 @@ class PhraseService implements IPhraseService {
       description: data.description,
       authorId: user.id,
       termIds,
+      listedInLibrary: data.listedInLibrary,
     });
   }
 
@@ -100,6 +107,7 @@ class PhraseService implements IPhraseService {
     return this._phraseRepository.update(phrase.id, {
       description: data.description,
       termIds,
+      listedInLibrary: data.listedInLibrary,
     });
   }
 
@@ -138,6 +146,18 @@ class PhraseService implements IPhraseService {
     }
 
     return phrase;
+  }
+
+  async findNextBoardsByPublishedPhraseUuid(
+    uuid: string,
+  ): Promise<BoardOutput[]> {
+    const phrase = await this._phraseRepository.findByUuid(uuid);
+
+    if (!phrase || phrase.publishedAt === null) {
+      throw new NotFoundError("Phrase not found");
+    }
+
+    return this._boardRepository.findNextBoardsByPhraseId(phrase.id);
   }
 
   async publish(uuid: string, user: AuthenticatedUser): Promise<PhraseOutput> {

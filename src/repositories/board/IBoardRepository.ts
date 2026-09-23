@@ -32,6 +32,8 @@ interface IBoardRepository extends IRepository<BoardOutput> {
 
   findNextBoardsByBoardId(boardId: number): Promise<BoardOutput[]>;
 
+  findNextBoardsByPhraseId(phraseId: number): Promise<BoardOutput[]>;
+
   existsBoardTerm(boardId: number, termId: number): Promise<boolean>;
 
   findBoardTermByUuid(

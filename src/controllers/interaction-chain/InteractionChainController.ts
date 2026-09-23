@@ -2,7 +2,10 @@ import type { Request, Response } from "express";
 
 import { BadRequestError } from "@/errors/BadRequestError.js";
 import { NotFoundError } from "@/errors/NotFoundError.js";
-import type { InteractionChainOutput } from "@/models/types/InteractionChain.type.js";
+import type {
+  ChainTrigger,
+  InteractionChainOutput,
+} from "@/models/types/InteractionChain.type.js";
 import type { IInteractionChainService } from "@/services/interaction-chain/IInteractionChainService.js";
 import InteractionChainService from "@/services/interaction-chain/InteractionChainService.js";
 
@@ -11,6 +14,8 @@ import type { IInteractionChainController } from "./IInteractionChainController.
 type Props = {
   interactionChainService?: IInteractionChainService;
 };
+
+const TRIGGER_TYPES = ["board", "phrase"] as const;
 
 class InteractionChainController implements IInteractionChainController {
   private _interactionChainService: IInteractionChainService;
@@ -23,13 +28,35 @@ class InteractionChainController implements IInteractionChainController {
   private _toResponse(interactionChain: InteractionChainOutput) {
     return {
       uuid: interactionChain.uuid,
-      triggerBoardUuid: interactionChain.triggerBoardUuid,
+      trigger: interactionChain.trigger,
       responseBoardUuid: interactionChain.responseBoardUuid,
       rank: interactionChain.rank,
       label: interactionChain.label,
       createdAt: interactionChain.createdAt,
       updatedAt: interactionChain.updatedAt,
     };
+  }
+
+  // The nested trigger makes "both" and "neither" unrepresentable, so what is
+  // left to reject is a missing, malformed or unknown one.
+  private _parseTrigger(trigger: unknown): ChainTrigger {
+    if (typeof trigger !== "object" || trigger === null) {
+      throw new BadRequestError("Trigger is required");
+    }
+
+    const { type, uuid } = trigger as { type?: unknown; uuid?: unknown };
+
+    if (!TRIGGER_TYPES.includes(type as (typeof TRIGGER_TYPES)[number])) {
+      throw new BadRequestError(
+        `Trigger type must be one of: ${TRIGGER_TYPES.join(", ")}`,
+      );
+    }
+
+    if (!uuid || typeof uuid !== "string") {
+      throw new BadRequestError("Trigger uuid is required");
+    }
+
+    return { type: type as (typeof TRIGGER_TYPES)[number], uuid };
   }
 
   private _assertOptionalLabel(label: unknown): void {
@@ -40,18 +67,15 @@ class InteractionChainController implements IInteractionChainController {
 
   private _assertOptionalRank(rank: unknown): void {
     if (rank === undefined) return;
-
     if (typeof rank !== "number" || !Number.isInteger(rank)) {
       throw new BadRequestError("Rank must be an integer");
     }
   }
 
   async create(req: Request, res: Response): Promise<void> {
-    const { triggerBoardUuid, responseBoardUuid, rank, label } = req.body;
+    const { trigger, responseBoardUuid, rank, label } = req.body;
 
-    if (!triggerBoardUuid || typeof triggerBoardUuid !== "string") {
-      throw new BadRequestError("Trigger board uuid is required");
-    }
+    const parsedTrigger = this._parseTrigger(trigger);
 
     if (!responseBoardUuid || typeof responseBoardUuid !== "string") {
       throw new BadRequestError("Response board uuid is required");
@@ -62,7 +86,7 @@ class InteractionChainController implements IInteractionChainController {
 
     const interactionChain = await this._interactionChainService.create(
       {
-        triggerBoardUuid,
+        trigger: parsedTrigger,
         responseBoardUuid,
         rank,
         label,
@@ -78,10 +102,10 @@ class InteractionChainController implements IInteractionChainController {
   async update(req: Request, res: Response): Promise<void> {
     const uuid = req.params.uuid as string;
 
-    const { triggerBoardUuid, responseBoardUuid, rank, label } = req.body;
+    const { trigger, responseBoardUuid, rank, label } = req.body;
 
     if (
-      triggerBoardUuid === undefined &&
+      trigger === undefined &&
       responseBoardUuid === undefined &&
       rank === undefined &&
       label === undefined
@@ -89,12 +113,8 @@ class InteractionChainController implements IInteractionChainController {
       throw new BadRequestError("No fields to update");
     }
 
-    if (
-      triggerBoardUuid !== undefined &&
-      typeof triggerBoardUuid !== "string"
-    ) {
-      throw new BadRequestError("Trigger board uuid must be a string");
-    }
+    const parsedTrigger =
+      trigger !== undefined ? this._parseTrigger(trigger) : undefined;
 
     if (
       responseBoardUuid !== undefined &&
@@ -109,7 +129,7 @@ class InteractionChainController implements IInteractionChainController {
     const interactionChain = await this._interactionChainService.update(
       uuid,
       {
-        triggerBoardUuid,
+        trigger: parsedTrigger,
         responseBoardUuid,
         rank,
         label,
@@ -150,13 +170,24 @@ class InteractionChainController implements IInteractionChainController {
   }
 
   async findByTriggerBoardUuid(req: Request, res: Response): Promise<void> {
+    await this._respondWithTriggerChains(req, res, "board");
+  }
+
+  async findByTriggerPhraseUuid(req: Request, res: Response): Promise<void> {
+    await this._respondWithTriggerChains(req, res, "phrase");
+  }
+
+  private async _respondWithTriggerChains(
+    req: Request,
+    res: Response,
+    type: ChainTrigger["type"],
+  ): Promise<void> {
     const uuid = req.params.uuid as string;
 
-    const interactionChains =
-      await this._interactionChainService.findByTriggerBoardUuid(
-        uuid,
-        req.user!,
-      );
+    const interactionChains = await this._interactionChainService.findByTrigger(
+      { type, uuid },
+      req.user!,
+    );
 
     res.status(200).json({
       interactionChains: interactionChains.map((ic) => this._toResponse(ic)),

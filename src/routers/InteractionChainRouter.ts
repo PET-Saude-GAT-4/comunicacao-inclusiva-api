@@ -33,6 +33,14 @@ router.get(
 );
 
 router.get(
+  "/trigger-phrase/:uuid",
+  authMiddleware.auth([RoleEnum.SUPER_ADMIN, RoleEnum.ADMIN]),
+  interactionChainController.findByTriggerPhraseUuid.bind(
+    interactionChainController,
+  ),
+);
+
+router.get(
   "/:uuid",
   authMiddleware.auth([RoleEnum.SUPER_ADMIN, RoleEnum.ADMIN]),
   interactionChainController.findByUuid.bind(interactionChainController),

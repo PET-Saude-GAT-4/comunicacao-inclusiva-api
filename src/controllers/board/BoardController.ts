@@ -1,10 +1,9 @@
 import type { Request, Response } from "express";
 
-import { toPictogramResponse } from "@/controllers/pictogram/PictogramResponse.js";
+import { toBoardResponse } from "@/controllers/board/BoardResponse.js";
 import { toPlacementResponse } from "@/controllers/term/TermResponse.js";
 import { BadRequestError } from "@/errors/BadRequestError.js";
 import { NotFoundError } from "@/errors/NotFoundError.js";
-import type { BoardOutput } from "@/models/types/Board.type.js";
 import type { BoardTermOutput } from "@/models/types/BoardTerm.type.js";
 import BoardService from "@/services/board/BoardService.js";
 import type { IBoardService } from "@/services/board/IBoardService.js";
@@ -29,21 +28,6 @@ class BoardController implements IBoardController {
     };
   }
 
-  private _toResponse(board: BoardOutput) {
-    return {
-      uuid: board.uuid,
-      title: board.title,
-      authorUuid: board.authorUuid,
-      representativePictogram: toPictogramResponse(
-        board.representativePictogram,
-      ),
-      termCount: board.termCount,
-      publishedAt: board.publishedAt,
-      createdAt: board.createdAt,
-      updatedAt: board.updatedAt,
-    };
-  }
-
   async create(req: Request, res: Response): Promise<void> {
     const { title, representativeUuid } = req.body;
 
@@ -61,7 +45,7 @@ class BoardController implements IBoardController {
       representativeUuid,
     });
 
-    res.status(201).json({ board: this._toResponse(board) });
+    res.status(201).json({ board: toBoardResponse(board) });
   }
 
   async update(req: Request, res: Response): Promise<void> {
@@ -81,20 +65,20 @@ class BoardController implements IBoardController {
       req.user!,
     );
 
-    res.status(200).json({ board: this._toResponse(board) });
+    res.status(200).json({ board: toBoardResponse(board) });
   }
 
   async findAll(req: Request, res: Response): Promise<void> {
     const boards = await this._boardService.findAll(req.user!);
     res.status(200).json({
-      boards: boards.map((b) => this._toResponse(b)),
+      boards: boards.map((b) => toBoardResponse(b)),
     });
   }
 
   async findAllPublished(req: Request, res: Response): Promise<void> {
     const boards = await this._boardService.findAllPublished();
     res.status(200).json({
-      boards: boards.map((b) => this._toResponse(b)),
+      boards: boards.map((b) => toBoardResponse(b)),
     });
   }
 
@@ -107,7 +91,7 @@ class BoardController implements IBoardController {
       throw new NotFoundError("Board not found");
     }
 
-    res.status(200).json({ board: this._toResponse(board) });
+    res.status(200).json({ board: toBoardResponse(board) });
   }
 
   async findTermsByPublishedBoard(req: Request, res: Response): Promise<void> {
@@ -134,7 +118,7 @@ class BoardController implements IBoardController {
 
     res.status(200).json({
       boards: boards.map((b, i) => ({
-        ...this._toResponse(b),
+        ...toBoardResponse(b),
         order: i + 1,
       })),
     });
@@ -165,7 +149,7 @@ class BoardController implements IBoardController {
       throw new NotFoundError("Board not found");
     }
 
-    res.status(200).json({ board: this._toResponse(board) });
+    res.status(200).json({ board: toBoardResponse(board) });
   }
 
   async delete(req: Request, res: Response): Promise<void> {
