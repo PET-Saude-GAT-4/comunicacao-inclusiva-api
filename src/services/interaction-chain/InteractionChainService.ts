@@ -100,18 +100,10 @@ class InteractionChainService implements IInteractionChainService {
     return resolved;
   }
 
-  private async _requirePublishedTrigger(
-    trigger: ChainTrigger,
-  ): Promise<ResolvedTrigger> {
-    const resolved = await this._requireTrigger(trigger);
-
-    if (!resolved.publishedAt) {
-      throw new BadRequestError(`Trigger ${trigger.type} must be published`);
-    }
-
-    return resolved;
-  }
-
+  // The response board is the one the app opens, so it has to be reachable
+  // there. The trigger side carries no such rule: chains are authored before
+  // their board or phrase is published, and `_assertCanRead` already keeps an
+  // unpublished trigger's chains to its author.
   private async _requirePublishedResponseBoard(
     uuid: string,
   ): Promise<BoardOutput> {
@@ -149,7 +141,7 @@ class InteractionChainService implements IInteractionChainService {
     data: InteractionChainInput,
     user: AuthenticatedUser,
   ): Promise<InteractionChainOutput> {
-    const trigger = await this._requirePublishedTrigger(data.trigger);
+    const trigger = await this._requireTrigger(data.trigger);
     const responseBoard = await this._requirePublishedResponseBoard(
       data.responseBoardUuid,
     );
@@ -189,7 +181,7 @@ class InteractionChainService implements IInteractionChainService {
     this._assertCanManage(interactionChain.triggerAuthorUuid, user);
 
     const newTrigger = data.trigger
-      ? await this._requirePublishedTrigger(data.trigger)
+      ? await this._requireTrigger(data.trigger)
       : undefined;
     const responseBoard = data.responseBoardUuid
       ? await this._requirePublishedResponseBoard(data.responseBoardUuid)
