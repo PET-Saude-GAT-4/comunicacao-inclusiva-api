@@ -63,6 +63,10 @@ class UserService implements IUserService {
     return this._userRepository.findById(id);
   }
 
+  async findByUuid(uuid: string): Promise<UserOutput | null> {
+    return this._userRepository.findByUuid(uuid);
+  }
+
   async findAll(): Promise<UserOutput[]> {
     return this._userRepository.findAll();
   }
