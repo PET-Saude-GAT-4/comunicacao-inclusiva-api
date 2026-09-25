@@ -1,27 +1,46 @@
-import type { InvitationToken } from "@/generated/prisma/client.js";
+import type {
+  InvitationTokenInput,
+  InvitationTokenOutput,
+} from "@/models/types/InvitationToken.type.js";
 import { prisma } from "@/prisma.js";
 
 import type { IInvitationTokenRepository } from "./IInvitationTokenRepository.js";
 
 class InvitationTokenRepository implements IInvitationTokenRepository {
-  async create(data: {
-    token: string;
-    userId: number;
-    expiresAt: Date;
-  }): Promise<InvitationToken> {
-    return prisma.invitationToken.create({
+  async create(data: InvitationTokenInput): Promise<InvitationTokenOutput> {
+    const token = await prisma.invitationToken.create({
       data: {
         token: data.token,
         userId: data.userId,
         expiresAt: data.expiresAt,
       },
     });
+
+    return {
+      id: token.id,
+      token: token.token,
+      userId: token.userId,
+      expiresAt: token.expiresAt,
+      usedAt: token.usedAt,
+      createdAt: token.createdAt,
+    };
   }
 
-  async findByToken(token: string): Promise<InvitationToken | null> {
-    return prisma.invitationToken.findUnique({
+  async findByToken(token: string): Promise<InvitationTokenOutput | null> {
+    const record = await prisma.invitationToken.findUnique({
       where: { token },
     });
+
+    if (!record) return null;
+
+    return {
+      id: record.id,
+      token: record.token,
+      userId: record.userId,
+      expiresAt: record.expiresAt,
+      usedAt: record.usedAt,
+      createdAt: record.createdAt,
+    };
   }
 
   async markUsed(id: number): Promise<void> {

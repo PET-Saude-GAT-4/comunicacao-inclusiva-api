@@ -1,12 +1,11 @@
-import type { InvitationToken } from "@/generated/prisma/client.js";
+import type {
+  InvitationTokenInput,
+  InvitationTokenOutput,
+} from "@/models/types/InvitationToken.type.js";
 
 interface IInvitationTokenRepository {
-  create(data: {
-    token: string;
-    userId: number;
-    expiresAt: Date;
-  }): Promise<InvitationToken>;
-  findByToken(token: string): Promise<InvitationToken | null>;
+  create(data: InvitationTokenInput): Promise<InvitationTokenOutput>;
+  findByToken(token: string): Promise<InvitationTokenOutput | null>;
   markUsed(id: number): Promise<void>;
   invalidateByUserId(userId: number): Promise<void>;
   consumeTokenAndSetPassword(data: {

@@ -102,6 +102,13 @@ class UserRepository implements IUserRepository {
     };
   }
 
+  async updatePassword(id: number, password: string): Promise<void> {
+    await prisma.user.update({
+      where: { id },
+      data: { passwordHash: password },
+    });
+  }
+
   async findByEmail(email: string): Promise<UserOutput | null> {
     const user = await prisma.user.findUnique({
       where: {
