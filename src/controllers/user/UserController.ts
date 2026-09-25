@@ -44,6 +44,17 @@ class UserController implements IUserController {
     res.status(200).json({ user: user });
   }
 
+  async findByUuid(req: Request, res: Response): Promise<void> {
+    const uuid = req.params.uuid as string;
+    const user = await this._userService.findByUuid(uuid);
+
+    if (!user) {
+      throw new NotFoundError("User not found");
+    }
+
+    res.status(200).json({ user });
+  }
+
   async findAll(req: Request, res: Response): Promise<void> {
     const users = await this._userService.findAll();
     res.status(200).json({ users: users });

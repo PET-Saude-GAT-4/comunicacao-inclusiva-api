@@ -7,6 +7,8 @@ interface IInteractionChainController extends IController<InteractionChainOutput
   findByUuid(req: Request, res: Response): Promise<void>;
 
   findByTriggerBoardUuid(req: Request, res: Response): Promise<void>;
+
+  findByTriggerPhraseUuid(req: Request, res: Response): Promise<void>;
 }
 
 export type { IInteractionChainController };

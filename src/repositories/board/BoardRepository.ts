@@ -257,6 +257,19 @@ class BoardRepository implements IBoardRepository {
     return results.map((r) => this._map(r.responseBoard));
   }
 
+  async findNextBoardsByPhraseId(phraseId: number): Promise<BoardOutput[]> {
+    const results = await prisma.interactionChain.findMany({
+      where: {
+        triggerPhraseId: phraseId,
+        responseBoard: { publishedAt: { not: null } },
+      },
+      orderBy: [{ rank: "asc" }, { id: "asc" }],
+      select: { responseBoard: { include } },
+    });
+
+    return results.map((r) => this._map(r.responseBoard));
+  }
+
   async existsBoardTerm(boardId: number, termId: number): Promise<boolean> {
     const count = await prisma.boardTerm.count({
       where: { boardId, termId },

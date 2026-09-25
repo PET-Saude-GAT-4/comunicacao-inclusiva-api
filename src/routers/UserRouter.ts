@@ -15,13 +15,19 @@ const router = express.Router();
 router.post(
   "/",
   authMiddleware.auth([RoleEnum.SUPER_ADMIN, RoleEnum.ADMIN]),
-  (req: Request, res: Response) => userController.create(req, res),
+  (req: Request, res: Response) => userController.create(req, res), 
 );
 
 router.get(
   "/",
   authMiddleware.auth([RoleEnum.SUPER_ADMIN, RoleEnum.ADMIN]),
   (req: Request, res: Response) => userController.findAll(req, res),
+);
+
+router.get(
+  "/uuid/:uuid",
+  authMiddleware.auth([RoleEnum.SUPER_ADMIN, RoleEnum.ADMIN]),
+  (req: Request, res: Response) => userController.findByUuid(req, res),
 );
 
 router.get(

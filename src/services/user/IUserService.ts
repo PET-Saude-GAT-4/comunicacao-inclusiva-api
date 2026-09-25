@@ -9,6 +9,8 @@ interface IUserService {
 
   findById(id: number): Promise<UserOutput | null>;
 
+  findByUuid(uuid: string): Promise<UserOutput | null>;
+
   findAll(): Promise<UserOutput[]>;
 
   update(

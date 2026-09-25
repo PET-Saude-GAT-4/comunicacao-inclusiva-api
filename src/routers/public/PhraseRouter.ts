@@ -14,4 +14,9 @@ router.get(
   phraseController.findPublishedByUuid.bind(phraseController),
 );
 
+router.get(
+  "/:uuid/next-boards",
+  phraseController.findNextBoardsByPublishedPhrase.bind(phraseController),
+);
+
 export default router;

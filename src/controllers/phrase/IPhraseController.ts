@@ -10,6 +10,8 @@ interface IPhraseController extends IController<PhraseOutput> {
 
   findPublishedByUuid(req: Request, res: Response): Promise<void>;
 
+  findNextBoardsByPublishedPhrase(req: Request, res: Response): Promise<void>;
+
   publish(req: Request, res: Response): Promise<void>;
 
   unpublish(req: Request, res: Response): Promise<void>;
