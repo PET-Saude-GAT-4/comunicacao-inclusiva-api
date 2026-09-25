@@ -1,5 +1,3 @@
-import bcrypt from "bcryptjs";
-
 import { BadRequestError } from "@/errors/BadRequestError.js";
 import { ConflictError } from "@/errors/ConflictError.js";
 import { ForbiddenError } from "@/errors/ForbiddenError.js";
@@ -9,6 +7,10 @@ import type { IRoleRepository } from "@/repositories/role/IRoleRepository.js";
 import RoleRepository from "@/repositories/role/RoleRepository.js";
 import type { IUserRepository } from "@/repositories/user/IUserRepository.js";
 import UserRepository from "@/repositories/user/UserRepository.js";
+import type { IInvitationService } from "@/services/invitation/IInvitationService.js";
+import InvitationService from "@/services/invitation/InvitationService.js";
+import type { IPasswordService } from "@/services/password/IPasswordService.js";
+import PasswordService from "@/services/password/PasswordService.js";
 import { canManageRole } from "@/utils/permissions.js";
 
 import type { IUserService } from "./IUserService.js";
@@ -16,24 +18,26 @@ import type { IUserService } from "./IUserService.js";
 type Props = {
   userRepository?: IUserRepository;
   roleRepository?: IRoleRepository;
+  invitationService?: IInvitationService;
+  passwordService?: IPasswordService;
 };
 
 class UserService implements IUserService {
   private _userRepository: IUserRepository;
   private _roleRepository: IRoleRepository;
+  private _invitationService: IInvitationService;
+  private _passwordService: IPasswordService;
 
   constructor(props?: Props) {
     this._userRepository = props?.userRepository ?? new UserRepository();
     this._roleRepository = props?.roleRepository ?? new RoleRepository();
-  }
-
-  async hashPassword(password: string): Promise<string> {
-    return bcrypt.hash(password, 12);
+    this._invitationService =
+      props?.invitationService ?? new InvitationService();
+    this._passwordService = props?.passwordService ?? new PasswordService();
   }
 
   async create(
     email: string,
-    password: string,
     roleId: number,
     currentUser?: { role: string },
   ): Promise<UserOutput> {
@@ -54,9 +58,10 @@ class UserService implements IUserService {
     if (existsByUserEmail) {
       throw new ConflictError("Email already in use");
     }
+    const newUser = await this._userRepository.create({ email, roleId });
 
-    const passwordHash = await this.hashPassword(password);
-    return this._userRepository.create({ email, passwordHash, roleId });
+    await this._invitationService.sendInvitation(newUser.id, newUser.email);
+    return newUser;
   }
 
   async findById(id: number): Promise<UserOutput | null> {
@@ -107,7 +112,9 @@ class UserService implements IUserService {
     }
 
     if (userUpdate.password != undefined) {
-      userUpdate.password = await this.hashPassword(userUpdate.password);
+      userUpdate.password = await this._passwordService.validateAndHash(
+        userUpdate.password,
+      );
     }
 
     if (

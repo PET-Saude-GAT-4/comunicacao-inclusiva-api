@@ -2,7 +2,6 @@ import type { RoleOutput } from "./Role.type.js";
 
 export type UserInput = {
   email: string;
-  passwordHash?: string | null;
   roleId: number;
   confirmedAt?: Date | null;
 };

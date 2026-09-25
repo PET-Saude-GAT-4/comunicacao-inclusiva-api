@@ -2,37 +2,33 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 
 import { env } from "@/config/env.js";
-import { ConflictError } from "@/errors/ConflictError.js";
-import { ForbiddenError } from "@/errors/ForbiddenError.js";
-import { NotFoundError } from "@/errors/NotFoundError.js";
+import { AccountNotConfirmedError } from "@/errors/AccountNotConfirmedError.js";
 import { UnauthorizedError } from "@/errors/UnauthorizedError.js";
 import type { UserOutput } from "@/models/types/User.type.js";
-import type { IRoleRepository } from "@/repositories/role/IRoleRepository.js";
-import RoleRepository from "@/repositories/role/RoleRepository.js";
 import type { IUserRepository } from "@/repositories/user/IUserRepository.js";
 import UserRepository from "@/repositories/user/UserRepository.js";
-import { canManageRole } from "@/utils/permissions.js";
 
 import type { IAuthService } from "./IAuthService.js";
 
 type Props = {
   userRepository?: IUserRepository;
-  roleRepository?: IRoleRepository;
 };
 
 class AuthService implements IAuthService {
   private _userRepository: IUserRepository;
-  private _roleRepository: IRoleRepository;
 
   constructor(props?: Props) {
     this._userRepository = props?.userRepository ?? new UserRepository();
-    this._roleRepository = props?.roleRepository ?? new RoleRepository();
   }
 
   async login(email: string, password: string): Promise<[string, UserOutput]> {
     const user = await this._userRepository.findByEmail(email);
 
     if (!user) throw new UnauthorizedError("Invalid credentials");
+
+    if (user.confirmedAt === null) {
+      throw new AccountNotConfirmedError();
+    }
 
     const passwordHash =
       await this._userRepository.findPasswordHashByEmail(email);
@@ -51,6 +47,7 @@ class AuthService implements IAuthService {
         uuid: user.uuid,
         email: user.email,
         role: user.role.name,
+        confirmed: user.confirmedAt !== null,
       },
       env.jwtSecret,
       {
@@ -61,38 +58,6 @@ class AuthService implements IAuthService {
     );
 
     return [token, user];
-  }
-
-  async register(
-    email: string,
-    password: string,
-    role: string,
-    currentUser?: { role: string },
-  ): Promise<UserOutput> {
-    const exists = await this._userRepository.existsByEmail(email);
-
-    if (exists) {
-      throw new ConflictError("E-mail already in use");
-    }
-
-    const roleRecord = await this._roleRepository.findByName(role);
-
-    if (!roleRecord) {
-      throw new NotFoundError("Role not found.");
-    }
-
-    if (currentUser && !canManageRole(currentUser.role, roleRecord.name)) {
-      throw new ForbiddenError(
-        "You do not have permission to assign this role.",
-      );
-    }
-
-    const passwordHash = await bcrypt.hash(password, 12);
-    return this._userRepository.create({
-      email: email,
-      passwordHash: passwordHash,
-      roleId: roleRecord.id,
-    });
   }
 }
 

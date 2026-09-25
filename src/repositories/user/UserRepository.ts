@@ -60,7 +60,6 @@ class UserRepository implements IUserRepository {
     const user = await prisma.user.create({
       data: {
         email: data.email,
-        passwordHash: data.passwordHash ?? null,
         confirmedAt: data.confirmedAt ?? null,
         role: { connect: { id: data.roleId } },
       },

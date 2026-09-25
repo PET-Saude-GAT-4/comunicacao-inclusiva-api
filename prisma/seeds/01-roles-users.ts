@@ -29,10 +29,13 @@ export async function seedRolesAndUsers(prisma: PrismaClient): Promise<void> {
 
   await prisma.user.upsert({
     where: { email: "admin@admin.admin" },
-    update: {},
+    update: {
+      confirmedAt: new Date(),
+    },
     create: {
       email: "admin@admin.admin",
       passwordHash,
+      confirmedAt: new Date(),
       roleId: superAdminRole.id,
     },
   });

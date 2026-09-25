@@ -19,15 +19,14 @@ class UserController implements IUserController {
   }
 
   async create(req: Request, res: Response): Promise<void> {
-    const { email, password, roleId } = req.body;
+    const { email, roleId } = req.body;
 
-    if (!email || !password || !roleId) {
-      throw new BadRequestError("Email, password, and role ID are required");
+    if (!email || !roleId) {
+      throw new BadRequestError("Email and role ID are required");
     }
 
     const user = await this._userService.create(
       email,
-      password,
       roleId,
       req.user ? { role: req.user.role } : undefined,
     );
