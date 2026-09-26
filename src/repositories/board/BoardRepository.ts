@@ -52,6 +52,17 @@ class BoardRepository implements IBoardRepository {
     };
   }
 
+  // Every pointer edit reads Board.first and a predecessor's next, then rewrites
+  // them. Locking the board row first serialises those edits per board; without
+  // it two concurrent edits read the same predecessor and the last write
+  // orphans the other node.
+  private async _lockBoard(
+    tx: Prisma.TransactionClient,
+    boardId: number,
+  ): Promise<void> {
+    await tx.$queryRaw`SELECT id FROM "Board" WHERE id = ${boardId} FOR UPDATE`;
+  }
+
   async create(data: BoardRepositoryInput): Promise<BoardOutput> {
     const result = await prisma.board.create({
       data: {
@@ -148,6 +159,8 @@ class BoardRepository implements IBoardRepository {
 
   async addTerm(data: BoardTermRepositoryInput): Promise<void> {
     await prisma.$transaction(async (tx) => {
+      await this._lockBoard(tx, data.boardId);
+
       const board = await tx.board.findUniqueOrThrow({
         where: { id: data.boardId },
         select: { first: true },
@@ -188,6 +201,8 @@ class BoardRepository implements IBoardRepository {
 
   async deleteBoardTerm(boardId: number, boardTermId: number): Promise<void> {
     await prisma.$transaction(async (tx) => {
+      await this._lockBoard(tx, boardId);
+
       const node = await tx.boardTerm.findUniqueOrThrow({
         where: { id: boardTermId },
         select: { next: true },
@@ -293,6 +308,8 @@ class BoardRepository implements IBoardRepository {
     next: number | null,
   ): Promise<void> {
     await prisma.$transaction(async (tx) => {
+      await this._lockBoard(tx, boardId);
+
       const node = await tx.boardTerm.findUniqueOrThrow({
         where: { id: boardTermId },
         select: { next: true },
