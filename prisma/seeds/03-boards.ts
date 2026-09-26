@@ -112,6 +112,9 @@ export async function seedBoards(prisma: PrismaClient): Promise<void> {
         data: {
           representativeId: representative.id,
           publishedAt: board.publishedAt ?? new Date(),
+          // Released before the chain is deleted below: the foreign key on
+          // Board.first would otherwise reject deleting the head term.
+          first: null,
         },
       });
     }
