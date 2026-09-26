@@ -113,10 +113,14 @@ model Board {
   representative   Pictogram        @relation("BoardRepresentative", fields: [representativeId], references: [id])
   /// A BoardTerm.id, the head of the linked list.
   first            Int?
+  // Composite on (id, first) so the head must be a term of this same board,
+  // not just any BoardTerm. NoAction defers the check to the end of the
+  // statement, which lets a board's cascade delete remove its own head.
+  head             BoardTerm?       @relation("BoardHead", fields: [id, first], references: [boardId, id], onDelete: NoAction, onUpdate: NoAction)
   publishedAt      DateTime?
   createdAt        DateTime         @default(now())
   updatedAt        DateTime         @updatedAt
-  terms            BoardTerm[]
+  terms            BoardTerm[]      @relation("BoardTerms")
   triggerChains    InteractionChain[] @relation("TriggerChain")
   responseChains   InteractionChain[] @relation("ResponseChain")
 }
@@ -125,11 +129,20 @@ model BoardTerm {
   id      Int    @id @default(autoincrement())
   uuid    String @unique @default(uuid())
   boardId Int
-  board   Board  @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  board   Board  @relation("BoardTerms", fields: [boardId], references: [id], onDelete: Cascade)
   termId  Int
   term    Term   @relation(fields: [termId], references: [id])
   next    Int?
+  // Composite on (boardId, next) for the same reason as Board.head: the next
+  // node must belong to this board.
+  nextTerm      BoardTerm?  @relation("BoardTermNext", fields: [boardId, next], references: [boardId, id], onDelete: NoAction, onUpdate: NoAction)
+  // Back-relations Prisma requires; no code reads them. They are lists rather
+  // than 1:1 because 1:1 would demand @@unique([boardId, next]), which addTerm
+  // briefly violates when the new node and its predecessor share a next.
+  previousTerms BoardTerm[] @relation("BoardTermNext")
+  headOf        Board[]     @relation("BoardHead")
 
+  @@unique([boardId, id])
   @@unique([boardId, termId])
   @@index([boardId])
 }
