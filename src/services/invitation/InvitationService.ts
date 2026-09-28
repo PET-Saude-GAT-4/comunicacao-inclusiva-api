@@ -52,7 +52,7 @@ class InvitationService implements IInvitationService {
       expiresAt,
     });
 
-    const convite = `${env.appBaseUrl}/invitation/accept?token=${token}`;
+    const convite = `${env.frontendBaseUrl}/invitation/accept?token=${token}`;
     const subject = "Convite para ativação de conta";
     const html = `
       <p>Olá,</p>

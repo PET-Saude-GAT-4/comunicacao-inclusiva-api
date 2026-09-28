@@ -15,7 +15,7 @@
     "prisma:seed": "docker exec -it api_dev npx prisma db seed",
     "build": "tsc && tsc-alias",
     "start": "node dist/server.js",
-    "dev": "npx prisma generate && tsc --noEmit && CHOKIDAR_USEPOLLING=true tsx watch src/server.ts",
+    "dev": "npx prisma generate && tsc --noEmit && tsx watch src/server.ts",
     "lint": "eslint 'src/**/*.ts'"
   },
   "dependencies": {

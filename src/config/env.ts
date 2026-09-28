@@ -13,7 +13,8 @@ import { z } from "zod";
 import { formatZodError } from "@/utils/zod.js";
 
 const envSchema = z.object({
-  APP_BASE_URL: z.url(),
+  API_BASE_URL: z.url(),
+  FRONTEND_BASE_URL: z.url(),
   NODE_ENV: z
     .enum(["development", "test", "production"])
     .default("development"),
@@ -47,7 +48,8 @@ if (!parsedEnv.success) {
 }
 
 export const env = {
-  appBaseUrl: parsedEnv.data.APP_BASE_URL,
+  apiBaseUrl: parsedEnv.data.API_BASE_URL,
+  frontendBaseUrl: parsedEnv.data.FRONTEND_BASE_URL,
   nodeEnv: parsedEnv.data.NODE_ENV,
   port: parsedEnv.data.PORT,
   databaseUrl: parsedEnv.data.DATABASE_URL,
