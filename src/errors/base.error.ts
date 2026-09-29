@@ -10,6 +10,7 @@ export class ErrorBase extends Error {
 
   send(res: Response) {
     res.status(this.status).send({
+      status: this.status,
       message: this.message,
     });
   }
