@@ -17,6 +17,8 @@ interface IUserRepository extends IRepository<UserOutput> {
 
   create(data: UserInput): Promise<UserOutput>;
   update(id: number, data: UserUpdateInput): Promise<UserOutput>;
+
+  updatePassword(id: number, password: string): Promise<void>;
 }
 
 export type { IUserRepository };

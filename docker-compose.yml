@@ -20,6 +20,18 @@ services:
       timeout: 5s
       retries: 5
 
+  mailpit:
+    profiles: ["dev"]
+    image: axllent/mailpit
+    container_name: comunicacao_mailpit
+    restart: unless-stopped
+    ports:
+      - "1025:1025" # SMTP
+      - "8025:8025" # UI Web
+    environment:
+      MP_SMTP_AUTH_ACCEPT_ANY: 1
+      MP_SMTP_AUTH_ALLOW_INSECURE: 1
+
   api-dev:
     profiles: ["dev"]
     build:
@@ -29,6 +41,8 @@ services:
     restart: unless-stopped
     env_file:
       - .env
+    environment:
+      - CHOKIDAR_USEPOLLING=true
     ports:
       - "8080:8080"
     volumes:
@@ -37,6 +51,8 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      mailpit:
+        condition: service_started
 
   api-prod:
     profiles: ["prod"]

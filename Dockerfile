@@ -11,6 +11,8 @@ COPY .yarn ./.yarn
 # ---- Development ----
 FROM base AS development
 
+ENV CHOKIDAR_USEPOLLING=true
+
 RUN yarn install
 
 COPY . .

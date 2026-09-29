@@ -2,6 +2,7 @@ import type { NextFunction, Request, Response } from "express";
 import jwt from "jsonwebtoken";
 
 import { env } from "@/config/env.js";
+import { AccountNotConfirmedError } from "@/errors/AccountNotConfirmedError.js";
 import { ForbiddenError } from "@/errors/ForbiddenError.js";
 import { UnauthorizedError } from "@/errors/UnauthorizedError.js";
 
@@ -40,13 +41,19 @@ class AuthMiddleware implements IAuthMiddleware {
       return !required;
     }
 
-    const { id, uuid, email, role } = decoded;
+    const { id, uuid, email, role, confirmed } = decoded;
+
+    if (required && !confirmed) {
+      delete req.user;
+      throw new AccountNotConfirmedError();
+    }
 
     req.user = {
       id: id,
       uuid: uuid,
       email: email,
       role: role,
+      confirmed: !!confirmed,
     };
 
     return true;

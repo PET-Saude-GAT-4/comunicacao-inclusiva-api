@@ -856,6 +856,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/nodemailer@npm:^8.0.2":
+  version: 8.0.2
+  resolution: "@types/nodemailer@npm:8.0.2"
+  dependencies:
+    "@types/node": "npm:*"
+  checksum: 10c0/1ad3f83ac130cf9af65ce9eb7985b08b27b4723316c2be621522effc31c63d7d2d76880815490499fbe8b1aff3da889d24b54b3db892526d1166b12702404ff0
+  languageName: node
+  linkType: hard
+
 "@types/qs@npm:*":
   version: 6.14.0
   resolution: "@types/qs@npm:6.14.0"
@@ -1502,6 +1511,7 @@ __metadata:
     "@types/jsonwebtoken": "npm:^9.0.10"
     "@types/multer": "npm:^2.1.0"
     "@types/node": "npm:^25.2.2"
+    "@types/nodemailer": "npm:^8.0.2"
     "@typescript-eslint/eslint-plugin": "npm:^8.55.0"
     "@typescript-eslint/parser": "npm:^8.55.0"
     bcryptjs: "npm:^3.0.3"
@@ -1517,6 +1527,7 @@ __metadata:
     jiti: "npm:^2.6.1"
     jsonwebtoken: "npm:^9.0.3"
     multer: "npm:^2.1.1"
+    nodemailer: "npm:^10.0.10"
     prettier: "npm:3.8.1"
     prisma: "npm:^7.3.0"
     ts-node: "npm:^10.9.2"
@@ -3713,6 +3724,13 @@ __metadata:
   bin:
     node-gyp: bin/node-gyp.js
   checksum: 10c0/3ed046746a5a7d90950cd8b0547332b06598443f31fe213ef4332a7174c7b7d259e1704835feda79b87d3f02e59d7791842aac60642ede4396ab25fdf0f8f759
+  languageName: node
+  linkType: hard
+
+"nodemailer@npm:^10.0.10":
+  version: 10.0.10
+  resolution: "nodemailer@npm:10.0.10"
+  checksum: 10c0/062bf0861e4986eca150b8d78b8289c55f33ad689e9596aa71b4abd4ab4358b9c4881cec8acca3251643814d84d26ca6b1082153f47d35d65639d4ce858cfd67
   languageName: node
   linkType: hard
 
