@@ -30,6 +30,7 @@ export async function seedRolesAndUsers(prisma: PrismaClient): Promise<void> {
   await prisma.user.upsert({
     where: { email: "admin@admin.admin" },
     update: {
+      passwordHash,
       confirmedAt: new Date(),
     },
     create: {
