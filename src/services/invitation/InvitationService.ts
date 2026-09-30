@@ -8,6 +8,7 @@ import type { IUserTokenRepository } from "@/repositories/user-token/IUserTokenR
 import UserTokenRepository from "@/repositories/user-token/UserTokenRepository.js";
 import type { IMailService } from "@/services/mail/IMailService.js";
 import MailService from "@/services/mail/MailService.js";
+import { concatWithFrontendUrl } from "@/utils/url.js";
 
 import type { IPasswordService } from "../password/IPasswordService.js";
 import PasswordService from "../password/PasswordService.js";
@@ -53,7 +54,7 @@ class InvitationService implements IInvitationService {
       expiresAt,
     });
 
-    const convite = `${env.frontendBaseUrl}/invitation/accept?token=${token}`;
+    const convite = concatWithFrontendUrl(`/invitation/accept?token=${token}`);
     const subject = "Convite para ativação de conta";
     const html = `
       <p>Olá,</p>
