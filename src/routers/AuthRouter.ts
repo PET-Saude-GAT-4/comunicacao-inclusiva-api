@@ -16,6 +16,14 @@ router.post("/login", (req: Request, res: Response) =>
   authController.login(req, res),
 );
 
+router.post("/password-reset", (req: Request, res: Response) =>
+  authController.requestPasswordReset(req, res),
+);
+
+router.post("/password-reset/confirm", (req: Request, res: Response) =>
+  authController.confirmPasswordReset(req, res),
+);
+
 // Protected routes
 router.get(
   "/check-token",
