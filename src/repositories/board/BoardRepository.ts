@@ -1,7 +1,10 @@
 import { Prisma } from "@/generated/prisma/client.js";
 import type {
+  BoardFilter,
   BoardOutput,
   BoardRepositoryInput,
+  BoardRepositoryUpdateInput,
+  BoardType,
 } from "@/models/types/Board.type.js";
 import type {
   BoardTermOutput,
@@ -25,6 +28,7 @@ class BoardRepository implements IBoardRepository {
     id: number;
     uuid: string;
     title: string;
+    type: BoardType;
     author: { uuid: string } | null;
     publishedAt: Date | null;
     createdAt: Date;
@@ -43,6 +47,7 @@ class BoardRepository implements IBoardRepository {
       id: data.id,
       uuid: data.uuid,
       title: data.title,
+      type: data.type,
       authorUuid: data.author?.uuid ?? null,
       representativePictogram: mapPictogramRow(data.representative),
       termCount: data._count.terms,
@@ -67,6 +72,8 @@ class BoardRepository implements IBoardRepository {
     const result = await prisma.board.create({
       data: {
         title: data.title,
+        // Left to the column default ("common") when the caller names none.
+        type: data.type ?? Prisma.skip,
         authorId: data.authorId ?? null,
         representativeId: data.representativeId,
       },
@@ -78,7 +85,7 @@ class BoardRepository implements IBoardRepository {
 
   async update(
     id: number,
-    data: { title: string | undefined; representativeId: number | undefined },
+    data: BoardRepositoryUpdateInput,
   ): Promise<BoardOutput> {
     if (isEmpty(data)) {
       throw new Error("No fields to update.");
@@ -88,6 +95,7 @@ class BoardRepository implements IBoardRepository {
       where: { id },
       data: {
         title: data.title ?? Prisma.skip,
+        type: data.type ?? Prisma.skip,
         representativeId: data.representativeId ?? Prisma.skip,
       },
       include,
@@ -95,12 +103,17 @@ class BoardRepository implements IBoardRepository {
     return this._map(result);
   }
 
-  async findAll(filter?: { authorUuid?: string }): Promise<BoardOutput[]> {
+  async findAll(
+    filter?: { authorUuid?: string } & BoardFilter,
+  ): Promise<BoardOutput[]> {
     const results = await prisma.board.findMany({
-      where:
-        filter?.authorUuid != null
-          ? { author: { uuid: filter.authorUuid } }
-          : Prisma.skip,
+      where: {
+        author:
+          filter?.authorUuid != null
+            ? { uuid: filter.authorUuid }
+            : Prisma.skip,
+        type: filter?.type ?? Prisma.skip,
+      },
       orderBy: {
         createdAt: "desc",
       },
@@ -125,9 +138,12 @@ class BoardRepository implements IBoardRepository {
     return result ? this._map(result) : null;
   }
 
-  async findAllPublished(): Promise<BoardOutput[]> {
+  async findAllPublished(filter?: BoardFilter): Promise<BoardOutput[]> {
     const results = await prisma.board.findMany({
-      where: { publishedAt: { not: null } },
+      where: {
+        publishedAt: { not: null },
+        type: filter?.type ?? Prisma.skip,
+      },
       orderBy: { publishedAt: "desc" },
       include,
     });

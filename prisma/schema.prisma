@@ -23,6 +23,14 @@ enum FileType {
   other
 }
 
+/// Separates emergency-focused boards from everyday ones, so clients can offer
+/// them apart.
+enum BoardType {
+  common
+  emergency
+}
+
+
 model Role {
   id        Int      @id @default(autoincrement())
   name      String   @unique
@@ -121,6 +129,7 @@ model Board {
   id               Int              @id @default(autoincrement())
   uuid             String           @unique @default(uuid())
   title            String
+  type             BoardType        @default(common)
   authorId         Int?
   author           User?            @relation("BoardAuthor", fields: [authorId], references: [id])
   representativeId Int

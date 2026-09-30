@@ -2,7 +2,12 @@ import { BadRequestError } from "@/errors/BadRequestError.js";
 import { ConflictError } from "@/errors/ConflictError.js";
 import { ForbiddenError } from "@/errors/ForbiddenError.js";
 import { NotFoundError } from "@/errors/NotFoundError.js";
-import type { BoardInput, BoardOutput } from "@/models/types/Board.type.js";
+import type {
+  BoardFilter,
+  BoardInput,
+  BoardOutput,
+  BoardUpdateInput,
+} from "@/models/types/Board.type.js";
 import type {
   BoardTermInput,
   BoardTermOutput,
@@ -61,6 +66,7 @@ class BoardService implements IBoardService {
 
     return this._boardRepository.create({
       title: data.title,
+      type: data.type,
       authorId: data.authorId ?? null,
       representativeId: pictogram.id,
     });
@@ -68,7 +74,7 @@ class BoardService implements IBoardService {
 
   async update(
     uuid: string,
-    data: { title?: string; representativeUuid?: string },
+    data: BoardUpdateInput,
     user: AuthenticatedUser,
   ): Promise<BoardOutput> {
     const board = await this._boardRepository.findByUuid(uuid);
@@ -91,14 +97,19 @@ class BoardService implements IBoardService {
 
     return this._boardRepository.update(board.id, {
       title: data.title,
+      type: data.type,
       representativeId,
     });
   }
 
-  async findAll(user: AuthenticatedUser): Promise<BoardOutput[]> {
-    return this._boardRepository.findAll(
-      user.role === "admin" ? { authorUuid: user.uuid } : undefined,
-    );
+  async findAll(
+    user: AuthenticatedUser,
+    filter?: BoardFilter,
+  ): Promise<BoardOutput[]> {
+    return this._boardRepository.findAll({
+      ...(user.role === RoleEnum.ADMIN && { authorUuid: user.uuid }),
+      type: filter?.type,
+    });
   }
 
   async findById(id: number): Promise<BoardOutput | null> {
@@ -118,8 +129,13 @@ class BoardService implements IBoardService {
     return board;
   }
 
-  async findAllPublished(): Promise<BoardOutput[]> {
-    return this._boardRepository.findAllPublished();
+  // The public listing predates board types, so it keeps answering with common
+  // boards only; emergency boards have to be asked for. That way clients built
+  // before types existed see exactly what they saw before.
+  async findAllPublished(filter?: BoardFilter): Promise<BoardOutput[]> {
+    return this._boardRepository.findAllPublished({
+      type: filter?.type ?? "common",
+    });
   }
 
   async findPublishedByUuid(uuid: string): Promise<BoardOutput | null> {

@@ -1,4 +1,9 @@
-import type { BoardInput, BoardOutput } from "@/models/types/Board.type.js";
+import type {
+  BoardFilter,
+  BoardInput,
+  BoardOutput,
+  BoardUpdateInput,
+} from "@/models/types/Board.type.js";
 import type {
   BoardTermInput,
   BoardTermOutput,
@@ -10,11 +15,11 @@ interface IBoardService {
 
   update(
     uuid: string,
-    data: { title?: string; representativeUuid?: string },
+    data: BoardUpdateInput,
     user: AuthenticatedUser,
   ): Promise<BoardOutput>;
 
-  findAll(user: AuthenticatedUser): Promise<BoardOutput[]>;
+  findAll(user: AuthenticatedUser, filter?: BoardFilter): Promise<BoardOutput[]>;
 
   findById(id: number): Promise<BoardOutput | null>;
 
@@ -23,7 +28,7 @@ interface IBoardService {
     user?: AuthenticatedUser,
   ): Promise<BoardOutput | null>;
 
-  findAllPublished(): Promise<BoardOutput[]>;
+  findAllPublished(filter?: BoardFilter): Promise<BoardOutput[]>;
 
   findPublishedByUuid(uuid: string): Promise<BoardOutput | null>;
 
