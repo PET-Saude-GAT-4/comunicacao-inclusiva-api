@@ -43,6 +43,33 @@ class AuthController implements IAuthController {
 
     res.status(200).json({ user: user });
   }
+
+  async requestPasswordReset(req: Request, res: Response): Promise<void> {
+    const { email } = req.body;
+
+    if (!email) {
+      throw new BadRequestError("Email is required.");
+    }
+
+    await this._authService.requestPasswordReset(email);
+
+    res.status(200).json({
+      message:
+        "If that email address is in our system, we have sent a reset link.",
+    });
+  }
+
+  async confirmPasswordReset(req: Request, res: Response): Promise<void> {
+    const { token, password } = req.body;
+
+    if (!token || !password) {
+      throw new BadRequestError("Token and password are required.");
+    }
+
+    await this._authService.confirmPasswordReset(token, password);
+
+    res.status(200).json({ message: "Password reset successfully." });
+  }
 }
 
 export default AuthController;
