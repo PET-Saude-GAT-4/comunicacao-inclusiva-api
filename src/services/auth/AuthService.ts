@@ -95,6 +95,7 @@ class AuthService implements IAuthService {
     const hasRecent = await this._userTokenRepository.hasRecentToken(
       user.id,
       2,
+      "PASSWORD_RESET",
     );
     if (hasRecent) return;
 
@@ -108,84 +109,68 @@ class AuthService implements IAuthService {
       "PASSWORD_RESET",
     );
 
-    const code = crypto.randomInt(10000000, 100000000).toString();
-    const hashedCode = await bcrypt.hash(code, 12);
+    const rawToken = crypto.randomBytes(32).toString("hex");
+    const hashedToken = crypto
+      .createHash("sha256")
+      .update(rawToken)
+      .digest("hex");
     const expiresAt = new Date(Date.now() + 15 * 60 * 1000);
 
     await this._userTokenRepository.create({
-      token: hashedCode,
+      token: hashedToken,
       userId: user.id,
       purpose: "PASSWORD_RESET",
       expiresAt,
     });
 
-    const params = new URLSearchParams({ email: user.email, code });
     const resetLink = concatWithFrontendUrl(
-      `/reset-password?${params.toString()}`,
+      `/reset-password?token=${rawToken}`,
     );
     const subject = "Recuperação de Senha";
     const html = `
       <p>Olá,</p>
       <p>Recebemos uma solicitação para redefinir a senha da sua conta na plataforma <strong>Comunicação Inclusiva</strong>.</p>
-      <p>Seu código de recuperação é:</p>
-      <h2 style="letter-spacing: 4px; font-size: 24px; color: #007bff;">${code}</h2>
-      <p>Você também pode redefinir sua senha diretamente pelo link abaixo:</p>
+      <p>Para redefinir sua senha, clique no botão abaixo:</p>
       <p><a href="${resetLink}" style="background-color: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block;">Redefinir Senha</a></p>
       <p>Ou copie e cole a URL no seu navegador:</p>
       <p><a href="${resetLink}">${resetLink}</a></p>
-      <p>Este código expira em 15 minutos.</p>
+      <p>Este link expira em 15 minutos.</p>
       <p>Se você não solicitou a redefinição de senha, desconsidere este e-mail.</p>
     `;
 
     await this._mailService.sendMail(user.email, subject, html);
   }
 
-  async confirmPasswordReset(
-    email: string,
-    code: string,
-    password: string,
-  ): Promise<void> {
-    const invalidMessage = "Invalid or expired password reset code";
+  async confirmPasswordReset(token: string, password: string): Promise<void> {
+    const invalidMessage = "Invalid or expired password reset token";
 
-    if (!email || !code || !password) {
+    if (!token || !password) {
       throw new BadRequestError(invalidMessage);
     }
 
-    const user = await this._userRepository.findByEmail(email);
+    const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
+
+    const tokenRecord =
+      await this._userTokenRepository.findByToken(hashedToken);
+
+    if (
+      !tokenRecord ||
+      tokenRecord.purpose !== "PASSWORD_RESET" ||
+      tokenRecord.usedAt !== null ||
+      tokenRecord.expiresAt.getTime() < Date.now()
+    ) {
+      throw new BadRequestError(invalidMessage);
+    }
+
+    const user = await this._userRepository.findById(tokenRecord.userId);
     if (!user || user.confirmedAt === null) {
-      throw new BadRequestError(invalidMessage);
-    }
-
-    const activeToken =
-      await this._userTokenRepository.findActiveByUserIdAndPurpose(
-        user.id,
-        "PASSWORD_RESET",
-      );
-
-    if (!activeToken) {
-      throw new BadRequestError(invalidMessage);
-    }
-
-    if (activeToken.attempts >= 5) {
-      await this._userTokenRepository.markUsed(activeToken.id);
-      throw new BadRequestError(invalidMessage);
-    }
-
-    const isValid = await bcrypt.compare(code, activeToken.token);
-    if (!isValid) {
-      const attempts = await this._userTokenRepository.incrementAttempts(
-        activeToken.id,
-      );
-      if (attempts >= 5) {
-        await this._userTokenRepository.markUsed(activeToken.id);
-      }
       throw new BadRequestError(invalidMessage);
     }
 
     const passwordHash = await this._passwordService.validateAndHash(password);
 
     await this._userTokenRepository.consumeTokenAndSetPassword({
-      tokenId: activeToken.id,
+      tokenId: tokenRecord.id,
       userId: user.id,
       passwordHash,
     });
