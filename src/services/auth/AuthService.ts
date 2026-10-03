@@ -119,7 +119,10 @@ class AuthService implements IAuthService {
       expiresAt,
     });
 
-    const resetLink = concatWithFrontendUrl(`/reset-password?code=${code}`);
+    const params = new URLSearchParams({ email: user.email, code });
+    const resetLink = concatWithFrontendUrl(
+      `/reset-password?${params.toString()}`,
+    );
     const subject = "Recuperação de Senha";
     const html = `
       <p>Olá,</p>
