@@ -4,59 +4,19 @@ import type {
   BoardOutput,
   BoardRepositoryInput,
   BoardRepositoryUpdateInput,
-  BoardType,
 } from "@/models/types/Board.type.js";
 import type {
   BoardTermOutput,
   BoardTermRepositoryInput,
 } from "@/models/types/BoardTerm.type.js";
 import { prisma } from "@/prisma.js";
-import { mapPictogramRow } from "@/repositories/pictogram/PictogramMapper.js";
+import { boardInclude, mapBoardRow } from "@/repositories/board/BoardMapper.js";
 import { mapTermRow, termInclude } from "@/repositories/term/TermMapper.js";
 import { isEmpty } from "@/utils/object.js";
 
 import type { IBoardRepository } from "./IBoardRepository.js";
 
-const include = {
-  representative: { include: { storedFile: true } },
-  author: { select: { uuid: true } },
-  _count: { select: { terms: true } },
-} as const;
-
 class BoardRepository implements IBoardRepository {
-  private _map(data: {
-    id: number;
-    uuid: string;
-    title: string;
-    type: BoardType;
-    author: { uuid: string } | null;
-    publishedAt: Date | null;
-    createdAt: Date;
-    updatedAt: Date;
-    representative: {
-      id: number;
-      uuid: string;
-      description: string;
-      storedFile: { uuid: string };
-      createdAt: Date;
-      updatedAt: Date;
-    };
-    _count: { terms: number };
-  }): BoardOutput {
-    return {
-      id: data.id,
-      uuid: data.uuid,
-      title: data.title,
-      type: data.type,
-      authorUuid: data.author?.uuid ?? null,
-      representativePictogram: mapPictogramRow(data.representative),
-      termCount: data._count.terms,
-      publishedAt: data.publishedAt,
-      createdAt: data.createdAt,
-      updatedAt: data.updatedAt,
-    };
-  }
-
   // Every pointer edit reads Board.first and a predecessor's next, then rewrites
   // them. Locking the board row first serialises those edits per board; without
   // it two concurrent edits read the same predecessor and the last write
@@ -77,10 +37,10 @@ class BoardRepository implements IBoardRepository {
         authorId: data.authorId ?? null,
         representativeId: data.representativeId,
       },
-      include,
+      include: boardInclude,
     });
 
-    return this._map(result);
+    return mapBoardRow(result);
   }
 
   async update(
@@ -98,9 +58,9 @@ class BoardRepository implements IBoardRepository {
         type: data.type ?? Prisma.skip,
         representativeId: data.representativeId ?? Prisma.skip,
       },
-      include,
+      include: boardInclude,
     });
-    return this._map(result);
+    return mapBoardRow(result);
   }
 
   async findAll(
@@ -117,25 +77,25 @@ class BoardRepository implements IBoardRepository {
       orderBy: {
         createdAt: "desc",
       },
-      include,
+      include: boardInclude,
     });
-    return results.map((r) => this._map(r));
+    return results.map((r) => mapBoardRow(r));
   }
 
   async findById(id: number): Promise<BoardOutput | null> {
     const result = await prisma.board.findUnique({
       where: { id },
-      include,
+      include: boardInclude,
     });
-    return result ? this._map(result) : null;
+    return result ? mapBoardRow(result) : null;
   }
 
   async findByUuid(uuid: string): Promise<BoardOutput | null> {
     const result = await prisma.board.findUnique({
       where: { uuid },
-      include,
+      include: boardInclude,
     });
-    return result ? this._map(result) : null;
+    return result ? mapBoardRow(result) : null;
   }
 
   async findAllPublished(filter?: BoardFilter): Promise<BoardOutput[]> {
@@ -145,18 +105,18 @@ class BoardRepository implements IBoardRepository {
         type: filter?.type ?? Prisma.skip,
       },
       orderBy: { publishedAt: "desc" },
-      include,
+      include: boardInclude,
     });
-    return results.map((r) => this._map(r));
+    return results.map((r) => mapBoardRow(r));
   }
 
   async setPublishedAt(id: number, value: Date | null): Promise<BoardOutput> {
     const result = await prisma.board.update({
       where: { id },
       data: { publishedAt: value },
-      include,
+      include: boardInclude,
     });
-    return this._map(result);
+    return mapBoardRow(result);
   }
 
   async existsById(id: number): Promise<boolean> {
@@ -282,10 +242,10 @@ class BoardRepository implements IBoardRepository {
         responseBoard: { publishedAt: { not: null } },
       },
       orderBy: [{ rank: "asc" }, { id: "asc" }],
-      select: { responseBoard: { include } },
+      select: { responseBoard: { include: boardInclude } },
     });
 
-    return results.map((r) => this._map(r.responseBoard));
+    return results.map((r) => mapBoardRow(r.responseBoard));
   }
 
   async findNextBoardsByPhraseId(phraseId: number): Promise<BoardOutput[]> {
@@ -295,10 +255,10 @@ class BoardRepository implements IBoardRepository {
         responseBoard: { publishedAt: { not: null } },
       },
       orderBy: [{ rank: "asc" }, { id: "asc" }],
-      select: { responseBoard: { include } },
+      select: { responseBoard: { include: boardInclude } },
     });
 
-    return results.map((r) => this._map(r.responseBoard));
+    return results.map((r) => mapBoardRow(r.responseBoard));
   }
 
   async existsBoardTerm(boardId: number, termId: number): Promise<boolean> {
