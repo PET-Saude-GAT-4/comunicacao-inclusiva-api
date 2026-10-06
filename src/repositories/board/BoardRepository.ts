@@ -103,6 +103,7 @@ class BoardRepository implements IBoardRepository {
       where: {
         publishedAt: { not: null },
         type: filter?.type ?? Prisma.skip,
+        triageStep: { is: null },
       },
       orderBy: { publishedAt: "desc" },
       include: boardInclude,
