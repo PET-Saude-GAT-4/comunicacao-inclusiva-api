@@ -2,33 +2,34 @@ import crypto from "node:crypto";
 
 import { env } from "@/config/env.js";
 import { BadRequestError } from "@/errors/BadRequestError.js";
-import type { IInvitationTokenRepository } from "@/repositories/invitation-token/IInvitationTokenRepository.js";
-import InvitationTokenRepository from "@/repositories/invitation-token/InvitationTokenRepository.js";
 import type { IUserRepository } from "@/repositories/user/IUserRepository.js";
 import UserRepository from "@/repositories/user/UserRepository.js";
+import type { IUserTokenRepository } from "@/repositories/user-token/IUserTokenRepository.js";
+import UserTokenRepository from "@/repositories/user-token/UserTokenRepository.js";
 import type { IMailService } from "@/services/mail/IMailService.js";
 import MailService from "@/services/mail/MailService.js";
+import { concatWithFrontendUrl } from "@/utils/url.js";
 
 import type { IPasswordService } from "../password/IPasswordService.js";
 import PasswordService from "../password/PasswordService.js";
 import type { IInvitationService } from "./IInvitationService.js";
 
 type Props = {
-  invitationTokenRepository?: IInvitationTokenRepository;
+  userTokenRepository?: IUserTokenRepository;
   userRepository?: IUserRepository;
   mailService?: IMailService;
   passwordService?: IPasswordService;
 };
 
 class InvitationService implements IInvitationService {
-  private _invitationTokenRepository: IInvitationTokenRepository;
+  private _userTokenRepository: IUserTokenRepository;
   private _userRepository: IUserRepository;
   private _mailService: IMailService;
   private _passwordService: IPasswordService;
 
   constructor(props?: Props) {
-    this._invitationTokenRepository =
-      props?.invitationTokenRepository ?? new InvitationTokenRepository();
+    this._userTokenRepository =
+      props?.userTokenRepository ?? new UserTokenRepository();
     this._userRepository = props?.userRepository ?? new UserRepository();
     this._mailService = props?.mailService ?? new MailService();
     this._passwordService = props?.passwordService ?? new PasswordService();
@@ -39,20 +40,21 @@ class InvitationService implements IInvitationService {
       throw new BadRequestError("User ID and email are required");
     }
 
-    await this._invitationTokenRepository.invalidateByUserId(userId);
+    await this._userTokenRepository.invalidateByUserId(userId, "INVITATION");
 
     const token = crypto.randomBytes(32).toString("hex");
     const expiresAt = new Date(
       Date.now() + env.invitationExpiresHours * 60 * 60 * 1000,
     );
 
-    await this._invitationTokenRepository.create({
+    await this._userTokenRepository.create({
       token,
       userId,
+      purpose: "INVITATION",
       expiresAt,
     });
 
-    const convite = `${env.frontendBaseUrl}/invitation/accept?token=${token}`;
+    const convite = concatWithFrontendUrl(`/invitation/accept?token=${token}`);
     const subject = "Convite para ativação de conta";
     const html = `
       <p>Olá,</p>
@@ -73,9 +75,9 @@ class InvitationService implements IInvitationService {
       throw new BadRequestError("Token is required");
     }
 
-    const invitation = await this._invitationTokenRepository.findByToken(token);
+    const invitation = await this._userTokenRepository.findByToken(token);
 
-    if (!invitation) {
+    if (!invitation || invitation.purpose !== "INVITATION") {
       throw new BadRequestError("Invalid invitation token");
     }
 
@@ -91,10 +93,11 @@ class InvitationService implements IInvitationService {
 
     const newPassword = await this._passwordService.validateAndHash(password);
 
-    await this._invitationTokenRepository.consumeTokenAndSetPassword({
+    await this._userTokenRepository.consumeTokenAndSetPassword({
       tokenId: invitation.id,
       userId: invitation.userId,
       passwordHash: newPassword,
+      confirmUser: true,
     });
   }
 
