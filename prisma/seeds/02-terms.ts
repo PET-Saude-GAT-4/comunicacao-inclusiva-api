@@ -226,6 +226,43 @@ export const TERM_FILES: TermEntry[] = [
     pictogramFileUuid: "03648046-6607-4e16-adee-c2c93c9c1fa9",
     signWritingFileUuid: "4b03676f-3a41-490d-858f-6744f3294d06",
   },
+  // Emergency symptoms, used by the emergency modules and triage levels
+  {
+    path: "general-symptoms/cold",
+    description: "Frio",
+    pictogramFileUuid: "04e556b6-b664-405e-a5a1-d137e1c4c80f",
+    signWritingFileUuid: "ae1c473c-437b-4315-bb96-d9a82ef45b75",
+  },
+  {
+    path: "general-symptoms/allergy",
+    description: "Alergia",
+    pictogramFileUuid: "72fd5f38-f09a-4605-860e-65242cf44b88",
+    signWritingFileUuid: "705f39b4-90ac-4205-b304-91a437f32f48",
+  },
+  {
+    path: "general-symptoms/bleeding-cut",
+    description: "Sangramento",
+    pictogramFileUuid: "1cb7f52e-501f-4bab-8bf1-582e2853705e",
+    signWritingFileUuid: "f90c1177-05f5-4ded-9e22-9632f36e5ac9",
+  },
+  {
+    path: "general-symptoms/sharp-pain",
+    description: "Dor Forte",
+    pictogramFileUuid: "c1c92230-da53-465d-abd9-d8e1fa48d8f7",
+    signWritingFileUuid: "b8a68789-9d82-4b8f-802f-7f0b07c93eb3",
+  },
+  {
+    path: "general-symptoms/animal-bite",
+    description: "Mordida de Animal",
+    pictogramFileUuid: "f4e12cca-22d9-4de7-9311-d36861ba55f9",
+    signWritingFileUuid: "1e089427-2bb0-421b-8c06-1a520e02b5f1",
+  },
+  {
+    path: "general-symptoms/vehicle-crash",
+    description: "Acidente de Trânsito",
+    pictogramFileUuid: "6d2e5f26-93eb-4716-8e9b-8ab548bc23ce",
+    signWritingFileUuid: "d24db772-70c3-4374-9764-c188c92fe9ba",
+  },
 ];
 
 async function storeAsset(
