@@ -7,6 +7,7 @@ export function toBoardResponse(board: BoardOutput) {
   return {
     uuid: board.uuid,
     title: board.title,
+    type: board.type,
     authorUuid: board.authorUuid,
     representativePictogram: toPictogramResponse(board.representativePictogram),
     termCount: board.termCount,
