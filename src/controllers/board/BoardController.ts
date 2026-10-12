@@ -4,6 +4,7 @@ import { toBoardResponse } from "@/controllers/board/BoardResponse.js";
 import { toPlacementResponse } from "@/controllers/term/TermResponse.js";
 import { BadRequestError } from "@/errors/BadRequestError.js";
 import { NotFoundError } from "@/errors/NotFoundError.js";
+import { BOARD_TYPES, type BoardType } from "@/models/types/Board.type.js";
 import type { BoardTermOutput } from "@/models/types/BoardTerm.type.js";
 import BoardService from "@/services/board/BoardService.js";
 import type { IBoardService } from "@/services/board/IBoardService.js";
@@ -28,8 +29,23 @@ class BoardController implements IBoardController {
     };
   }
 
+  // Absent means "not specified", and the service decides what that implies:
+  // the column default on create, no change on update, every type on the
+  // authenticated listing and common only on the public one.
+  private _parseType(value: unknown): BoardType | undefined {
+    if (value === undefined) return undefined;
+
+    if (!BOARD_TYPES.includes(value as BoardType)) {
+      throw new BadRequestError(
+        `Type must be one of: ${BOARD_TYPES.join(", ")}`,
+      );
+    }
+
+    return value as BoardType;
+  }
+
   async create(req: Request, res: Response): Promise<void> {
-    const { title, representativeUuid } = req.body;
+    const { title, type, representativeUuid } = req.body;
 
     if (!title) {
       throw new BadRequestError("Title is required");
@@ -41,6 +57,7 @@ class BoardController implements IBoardController {
 
     const board = await this._boardService.create({
       title,
+      type: this._parseType(type),
       authorId: req.user?.id ?? null,
       representativeUuid,
     });
@@ -50,9 +67,13 @@ class BoardController implements IBoardController {
 
   async update(req: Request, res: Response): Promise<void> {
     const uuid = req.params.uuid as string;
-    const { title, representativeUuid } = req.body;
+    const { title, type, representativeUuid } = req.body;
 
-    if (title === undefined && representativeUuid === undefined) {
+    if (
+      title === undefined &&
+      type === undefined &&
+      representativeUuid === undefined
+    ) {
       throw new BadRequestError("No fields to update");
     }
 
@@ -60,6 +81,7 @@ class BoardController implements IBoardController {
       uuid,
       {
         title,
+        type: this._parseType(type),
         representativeUuid,
       },
       req.user!,
@@ -69,14 +91,18 @@ class BoardController implements IBoardController {
   }
 
   async findAll(req: Request, res: Response): Promise<void> {
-    const boards = await this._boardService.findAll(req.user!);
+    const boards = await this._boardService.findAll(req.user!, {
+      type: this._parseType(req.query.type),
+    });
     res.status(200).json({
       boards: boards.map((b) => toBoardResponse(b)),
     });
   }
 
   async findAllPublished(req: Request, res: Response): Promise<void> {
-    const boards = await this._boardService.findAllPublished();
+    const boards = await this._boardService.findAllPublished({
+      type: this._parseType(req.query.type),
+    });
     res.status(200).json({
       boards: boards.map((b) => toBoardResponse(b)),
     });

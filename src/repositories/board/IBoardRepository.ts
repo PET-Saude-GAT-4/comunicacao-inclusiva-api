@@ -1,6 +1,8 @@
 import type {
+  BoardFilter,
   BoardOutput,
   BoardRepositoryInput,
+  BoardRepositoryUpdateInput,
 } from "@/models/types/Board.type.js";
 import type {
   BoardTermOutput,
@@ -9,18 +11,17 @@ import type {
 import type { IRepository } from "@/repositories/IRepository.js";
 
 interface IBoardRepository extends IRepository<BoardOutput> {
-  findAll(filter?: { authorUuid?: string }): Promise<BoardOutput[]>;
+  findAll(
+    filter?: { authorUuid?: string } & BoardFilter,
+  ): Promise<BoardOutput[]>;
 
   create(data: BoardRepositoryInput): Promise<BoardOutput>;
 
-  update(
-    id: number,
-    data: { title: string | undefined; representativeId: number | undefined },
-  ): Promise<BoardOutput>;
+  update(id: number, data: BoardRepositoryUpdateInput): Promise<BoardOutput>;
 
   findByUuid(uuid: string): Promise<BoardOutput | null>;
 
-  findAllPublished(): Promise<BoardOutput[]>;
+  findAllPublished(filter?: BoardFilter): Promise<BoardOutput[]>;
 
   setPublishedAt(id: number, value: Date | null): Promise<BoardOutput>;
 

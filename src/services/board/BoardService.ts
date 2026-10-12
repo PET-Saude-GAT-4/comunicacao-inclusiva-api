@@ -2,7 +2,12 @@ import { BadRequestError } from "@/errors/BadRequestError.js";
 import { ConflictError } from "@/errors/ConflictError.js";
 import { ForbiddenError } from "@/errors/ForbiddenError.js";
 import { NotFoundError } from "@/errors/NotFoundError.js";
-import type { BoardInput, BoardOutput } from "@/models/types/Board.type.js";
+import type {
+  BoardFilter,
+  BoardInput,
+  BoardOutput,
+  BoardUpdateInput,
+} from "@/models/types/Board.type.js";
 import type {
   BoardTermInput,
   BoardTermOutput,
@@ -14,6 +19,8 @@ import type { IPictogramRepository } from "@/repositories/pictogram/IPictogramRe
 import PictogramRepository from "@/repositories/pictogram/PictogramRepository.js";
 import type { ITermRepository } from "@/repositories/term/ITermRepository.js";
 import TermRepository from "@/repositories/term/TermRepository.js";
+import type { ITriageStepRepository } from "@/repositories/triage-step/ITriageStepRepository.js";
+import TriageStepRepository from "@/repositories/triage-step/TriageStepRepository.js";
 import type { AuthenticatedUser } from "@/types/user.js";
 
 import type { IBoardService } from "./IBoardService.js";
@@ -22,12 +29,14 @@ type Props = {
   boardRepository?: IBoardRepository;
   pictogramRepository?: IPictogramRepository;
   termRepository?: ITermRepository;
+  triageStepRepository?: ITriageStepRepository;
 };
 
 class BoardService implements IBoardService {
   private _boardRepository: IBoardRepository;
   private _pictogramRepository: IPictogramRepository;
   private _termRepository: ITermRepository;
+  private _triageStepRepository: ITriageStepRepository;
 
   constructor(props?: Props) {
     this._boardRepository = props?.boardRepository ?? new BoardRepository();
@@ -35,6 +44,22 @@ class BoardService implements IBoardService {
     this._pictogramRepository =
       props?.pictogramRepository ?? new PictogramRepository();
     this._termRepository = props?.termRepository ?? new TermRepository();
+    this._triageStepRepository =
+      props?.triageStepRepository ?? new TriageStepRepository();
+  }
+
+  // The database refuses both (TriageStep's foreign key restricts updates and
+  // deletes); checking first answers with a 409 that says what to do instead
+  // of the raw constraint violation surfacing as a 500.
+  private async _assertNotTriageStep(
+    board: BoardOutput,
+    action: string,
+  ): Promise<void> {
+    if (await this._triageStepRepository.existsByBoardId(board.id)) {
+      throw new ConflictError(
+        `This board is a triage step; remove it from its triage level before ${action}.`,
+      );
+    }
   }
 
   private _assertCanManage(board: BoardOutput, user: AuthenticatedUser): void {
@@ -61,6 +86,7 @@ class BoardService implements IBoardService {
 
     return this._boardRepository.create({
       title: data.title,
+      type: data.type,
       authorId: data.authorId ?? null,
       representativeId: pictogram.id,
     });
@@ -68,7 +94,7 @@ class BoardService implements IBoardService {
 
   async update(
     uuid: string,
-    data: { title?: string; representativeUuid?: string },
+    data: BoardUpdateInput,
     user: AuthenticatedUser,
   ): Promise<BoardOutput> {
     const board = await this._boardRepository.findByUuid(uuid);
@@ -77,6 +103,10 @@ class BoardService implements IBoardService {
     }
 
     this._assertCanManage(board, user);
+
+    if (data.type !== undefined && data.type !== board.type) {
+      await this._assertNotTriageStep(board, "changing its type");
+    }
 
     let representativeId: number | undefined;
     if (data.representativeUuid) {
@@ -91,14 +121,19 @@ class BoardService implements IBoardService {
 
     return this._boardRepository.update(board.id, {
       title: data.title,
+      type: data.type,
       representativeId,
     });
   }
 
-  async findAll(user: AuthenticatedUser): Promise<BoardOutput[]> {
-    return this._boardRepository.findAll(
-      user.role === "admin" ? { authorUuid: user.uuid } : undefined,
-    );
+  async findAll(
+    user: AuthenticatedUser,
+    filter?: BoardFilter,
+  ): Promise<BoardOutput[]> {
+    return this._boardRepository.findAll({
+      ...(user.role === RoleEnum.ADMIN && { authorUuid: user.uuid }),
+      type: filter?.type,
+    });
   }
 
   async findById(id: number): Promise<BoardOutput | null> {
@@ -118,8 +153,14 @@ class BoardService implements IBoardService {
     return board;
   }
 
-  async findAllPublished(): Promise<BoardOutput[]> {
-    return this._boardRepository.findAllPublished();
+  // The public listing predates board types, so it keeps answering with common
+  // boards only; emergency boards have to be asked for. That way clients built
+  // before types existed see exactly what they saw before. Triage steps are
+  // left out too: the app reaches those through /public/triage-steps, in order.
+  async findAllPublished(filter?: BoardFilter): Promise<BoardOutput[]> {
+    return this._boardRepository.findAllPublished({
+      type: filter?.type ?? "common",
+    });
   }
 
   async findPublishedByUuid(uuid: string): Promise<BoardOutput | null> {
@@ -196,6 +237,8 @@ class BoardService implements IBoardService {
     }
 
     this._assertCanManage(board, user);
+
+    await this._assertNotTriageStep(board, "deleting it");
 
     await this._boardRepository.delete(board.id);
   }

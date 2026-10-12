@@ -23,6 +23,13 @@ enum FileType {
   other
 }
 
+/// Separates emergency-focused boards from everyday ones, so clients can offer
+/// them apart.
+enum BoardType {
+  common
+  emergency
+}
+
 enum TokenPurpose {
   INVITATION
   PASSWORD_RESET
@@ -128,6 +135,7 @@ model Board {
   id               Int              @id @default(autoincrement())
   uuid             String           @unique @default(uuid())
   title            String
+  type             BoardType        @default(common)
   authorId         Int?
   author           User?            @relation("BoardAuthor", fields: [authorId], references: [id])
   representativeId Int
@@ -144,6 +152,39 @@ model Board {
   terms            BoardTerm[]      @relation("BoardTerms")
   triggerChains    InteractionChain[] @relation("TriggerChain")
   responseChains   InteractionChain[] @relation("ResponseChain")
+  triageStep       TriageStep?
+
+  // Target of TriageStep's composite foreign key, which pins a step's board to
+  // its type.
+  @@unique([id, type])
+}
+
+/// One of the five fixed Quick Emergency levels, holding the board the app shows
+/// at that level. Being a step is what makes a board a triage board, so
+/// BoardType needs no value of its own for it.
+///
+/// Written by hand in migrations/20261004120000_add_triage_step, since Prisma
+/// can express none of them, so this model does not fully describe the table:
+/// - level is held to 1..5 by a CHECK: there are always exactly five levels.
+/// - boardType is held at "emergency" by a CHECK, and the composite foreign key
+///   below ties it to the board's type, so the database rejects retyping a
+///   board while it is a step.
+/// - The unique constraint on level is DEFERRABLE, so two boards can swap
+///   levels inside one transaction.
+///
+/// Deleting a step's board is rejected rather than cascading, so a level is
+/// only ever emptied on purpose.
+model TriageStep {
+  id        Int       @id @default(autoincrement())
+  uuid      String    @unique @default(uuid())
+  boardId   Int       @unique
+  boardType BoardType @default(emergency)
+  board     Board     @relation(fields: [boardId, boardType], references: [id, type], onDelete: Restrict, onUpdate: Restrict)
+  level     Int       @unique
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@unique([boardId, boardType])
 }
 
 model BoardTerm {
