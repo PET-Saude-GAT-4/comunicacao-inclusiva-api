@@ -21,25 +21,31 @@ function buildMessageFromIssue(issue: $ZodIssue): string {
     }
 
     case "too_small": {
-      const min = issue.inclusive
-        ? BigInt(issue.minimum)
-        : BigInt(issue.minimum) + BigInt(1);
-
+      // A numeric bound may be fractional, so an exclusive one is stated as is
+      // rather than turned into the next allowed value.
       if (isNumericOrigin(issue.origin))
-        return `'${issue.path.join(".")}' must be at least ${min}`;
+        return issue.inclusive
+          ? `'${issue.path.join(".")}' must be at least ${issue.minimum}`
+          : `'${issue.path.join(".")}' must be greater than ${issue.minimum}`;
 
-      return `'${issue.path.join(".")}' must have at least ${min} character${min == BigInt(1) ? "" : "s"}`;
+      const min = issue.inclusive
+        ? Number(issue.minimum)
+        : Number(issue.minimum) + 1;
+
+      return `'${issue.path.join(".")}' must have at least ${min} character${min === 1 ? "" : "s"}`;
     }
 
     case "too_big": {
-      const max = issue.inclusive
-        ? BigInt(issue.maximum)
-        : BigInt(issue.maximum) + BigInt(1);
-
       if (isNumericOrigin(issue.origin))
-        return `'${issue.path.join(".")}' must be at most ${max}`;
+        return issue.inclusive
+          ? `'${issue.path.join(".")}' must be at most ${issue.maximum}`
+          : `'${issue.path.join(".")}' must be less than ${issue.maximum}`;
 
-      return `'${issue.path.join(".")}' must have at most ${max} character${max == BigInt(1) ? "" : "s"}`;
+      const max = issue.inclusive
+        ? Number(issue.maximum)
+        : Number(issue.maximum) - 1;
+
+      return `'${issue.path.join(".")}' must have at most ${max} character${max === 1 ? "" : "s"}`;
     }
 
     case "unrecognized_keys":
