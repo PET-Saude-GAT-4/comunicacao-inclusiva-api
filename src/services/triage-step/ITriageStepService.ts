@@ -4,6 +4,7 @@ import type {
   TriageStepUpdateInput,
 } from "@/models/types/TriageStep.type.js";
 import type { AuthenticatedUser } from "@/types/user.js";
+import type { ListQuery, Page } from "@/utils/pagination.js";
 
 interface ITriageStepService {
   create(
@@ -20,6 +21,8 @@ interface ITriageStepService {
   delete(uuid: string, user: AuthenticatedUser): Promise<void>;
 
   findAll(): Promise<TriageStepOutput[]>;
+
+  findPage(query: ListQuery): Promise<Page<TriageStepOutput>>;
 
   findByUuid(uuid: string): Promise<TriageStepOutput | null>;
 

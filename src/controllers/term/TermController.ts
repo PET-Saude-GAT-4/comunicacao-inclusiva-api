@@ -4,6 +4,7 @@ import { BadRequestError } from "@/errors/BadRequestError.js";
 import { NotFoundError } from "@/errors/NotFoundError.js";
 import type { ITermService } from "@/services/term/ITermService.js";
 import TermService from "@/services/term/TermService.js";
+import { buildListMeta, parseListQuery } from "@/utils/pagination.js";
 
 import type { ITermController } from "./ITermController.js";
 import { toTermResponse } from "./TermResponse.js";
@@ -44,10 +45,12 @@ class TermController implements ITermController {
   }
 
   async findAll(req: Request, res: Response): Promise<void> {
-    const terms = await this._termService.findAll();
+    const query = parseListQuery(req.query);
+    const { items, total } = await this._termService.findPage(query);
 
     res.status(200).json({
-      terms: terms.map((t) => toTermResponse(t)),
+      terms: items.map((t) => toTermResponse(t)),
+      meta: buildListMeta(query, total),
     });
   }
 

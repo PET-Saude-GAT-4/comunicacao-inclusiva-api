@@ -11,6 +11,7 @@ import type { IInvitationService } from "@/services/invitation/IInvitationServic
 import InvitationService from "@/services/invitation/InvitationService.js";
 import type { IPasswordService } from "@/services/password/IPasswordService.js";
 import PasswordService from "@/services/password/PasswordService.js";
+import type { ListQuery, Page } from "@/utils/pagination.js";
 import { canManageRole } from "@/utils/permissions.js";
 
 import type { IUserService } from "./IUserService.js";
@@ -74,6 +75,10 @@ class UserService implements IUserService {
 
   async findAll(): Promise<UserOutput[]> {
     return this._userRepository.findAll();
+  }
+
+  async findPage(query: ListQuery): Promise<Page<UserOutput>> {
+    return this._userRepository.findPage(query);
   }
 
   async update(

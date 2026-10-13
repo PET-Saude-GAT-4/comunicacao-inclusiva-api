@@ -3,11 +3,14 @@ import type {
   TriageStepOutput,
   TriageStepRepositoryInput,
 } from "@/models/types/TriageStep.type.js";
+import type { ListQuery, Page } from "@/utils/pagination.js";
 
 import type { IRepository } from "../IRepository.js";
 
 export interface ITriageStepRepository extends IRepository<TriageStepOutput> {
   findAll(filter?: TriageStepFilter): Promise<TriageStepOutput[]>;
+
+  findPage(query: ListQuery): Promise<Page<TriageStepOutput>>;
 
   create(data: TriageStepRepositoryInput): Promise<TriageStepOutput>;
 

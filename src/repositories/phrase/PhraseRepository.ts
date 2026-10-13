@@ -5,9 +5,11 @@ import type {
   PhraseRepositoryUpdateInput,
 } from "@/models/types/Phrase.type.js";
 import { prisma } from "@/prisma.js";
+import { matchingIds, type SearchSource } from "@/repositories/search.js";
 import type { TermRow } from "@/repositories/term/TermMapper.js";
 import { mapTermRow, termInclude } from "@/repositories/term/TermMapper.js";
 import { isEmpty } from "@/utils/object.js";
+import { type ListQuery, type Page, pageArgs } from "@/utils/pagination.js";
 
 import type { IPhraseRepository } from "./IPhraseRepository.js";
 
@@ -18,6 +20,12 @@ const include = {
     include: { term: { include: termInclude } },
   },
 } as const;
+
+const search: SearchSource = {
+  from: Prisma.sql`"Phrase"`,
+  id: Prisma.sql`"Phrase"."id"`,
+  columns: [Prisma.sql`"Phrase"."description"`],
+};
 
 class PhraseRepository implements IPhraseRepository {
   private _map(data: {
@@ -116,6 +124,29 @@ class PhraseRepository implements IPhraseRepository {
     });
 
     return results.map((r) => this._map(r));
+  }
+
+  async findPage(
+    query: ListQuery,
+    filter?: { authorUuid?: string },
+  ): Promise<Page<PhraseOutput>> {
+    const where = {
+      author:
+        filter?.authorUuid != null ? { uuid: filter.authorUuid } : Prisma.skip,
+      id: await matchingIds(query.q, search),
+    };
+
+    const [total, results] = await prisma.$transaction([
+      prisma.phrase.count({ where }),
+      prisma.phrase.findMany({
+        where,
+        orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+        ...pageArgs(query),
+        include,
+      }),
+    ]);
+
+    return { items: results.map((r) => this._map(r)), total };
   }
 
   async findById(id: number): Promise<PhraseOutput | null> {

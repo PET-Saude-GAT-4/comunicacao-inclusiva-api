@@ -4,6 +4,7 @@ import { BadRequestError } from "@/errors/BadRequestError.js";
 import { NotFoundError } from "@/errors/NotFoundError.js";
 import type { IUserService } from "@/services/user/IUserService.js";
 import UserService from "@/services/user/UserService.js";
+import { buildListMeta, parseListQuery } from "@/utils/pagination.js";
 
 import type { IUserController } from "./IUserController.js";
 
@@ -56,8 +57,9 @@ class UserController implements IUserController {
   }
 
   async findAll(req: Request, res: Response): Promise<void> {
-    const users = await this._userService.findAll();
-    res.status(200).json({ users: users });
+    const query = parseListQuery(req.query);
+    const { items, total } = await this._userService.findPage(query);
+    res.status(200).json({ users: items, meta: buildListMeta(query, total) });
   }
 
   async update(req: Request, res: Response): Promise<void> {

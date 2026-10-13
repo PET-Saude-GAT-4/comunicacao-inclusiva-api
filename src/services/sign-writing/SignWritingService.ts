@@ -7,6 +7,7 @@ import type { ISignWritingRepository } from "@/repositories/sign-writing/ISignWr
 import SignWritingRepository from "@/repositories/sign-writing/SignWritingRepository.js";
 import FileService from "@/services/file/FileService.js";
 import type { IFileService } from "@/services/file/IFileService.js";
+import type { ListQuery, Page } from "@/utils/pagination.js";
 
 import type { ISignWritingService } from "./ISignWritingService.js";
 
@@ -55,6 +56,10 @@ class SignWritingService implements ISignWritingService {
 
   async findAll(): Promise<SignWritingOutput[]> {
     return this._signWritingRepository.findAll();
+  }
+
+  async findPage(query: ListQuery): Promise<Page<SignWritingOutput>> {
+    return this._signWritingRepository.findPage(query);
   }
 
   async findById(id: number): Promise<SignWritingOutput | null> {

@@ -3,6 +3,7 @@ import type { Request, Response } from "express";
 import { NotFoundError } from "@/errors/NotFoundError.js";
 import type { ISpecialityService } from "@/services/speciality/ISpecialityService.js";
 import SpecialityService from "@/services/speciality/SpecialityService.js";
+import { buildListMeta, parseListQuery } from "@/utils/pagination.js";
 
 import type { ISpecialityController } from "./ISpecialityController.js";
 
@@ -43,8 +44,11 @@ class SpecialityController implements ISpecialityController {
   }
 
   async findAll(req: Request, res: Response): Promise<void> {
-    const specialities = await this._specialityService.findAll();
-    res.status(200).json({ specialities: specialities });
+    const query = parseListQuery(req.query);
+    const { items, total } = await this._specialityService.findPage(query);
+    res
+      .status(200)
+      .json({ specialities: items, meta: buildListMeta(query, total) });
   }
 
   async findAllByProfessionCode(req: Request, res: Response): Promise<void> {

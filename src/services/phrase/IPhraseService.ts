@@ -5,6 +5,7 @@ import type {
   PhraseUpdateInput,
 } from "@/models/types/Phrase.type.js";
 import type { AuthenticatedUser } from "@/types/user.js";
+import type { ListQuery, Page } from "@/utils/pagination.js";
 
 interface IPhraseService {
   create(data: PhraseInput, user: AuthenticatedUser): Promise<PhraseOutput>;
@@ -16,6 +17,11 @@ interface IPhraseService {
   ): Promise<PhraseOutput>;
 
   findAll(user: AuthenticatedUser): Promise<PhraseOutput[]>;
+
+  findPage(
+    user: AuthenticatedUser,
+    query: ListQuery,
+  ): Promise<Page<PhraseOutput>>;
 
   findById(id: number): Promise<PhraseOutput | null>;
 

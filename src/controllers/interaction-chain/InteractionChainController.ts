@@ -8,6 +8,7 @@ import type {
 } from "@/models/types/InteractionChain.type.js";
 import type { IInteractionChainService } from "@/services/interaction-chain/IInteractionChainService.js";
 import InteractionChainService from "@/services/interaction-chain/InteractionChainService.js";
+import { buildListMeta, parseListQuery } from "@/utils/pagination.js";
 
 import type { IInteractionChainController } from "./IInteractionChainController.js";
 
@@ -143,12 +144,15 @@ class InteractionChainController implements IInteractionChainController {
   }
 
   async findAll(req: Request, res: Response): Promise<void> {
-    const interactionChains = await this._interactionChainService.findAll(
+    const query = parseListQuery(req.query);
+    const { items, total } = await this._interactionChainService.findPage(
       req.user!,
+      query,
     );
 
     res.status(200).json({
-      interactionChains: interactionChains.map((ic) => this._toResponse(ic)),
+      interactionChains: items.map((ic) => this._toResponse(ic)),
+      meta: buildListMeta(query, total),
     });
   }
 

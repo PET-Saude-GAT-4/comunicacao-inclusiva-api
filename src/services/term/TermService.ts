@@ -8,6 +8,7 @@ import type { ISignWritingRepository } from "@/repositories/sign-writing/ISignWr
 import SignWritingRepository from "@/repositories/sign-writing/SignWritingRepository.js";
 import type { ITermRepository } from "@/repositories/term/ITermRepository.js";
 import TermRepository from "@/repositories/term/TermRepository.js";
+import type { ListQuery, Page } from "@/utils/pagination.js";
 
 import type { ITermService } from "./ITermService.js";
 
@@ -67,6 +68,10 @@ class TermService implements ITermService {
 
   async findAll(): Promise<TermOutput[]> {
     return this._termRepository.findAll();
+  }
+
+  async findPage(query: ListQuery): Promise<Page<TermOutput>> {
+    return this._termRepository.findPage(query);
   }
 
   async findById(id: number): Promise<TermOutput | null> {

@@ -1,12 +1,20 @@
-import type { Prisma } from "@/generated/prisma/client.js";
+import { Prisma } from "@/generated/prisma/client.js";
 import type {
   SpecialityOutput,
   SpecialityRepositoryInput,
   SpecialityUpdate,
 } from "@/models/types/Speciality.type.js";
 import { prisma } from "@/prisma.js";
+import { matchingIds, type SearchSource } from "@/repositories/search.js";
+import { type ListQuery, type Page, pageArgs } from "@/utils/pagination.js";
 
 import type { ISpecialityRepository } from "./ISpecialityRepository.js";
+
+const search: SearchSource = {
+  from: Prisma.sql`"Speciality"`,
+  id: Prisma.sql`"Speciality"."id"`,
+  columns: [Prisma.sql`"Speciality"."name"`, Prisma.sql`"Speciality"."code"`],
+};
 
 class SpecialityRepository implements ISpecialityRepository {
   async create(
@@ -43,6 +51,32 @@ class SpecialityRepository implements ISpecialityRepository {
         updatedAt: speciality.updatedAt,
       };
     });
+  }
+
+  async findPage(query: ListQuery): Promise<Page<SpecialityOutput>> {
+    const where = { id: await matchingIds(query.q, search) };
+
+    const [total, data] = await prisma.$transaction([
+      prisma.speciality.count({ where }),
+      prisma.speciality.findMany({
+        where,
+        orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+        ...pageArgs(query),
+      }),
+    ]);
+
+    const items = data.map((speciality) => {
+      return {
+        id: speciality.id,
+        code: speciality.code,
+        name: speciality.name,
+        professionId: speciality.professionId,
+        createdAt: speciality.createdAt,
+        updatedAt: speciality.updatedAt,
+      };
+    });
+
+    return { items, total };
   }
 
   async findById(id: number): Promise<SpecialityOutput | null> {

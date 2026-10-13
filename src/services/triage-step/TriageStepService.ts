@@ -13,6 +13,7 @@ import type { IBoardRepository } from "@/repositories/board/IBoardRepository.js"
 import type { ITriageStepRepository } from "@/repositories/triage-step/ITriageStepRepository.js";
 import TriageStepRepository from "@/repositories/triage-step/TriageStepRepository.js";
 import type { AuthenticatedUser } from "@/types/user.js";
+import type { ListQuery, Page } from "@/utils/pagination.js";
 
 import type { ITriageStepService } from "./ITriageStepService.js";
 
@@ -112,6 +113,10 @@ class TriageStepService implements ITriageStepService {
 
   async findAll(): Promise<TriageStepOutput[]> {
     return await this._triageStepRepository.findAll();
+  }
+
+  async findPage(query: ListQuery): Promise<Page<TriageStepOutput>> {
+    return await this._triageStepRepository.findPage(query);
   }
 
   async findByUuid(uuid: string): Promise<TriageStepOutput | null> {

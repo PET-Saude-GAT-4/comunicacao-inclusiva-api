@@ -18,6 +18,7 @@ import InteractionChainRepository from "@/repositories/interaction-chain/Interac
 import type { IPhraseRepository } from "@/repositories/phrase/IPhraseRepository.js";
 import PhraseRepository from "@/repositories/phrase/PhraseRepository.js";
 import type { AuthenticatedUser } from "@/types/user.js";
+import type { ListQuery, Page } from "@/utils/pagination.js";
 
 import type { IInteractionChainService } from "./IInteractionChainService.js";
 
@@ -241,6 +242,18 @@ class InteractionChainService implements IInteractionChainService {
 
   async findAll(user: AuthenticatedUser): Promise<InteractionChainOutput[]> {
     return await this._interactionChainRepository.findAll(
+      user.role === RoleEnum.ADMIN
+        ? { triggerAuthorUuid: user.uuid }
+        : undefined,
+    );
+  }
+
+  async findPage(
+    user: AuthenticatedUser,
+    query: ListQuery,
+  ): Promise<Page<InteractionChainOutput>> {
+    return await this._interactionChainRepository.findPage(
+      query,
       user.role === RoleEnum.ADMIN
         ? { triggerAuthorUuid: user.uuid }
         : undefined,

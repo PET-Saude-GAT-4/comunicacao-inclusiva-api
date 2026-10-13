@@ -8,7 +8,10 @@ const signWritingController: ISignWritingController =
 
 const router = express.Router();
 
-router.get("/", signWritingController.findAll.bind(signWritingController));
+router.get(
+  "/",
+  signWritingController.findAllPublic.bind(signWritingController),
+);
 
 router.get(
   "/:uuid",

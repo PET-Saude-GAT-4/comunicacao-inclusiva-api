@@ -10,7 +10,7 @@ const specialityController: ISpecialityController = new SpecialityController();
 
 const router = express.Router();
 
-router.get("/", professionController.findAll.bind(professionController));
+router.get("/", professionController.findAllPublic.bind(professionController));
 
 router.get(
   "/:professionCode/specialities",

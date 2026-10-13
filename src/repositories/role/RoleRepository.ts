@@ -1,8 +1,17 @@
+import { Prisma } from "@/generated/prisma/client.js";
 import type { RoleInput, RoleOutput } from "@/models/types/Role.type.js";
 import type { UserOutput } from "@/models/types/User.type.js";
 import { prisma } from "@/prisma.js";
+import { matchingIds, type SearchSource } from "@/repositories/search.js";
+import { type ListQuery, type Page, pageArgs } from "@/utils/pagination.js";
 
 import type { IRoleRepository } from "./IRoleRepository.js";
+
+const search: SearchSource = {
+  from: Prisma.sql`"Role"`,
+  id: Prisma.sql`"Role"."id"`,
+  columns: [Prisma.sql`"Role"."name"`],
+};
 
 class RoleRepository implements IRoleRepository {
   // Repo specific methods
@@ -31,6 +40,28 @@ class RoleRepository implements IRoleRepository {
       createdAt: role.createdAt,
       updatedAt: role.updatedAt,
     }));
+  }
+
+  async findPage(query: ListQuery): Promise<Page<RoleOutput>> {
+    const where = { id: await matchingIds(query.q, search) };
+
+    const [total, roles] = await prisma.$transaction([
+      prisma.role.count({ where }),
+      prisma.role.findMany({
+        where,
+        orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+        ...pageArgs(query),
+      }),
+    ]);
+
+    const items = roles.map((role) => ({
+      id: role.id,
+      name: role.name,
+      createdAt: role.createdAt,
+      updatedAt: role.updatedAt,
+    }));
+
+    return { items, total };
   }
 
   async findByName(name: string): Promise<RoleOutput | null> {

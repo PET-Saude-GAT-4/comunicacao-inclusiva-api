@@ -4,6 +4,7 @@ import { BadRequestError } from "@/errors/BadRequestError.js";
 import { NotFoundError } from "@/errors/NotFoundError.js";
 import type { ISignWritingService } from "@/services/sign-writing/ISignWritingService.js";
 import SignWritingService from "@/services/sign-writing/SignWritingService.js";
+import { buildListMeta, parseListQuery } from "@/utils/pagination.js";
 
 import type { ISignWritingController } from "./ISignWritingController.js";
 import { toSignWritingResponse } from "./SignWritingResponse.js";
@@ -44,6 +45,18 @@ class SignWritingController implements ISignWritingController {
   }
 
   async findAll(req: Request, res: Response): Promise<void> {
+    const query = parseListQuery(req.query);
+    const { items, total } = await this._signWritingService.findPage(query);
+
+    res.status(200).json({
+      signWritings: items.map((s) => toSignWritingResponse(s)),
+      meta: buildListMeta(query, total),
+    });
+  }
+
+  // The app downloads the public list whole for offline use, so it ignores
+  // page, pageSize and q.
+  async findAllPublic(req: Request, res: Response): Promise<void> {
     const signWritings = await this._signWritingService.findAll();
 
     res.status(200).json({

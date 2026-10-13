@@ -7,7 +7,9 @@ import type {
   TriggerRef,
 } from "@/models/types/InteractionChain.type.js";
 import { prisma } from "@/prisma.js";
+import { matchingIds, type SearchSource } from "@/repositories/search.js";
 import { isEmpty } from "@/utils/object.js";
+import { type ListQuery, type Page, pageArgs } from "@/utils/pagination.js";
 
 import type { IInteractionChainRepository } from "./IInteractionChainRepository.js";
 
@@ -44,6 +46,20 @@ type TriggerRow = {
   publishedAt: Date | null;
   author: { uuid: string } | null;
 } | null;
+
+// A phrase-triggered chain has no trigger board, hence the LEFT JOIN; its
+// label and response board title are still searched.
+const search: SearchSource = {
+  from: Prisma.sql`"InteractionChain" ic
+    LEFT JOIN "Board" tb ON tb."id" = ic."triggerBoardId"
+    JOIN "Board" rb ON rb."id" = ic."responseBoardId"`,
+  id: Prisma.sql`ic."id"`,
+  columns: [
+    Prisma.sql`ic."label"`,
+    Prisma.sql`tb."title"`,
+    Prisma.sql`rb."title"`,
+  ],
+};
 
 class InteractionChainRepository implements IInteractionChainRepository {
   private _map(data: {
@@ -259,6 +275,36 @@ class InteractionChainRepository implements IInteractionChainRepository {
     });
 
     return results.map((r) => this._map(r));
+  }
+
+  async findPage(
+    query: ListQuery,
+    filter?: { triggerAuthorUuid?: string },
+  ): Promise<Page<InteractionChainOutput>> {
+    const authorUuid = filter?.triggerAuthorUuid;
+
+    const where = {
+      OR:
+        authorUuid != null
+          ? [
+              { triggerBoard: { author: { uuid: authorUuid } } },
+              { triggerPhrase: { author: { uuid: authorUuid } } },
+            ]
+          : Prisma.skip,
+      id: await matchingIds(query.q, search),
+    };
+
+    const [total, results] = await prisma.$transaction([
+      prisma.interactionChain.count({ where }),
+      prisma.interactionChain.findMany({
+        where,
+        orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+        ...pageArgs(query),
+        include,
+      }),
+    ]);
+
+    return { items: results.map((r) => this._map(r)), total };
   }
 
   async findById(id: number): Promise<InteractionChainOutput | null> {
