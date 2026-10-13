@@ -6,14 +6,21 @@ import { formatZodError } from "@/utils/zod.js";
 const DEFAULT_PAGE_SIZE = 10;
 const MAX_PAGE_SIZE = 100;
 
+// "?page=" reaches the server as an empty string, which would coerce to 0.
+// Treating it as absent lets a client serialize an unset field without a 400.
+const emptyAsAbsent = (value: unknown) => (value === "" ? undefined : value);
+
 const listQuerySchema = z.object({
-  page: z.coerce.number().int().min(1).optional(),
-  pageSize: z.coerce
-    .number()
-    .int()
-    .min(1)
-    .max(MAX_PAGE_SIZE)
-    .default(DEFAULT_PAGE_SIZE),
+  page: z.preprocess(emptyAsAbsent, z.coerce.number().int().min(1).optional()),
+  pageSize: z.preprocess(
+    emptyAsAbsent,
+    z.coerce
+      .number()
+      .int()
+      .min(1)
+      .max(MAX_PAGE_SIZE)
+      .default(DEFAULT_PAGE_SIZE),
+  ),
   q: z.string().trim().optional(),
 });
 
