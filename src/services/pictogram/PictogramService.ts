@@ -9,6 +9,7 @@ import type { IPictogramRepository } from "@/repositories/pictogram/IPictogramRe
 import PictogramRepository from "@/repositories/pictogram/PictogramRepository.js";
 import FileService from "@/services/file/FileService.js";
 import type { IFileService } from "@/services/file/IFileService.js";
+import type { ListQuery, Page } from "@/utils/pagination.js";
 
 import type { IPictogramService } from "./IPictogramService.js";
 
@@ -52,6 +53,10 @@ class PictogramService implements IPictogramService {
 
   async findAll(): Promise<PictogramOutput[]> {
     return this._pictogramRepository.findAll();
+  }
+
+  async findPage(query: ListQuery): Promise<Page<PictogramOutput>> {
+    return this._pictogramRepository.findPage(query);
   }
 
   async findById(id: number): Promise<PictogramOutput | null> {

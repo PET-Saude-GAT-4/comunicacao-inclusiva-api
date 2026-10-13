@@ -1,11 +1,20 @@
+import { Prisma } from "@/generated/prisma/client.js";
 import type {
   PictogramOutput,
   PictogramRepositoryInput,
 } from "@/models/types/Pictogram.type.js";
 import { prisma } from "@/prisma.js";
 import { mapPictogramRow } from "@/repositories/pictogram/PictogramMapper.js";
+import { matchingIds, type SearchSource } from "@/repositories/search.js";
+import { type ListQuery, type Page, pageArgs } from "@/utils/pagination.js";
 
 import type { IPictogramRepository } from "./IPictogramRepository.js";
+
+const search: SearchSource = {
+  from: Prisma.sql`"Pictogram"`,
+  id: Prisma.sql`"Pictogram"."id"`,
+  columns: [Prisma.sql`"Pictogram"."description"`],
+};
 
 class PictogramRepository implements IPictogramRepository {
   async create(data: PictogramRepositoryInput): Promise<PictogramOutput> {
@@ -26,6 +35,22 @@ class PictogramRepository implements IPictogramRepository {
     });
 
     return results.map((r) => mapPictogramRow(r));
+  }
+
+  async findPage(query: ListQuery): Promise<Page<PictogramOutput>> {
+    const where = { id: await matchingIds(query.q, search) };
+
+    const [total, results] = await prisma.$transaction([
+      prisma.pictogram.count({ where }),
+      prisma.pictogram.findMany({
+        where,
+        orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+        ...pageArgs(query),
+        include: { storedFile: true },
+      }),
+    ]);
+
+    return { items: results.map((r) => mapPictogramRow(r)), total };
   }
 
   async findById(id: number): Promise<PictogramOutput | null> {

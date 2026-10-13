@@ -1,5 +1,9 @@
 import type { $ZodError, $ZodIssue } from "zod/v4/core";
 
+function isNumericOrigin(origin: string): boolean {
+  return origin === "number" || origin === "int" || origin === "bigint";
+}
+
 function buildMessageFromIssue(issue: $ZodIssue): string {
   switch (issue.code) {
     case "invalid_type": {
@@ -21,6 +25,9 @@ function buildMessageFromIssue(issue: $ZodIssue): string {
         ? BigInt(issue.minimum)
         : BigInt(issue.minimum) + BigInt(1);
 
+      if (isNumericOrigin(issue.origin))
+        return `'${issue.path.join(".")}' must be at least ${min}`;
+
       return `'${issue.path.join(".")}' must have at least ${min} character${min == BigInt(1) ? "" : "s"}`;
     }
 
@@ -28,6 +35,9 @@ function buildMessageFromIssue(issue: $ZodIssue): string {
       const max = issue.inclusive
         ? BigInt(issue.maximum)
         : BigInt(issue.maximum) + BigInt(1);
+
+      if (isNumericOrigin(issue.origin))
+        return `'${issue.path.join(".")}' must be at most ${max}`;
 
       return `'${issue.path.join(".")}' must have at most ${max} character${max == BigInt(1) ? "" : "s"}`;
     }
