@@ -47,16 +47,18 @@ type TriggerRow = {
   author: { uuid: string } | null;
 } | null;
 
-// A phrase-triggered chain has no trigger board, hence the LEFT JOIN; its
-// label and response board title are still searched.
+// The trigger is either a board or a phrase, so both are LEFT JOINed and only
+// one of their columns is non-null for a given chain.
 const search: SearchSource = {
   from: Prisma.sql`"InteractionChain" ic
     LEFT JOIN "Board" tb ON tb."id" = ic."triggerBoardId"
+    LEFT JOIN "Phrase" tp ON tp."id" = ic."triggerPhraseId"
     JOIN "Board" rb ON rb."id" = ic."responseBoardId"`,
   id: Prisma.sql`ic."id"`,
   columns: [
     Prisma.sql`ic."label"`,
     Prisma.sql`tb."title"`,
+    Prisma.sql`tp."description"`,
     Prisma.sql`rb."title"`,
   ],
 };
