@@ -1,0 +1,25 @@
+# Dependencies, build output and the Prisma client are produced inside the image
+node_modules
+dist
+src/generated
+*.tsbuildinfo
+
+# Keep secrets out of the build context and the image layers
+.env
+.env.*
+
+# .yarnrc.yml points yarnPath at .yarn/releases; nothing else under .yarn is needed
+.yarn/*
+!.yarn/releases
+
+# Repository, tooling and Docker metadata
+.git
+.claude
+.agents
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# Logs
+logs
+*.log
