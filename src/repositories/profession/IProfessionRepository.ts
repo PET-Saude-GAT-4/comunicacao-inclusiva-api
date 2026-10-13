@@ -9,6 +9,7 @@ import type { ListQuery, Page } from "@/utils/pagination.js";
 import type { IRepository } from "../IRepository.js";
 
 interface IProfessionRepository extends IRepository<ProfessionOutput> {
+  findAll(): Promise<ProfessionOutput[]>;
   findPage(query: ListQuery): Promise<Page<ProfessionOutput>>;
   findByName(name: string): Promise<ProfessionOutput | null>;
   findByCode(code: string): Promise<ProfessionOutput | null>;

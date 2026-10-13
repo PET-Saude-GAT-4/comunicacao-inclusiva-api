@@ -71,25 +71,6 @@ class BoardRepository implements IBoardRepository {
     return mapBoardRow(result);
   }
 
-  async findAll(
-    filter?: { authorUuid?: string } & BoardFilter,
-  ): Promise<BoardOutput[]> {
-    const results = await prisma.board.findMany({
-      where: {
-        author:
-          filter?.authorUuid != null
-            ? { uuid: filter.authorUuid }
-            : Prisma.skip,
-        type: filter?.type ?? Prisma.skip,
-      },
-      orderBy: {
-        createdAt: "desc",
-      },
-      include: boardInclude,
-    });
-    return results.map((r) => mapBoardRow(r));
-  }
-
   async findPage(
     query: ListQuery,
     filter?: { authorUuid?: string } & BoardFilter,

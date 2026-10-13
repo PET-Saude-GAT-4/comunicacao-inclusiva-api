@@ -47,7 +47,7 @@ class ProfessionController implements IProfessionController {
   // The app downloads the public list whole for offline use, so it ignores
   // page, pageSize and q.
   async findAllPublic(req: Request, res: Response): Promise<void> {
-    const professions = await this._professionService.findAll!();
+    const professions = await this._professionService.findAll();
     res.status(200).json({ professions: professions });
   }
 

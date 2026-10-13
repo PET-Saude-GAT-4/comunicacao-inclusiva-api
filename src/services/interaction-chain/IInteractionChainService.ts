@@ -21,8 +21,6 @@ interface IInteractionChainService {
 
   delete(uuid: string, user: AuthenticatedUser): Promise<void>;
 
-  findAll(user: AuthenticatedUser): Promise<InteractionChainOutput[]>;
-
   findPage(
     user: AuthenticatedUser,
     query: ListQuery,

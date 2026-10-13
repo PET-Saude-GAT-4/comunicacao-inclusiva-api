@@ -127,16 +127,6 @@ class BoardService implements IBoardService {
     });
   }
 
-  async findAll(
-    user: AuthenticatedUser,
-    filter?: BoardFilter,
-  ): Promise<BoardOutput[]> {
-    return this._boardRepository.findAll({
-      ...(user.role === RoleEnum.ADMIN && { authorUuid: user.uuid }),
-      type: filter?.type,
-    });
-  }
-
   async findPage(
     user: AuthenticatedUser,
     query: ListQuery,

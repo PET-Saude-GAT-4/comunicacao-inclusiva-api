@@ -257,28 +257,6 @@ class InteractionChainRepository implements IInteractionChainRepository {
     return this._map(result);
   }
 
-  async findAll(filter?: {
-    triggerAuthorUuid?: string;
-  }): Promise<InteractionChainOutput[]> {
-    const authorUuid = filter?.triggerAuthorUuid;
-
-    const results = await prisma.interactionChain.findMany({
-      where:
-        authorUuid != null
-          ? {
-              OR: [
-                { triggerBoard: { author: { uuid: authorUuid } } },
-                { triggerPhrase: { author: { uuid: authorUuid } } },
-              ],
-            }
-          : Prisma.skip,
-      orderBy: [{ rank: "asc" }, { id: "asc" }],
-      include,
-    });
-
-    return results.map((r) => this._map(r));
-  }
-
   async findPage(
     query: ListQuery,
     filter?: { triggerAuthorUuid?: string },

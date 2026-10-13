@@ -116,10 +116,6 @@ class SpecialityService implements ISpecialityService {
     return await this._specialityRepository.update(id, updateData);
   }
 
-  async findAll(): Promise<SpecialityOutput[]> {
-    return this._specialityRepository.findAll();
-  }
-
   async delete(id: number): Promise<void> {
     await this._specialityRepository.delete(id);
   }

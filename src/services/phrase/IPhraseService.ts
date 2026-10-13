@@ -16,8 +16,6 @@ interface IPhraseService {
     user: AuthenticatedUser,
   ): Promise<PhraseOutput>;
 
-  findAll(user: AuthenticatedUser): Promise<PhraseOutput[]>;
-
   findPage(
     user: AuthenticatedUser,
     query: ListQuery,

@@ -8,6 +8,8 @@ import type { ListQuery, Page } from "@/utils/pagination.js";
 interface IPictogramRepository extends IRepository<PictogramOutput> {
   create(data: PictogramRepositoryInput): Promise<PictogramOutput>;
 
+  findAll(): Promise<PictogramOutput[]>;
+
   findPage(query: ListQuery): Promise<Page<PictogramOutput>>;
 
   findByUuid(uuid: string): Promise<PictogramOutput | null>;

@@ -73,10 +73,6 @@ class UserService implements IUserService {
     return this._userRepository.findByUuid(uuid);
   }
 
-  async findAll(): Promise<UserOutput[]> {
-    return this._userRepository.findAll();
-  }
-
   async findPage(query: ListQuery): Promise<Page<UserOutput>> {
     return this._userRepository.findPage(query);
   }

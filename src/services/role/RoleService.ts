@@ -28,10 +28,6 @@ class RoleService implements IRoleService {
     return this._roleRepository.findById(id);
   }
 
-  async findAll(): Promise<RoleOutput[]> {
-    return this._roleRepository.findAll();
-  }
-
   async findPage(query: ListQuery): Promise<Page<RoleOutput>> {
     return this._roleRepository.findPage(query);
   }

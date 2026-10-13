@@ -38,21 +38,6 @@ class SpecialityRepository implements ISpecialityRepository {
     };
   }
 
-  async findAll(): Promise<SpecialityOutput[]> {
-    const data = await prisma.speciality.findMany();
-
-    return data.map((speciality) => {
-      return {
-        id: speciality.id,
-        code: speciality.code,
-        name: speciality.name,
-        professionId: speciality.professionId,
-        createdAt: speciality.createdAt,
-        updatedAt: speciality.updatedAt,
-      };
-    });
-  }
-
   async findPage(query: ListQuery): Promise<Page<SpecialityOutput>> {
     const where = { id: await matchingIds(query.q, search) };
 

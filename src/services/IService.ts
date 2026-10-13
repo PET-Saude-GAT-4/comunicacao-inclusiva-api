@@ -1,9 +1,6 @@
-import type { ListQuery, Page } from "@/utils/pagination.js";
-
 interface IService<T> {
   findById?(id: number): Promise<T | null>;
-  findAll(): Promise<T[]>;
-  findPage?(query: ListQuery): Promise<Page<T>>;
+  findAll?(): Promise<T[]>;
   delete(id: number): Promise<void>;
 }
 

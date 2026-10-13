@@ -33,12 +33,6 @@ class TermRepository implements ITermRepository {
     return mapTermRow(result);
   }
 
-  async findAll(): Promise<TermOutput[]> {
-    const results = await prisma.term.findMany({ include });
-
-    return results.map((r) => mapTermRow(r));
-  }
-
   async findPage(query: ListQuery): Promise<Page<TermOutput>> {
     const where = { id: await matchingIds(query.q, search) };
 

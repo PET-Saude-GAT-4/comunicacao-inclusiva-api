@@ -66,10 +66,6 @@ class TermService implements ITermService {
     });
   }
 
-  async findAll(): Promise<TermOutput[]> {
-    return this._termRepository.findAll();
-  }
-
   async findPage(query: ListQuery): Promise<Page<TermOutput>> {
     return this._termRepository.findPage(query);
   }

@@ -39,19 +39,6 @@ class UserRepository implements IUserRepository {
     };
   }
 
-  async findAll(): Promise<UserOutput[]> {
-    const users = await prisma.user.findMany({ include: { role: true } });
-    return users.map((user) => ({
-      id: user.id,
-      uuid: user.uuid,
-      email: user.email,
-      role: user.role,
-      confirmedAt: user.confirmedAt,
-      createdAt: user.createdAt,
-      updatedAt: user.updatedAt,
-    }));
-  }
-
   async findPage(query: ListQuery): Promise<Page<UserOutput>> {
     const where = { id: await matchingIds(query.q, search) };
 

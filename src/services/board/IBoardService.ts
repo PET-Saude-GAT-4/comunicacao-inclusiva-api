@@ -20,8 +20,6 @@ interface IBoardService {
     user: AuthenticatedUser,
   ): Promise<BoardOutput>;
 
-  findAll(user: AuthenticatedUser, filter?: BoardFilter): Promise<BoardOutput[]>;
-
   findPage(
     user: AuthenticatedUser,
     query: ListQuery,

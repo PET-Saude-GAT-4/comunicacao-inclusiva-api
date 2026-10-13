@@ -12,10 +12,6 @@ import type { IRepository } from "@/repositories/IRepository.js";
 import type { ListQuery, Page } from "@/utils/pagination.js";
 
 interface IBoardRepository extends IRepository<BoardOutput> {
-  findAll(
-    filter?: { authorUuid?: string } & BoardFilter,
-  ): Promise<BoardOutput[]>;
-
   findPage(
     query: ListQuery,
     filter?: { authorUuid?: string } & BoardFilter,

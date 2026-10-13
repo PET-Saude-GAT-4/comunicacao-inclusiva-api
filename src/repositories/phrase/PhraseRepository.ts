@@ -111,21 +111,6 @@ class PhraseRepository implements IPhraseRepository {
     return this._map(result);
   }
 
-  async findAll(filter?: { authorUuid?: string }): Promise<PhraseOutput[]> {
-    const results = await prisma.phrase.findMany({
-      where:
-        filter?.authorUuid != null
-          ? { author: { uuid: filter.authorUuid } }
-          : Prisma.skip,
-      orderBy: {
-        createdAt: "desc",
-      },
-      include,
-    });
-
-    return results.map((r) => this._map(r));
-  }
-
   async findPage(
     query: ListQuery,
     filter?: { authorUuid?: string },

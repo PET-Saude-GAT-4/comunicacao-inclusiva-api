@@ -6,8 +6,6 @@ interface IRoleService {
 
   findById(id: number): Promise<RoleOutput | null>;
 
-  findAll(): Promise<RoleOutput[]>;
-
   findPage(query: ListQuery): Promise<Page<RoleOutput>>;
 
   update(id: number, data: RoleInput): Promise<RoleOutput>;

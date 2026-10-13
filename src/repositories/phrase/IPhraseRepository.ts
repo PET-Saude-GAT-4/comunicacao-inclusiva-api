@@ -11,8 +11,6 @@ interface IPhraseRepository extends IRepository<PhraseOutput> {
 
   update(id: number, data: PhraseRepositoryUpdateInput): Promise<PhraseOutput>;
 
-  findAll(filter?: { authorUuid?: string }): Promise<PhraseOutput[]>;
-
   findPage(
     query: ListQuery,
     filter?: { authorUuid?: string },

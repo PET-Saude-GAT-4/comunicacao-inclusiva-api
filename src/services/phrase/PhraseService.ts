@@ -112,12 +112,6 @@ class PhraseService implements IPhraseService {
     });
   }
 
-  async findAll(user: AuthenticatedUser): Promise<PhraseOutput[]> {
-    return this._phraseRepository.findAll(
-      user.role === "admin" ? { authorUuid: user.uuid } : undefined,
-    );
-  }
-
   async findPage(
     user: AuthenticatedUser,
     query: ListQuery,

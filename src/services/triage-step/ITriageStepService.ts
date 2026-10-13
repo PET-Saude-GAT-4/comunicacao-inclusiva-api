@@ -20,8 +20,6 @@ interface ITriageStepService {
 
   delete(uuid: string, user: AuthenticatedUser): Promise<void>;
 
-  findAll(): Promise<TriageStepOutput[]>;
-
   findPage(query: ListQuery): Promise<Page<TriageStepOutput>>;
 
   findByUuid(uuid: string): Promise<TriageStepOutput | null>;

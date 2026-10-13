@@ -12,8 +12,6 @@ interface IUserService {
 
   findByUuid(uuid: string): Promise<UserOutput | null>;
 
-  findAll(): Promise<UserOutput[]>;
-
   findPage(query: ListQuery): Promise<Page<UserOutput>>;
 
   update(

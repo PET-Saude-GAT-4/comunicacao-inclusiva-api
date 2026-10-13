@@ -111,10 +111,6 @@ class TriageStepService implements ITriageStepService {
     await this._triageStepRepository.delete(triageStep.id);
   }
 
-  async findAll(): Promise<TriageStepOutput[]> {
-    return await this._triageStepRepository.findAll();
-  }
-
   async findPage(query: ListQuery): Promise<Page<TriageStepOutput>> {
     return await this._triageStepRepository.findPage(query);
   }

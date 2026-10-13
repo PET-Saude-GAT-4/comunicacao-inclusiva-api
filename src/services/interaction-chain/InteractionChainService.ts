@@ -240,14 +240,6 @@ class InteractionChainService implements IInteractionChainService {
     await this._interactionChainRepository.delete(interactionChain.id);
   }
 
-  async findAll(user: AuthenticatedUser): Promise<InteractionChainOutput[]> {
-    return await this._interactionChainRepository.findAll(
-      user.role === RoleEnum.ADMIN
-        ? { triggerAuthorUuid: user.uuid }
-        : undefined,
-    );
-  }
-
   async findPage(
     user: AuthenticatedUser,
     query: ListQuery,

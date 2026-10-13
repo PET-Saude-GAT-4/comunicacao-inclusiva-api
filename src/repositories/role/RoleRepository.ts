@@ -32,16 +32,6 @@ class RoleRepository implements IRoleRepository {
     };
   }
 
-  async findAll(): Promise<RoleOutput[]> {
-    const roles = await prisma.role.findMany();
-    return roles.map((role) => ({
-      id: role.id,
-      name: role.name,
-      createdAt: role.createdAt,
-      updatedAt: role.updatedAt,
-    }));
-  }
-
   async findPage(query: ListQuery): Promise<Page<RoleOutput>> {
     const where = { id: await matchingIds(query.q, search) };
 
