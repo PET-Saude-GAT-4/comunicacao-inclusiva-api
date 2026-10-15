@@ -18,17 +18,17 @@ import type { ListQuery, Page } from "@/utils/pagination.js";
 import type { IInteractionChainRepository } from "./IInteractionChainRepository.js";
 
 const triggerSelect = {
-  select: {
-    uuid: true,
-    publishedAt: true,
-    author: { select: { uuid: true } },
-  },
+  uuid: true,
+  publishedAt: true,
+  author: { select: { uuid: true } },
 } as const;
 
+// The titles let the dashboard label a chain without loading every board and
+// phrase to look them up.
 const include = {
-  triggerBoard: triggerSelect,
-  triggerPhrase: triggerSelect,
-  responseBoard: { select: { uuid: true } },
+  triggerBoard: { select: { ...triggerSelect, title: true } },
+  triggerPhrase: { select: { ...triggerSelect, description: true } },
+  responseBoard: { select: { uuid: true, title: true } },
 } as const;
 
 // Which column holds a given trigger's list. Every rank operation is scoped by
@@ -49,7 +49,7 @@ type TriggerRow = {
   uuid: string;
   publishedAt: Date | null;
   author: { uuid: string } | null;
-} | null;
+};
 
 // The trigger is either a board or a phrase, so both are LEFT JOINed and only
 // one of their columns is non-null for a given chain.
@@ -72,9 +72,9 @@ class InteractionChainRepository implements IInteractionChainRepository {
   private _map(data: {
     id: number;
     uuid: string;
-    triggerBoard: TriggerRow;
-    triggerPhrase: TriggerRow;
-    responseBoard: { uuid: string };
+    triggerBoard: (TriggerRow & { title: string }) | null;
+    triggerPhrase: (TriggerRow & { description: string }) | null;
+    responseBoard: { uuid: string; title: string };
     rank: number;
     label: string | null;
     createdAt: Date;
@@ -93,10 +93,14 @@ class InteractionChainRepository implements IInteractionChainRepository {
       trigger: {
         type: data.triggerBoard ? "board" : "phrase",
         uuid: trigger.uuid,
+        title: data.triggerBoard
+          ? data.triggerBoard.title
+          : data.triggerPhrase!.description,
       },
       triggerAuthorUuid: trigger.author?.uuid ?? null,
       triggerPublishedAt: trigger.publishedAt,
       responseBoardUuid: data.responseBoard.uuid,
+      responseBoardTitle: data.responseBoard.title,
       rank: data.rank,
       label: data.label,
       createdAt: data.createdAt,

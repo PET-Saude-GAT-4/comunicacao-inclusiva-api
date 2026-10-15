@@ -1,5 +1,6 @@
 import { Prisma } from "@/generated/prisma/client.js";
 import type {
+  SignWritingListOutput,
   SignWritingOutput,
   SignWritingRepositoryInput,
 } from "@/models/types/SignWriting.type.js";
@@ -9,7 +10,11 @@ import {
   type ListSource,
   pageIds,
 } from "@/repositories/search.js";
-import { mapSignWritingRow } from "@/repositories/sign-writing/SignWritingMapper.js";
+import {
+  mapSignWritingListRow,
+  mapSignWritingRow,
+  signWritingListInclude,
+} from "@/repositories/sign-writing/SignWritingMapper.js";
 import type { ListQuery, Page } from "@/utils/pagination.js";
 
 import type { ISignWritingRepository } from "./ISignWritingRepository.js";
@@ -42,16 +47,16 @@ class SignWritingRepository implements ISignWritingRepository {
     return results.map((r) => mapSignWritingRow(r));
   }
 
-  async findPage(query: ListQuery): Promise<Page<SignWritingOutput>> {
+  async findPage(query: ListQuery): Promise<Page<SignWritingListOutput>> {
     const { ids, total } = await pageIds(query, source);
     const results = await findInOrder(ids, (chunk) =>
       prisma.signWriting.findMany({
         where: { id: { in: chunk } },
-        include: { storedFile: true },
+        include: signWritingListInclude,
       }),
     );
 
-    return { items: results.map((r) => mapSignWritingRow(r)), total };
+    return { items: results.map((r) => mapSignWritingListRow(r)), total };
   }
 
   async findById(id: number): Promise<SignWritingOutput | null> {

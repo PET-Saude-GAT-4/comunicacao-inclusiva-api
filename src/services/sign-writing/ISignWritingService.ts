@@ -1,5 +1,6 @@
 import type {
   SignWritingInput,
+  SignWritingListOutput,
   SignWritingOutput,
 } from "@/models/types/SignWriting.type.js";
 import type { IService } from "@/services/IService.js";
@@ -10,7 +11,7 @@ interface ISignWritingService extends IService<SignWritingOutput> {
 
   findAll(): Promise<SignWritingOutput[]>;
 
-  findPage(query: ListQuery): Promise<Page<SignWritingOutput>>;
+  findPage(query: ListQuery): Promise<Page<SignWritingListOutput>>;
 
   findByUuid(uuid: string): Promise<SignWritingOutput | null>;
 

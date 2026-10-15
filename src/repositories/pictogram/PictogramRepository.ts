@@ -1,10 +1,15 @@
 import { Prisma } from "@/generated/prisma/client.js";
 import type {
+  PictogramListOutput,
   PictogramOutput,
   PictogramRepositoryInput,
 } from "@/models/types/Pictogram.type.js";
 import { prisma } from "@/prisma.js";
-import { mapPictogramRow } from "@/repositories/pictogram/PictogramMapper.js";
+import {
+  mapPictogramListRow,
+  mapPictogramRow,
+  pictogramListInclude,
+} from "@/repositories/pictogram/PictogramMapper.js";
 import {
   findInOrder,
   type ListSource,
@@ -42,16 +47,16 @@ class PictogramRepository implements IPictogramRepository {
     return results.map((r) => mapPictogramRow(r));
   }
 
-  async findPage(query: ListQuery): Promise<Page<PictogramOutput>> {
+  async findPage(query: ListQuery): Promise<Page<PictogramListOutput>> {
     const { ids, total } = await pageIds(query, source);
     const results = await findInOrder(ids, (chunk) =>
       prisma.pictogram.findMany({
         where: { id: { in: chunk } },
-        include: { storedFile: true },
+        include: pictogramListInclude,
       }),
     );
 
-    return { items: results.map((r) => mapPictogramRow(r)), total };
+    return { items: results.map((r) => mapPictogramListRow(r)), total };
   }
 
   async findById(id: number): Promise<PictogramOutput | null> {

@@ -7,7 +7,10 @@ import PictogramService from "@/services/pictogram/PictogramService.js";
 import { buildListMeta, parseListQuery } from "@/utils/pagination.js";
 
 import type { IPictogramController } from "./IPictogramController.js";
-import { toPictogramResponse } from "./PictogramResponse.js";
+import {
+  toPictogramListResponse,
+  toPictogramResponse,
+} from "./PictogramResponse.js";
 
 type Props = {
   pictogramService?: IPictogramService;
@@ -48,7 +51,7 @@ class PictogramController implements IPictogramController {
     const { items, total } = await this._pictogramService.findPage(query);
 
     res.status(200).json({
-      pictograms: items.map((p) => toPictogramResponse(p)),
+      pictograms: items.map((p) => toPictogramListResponse(p)),
       meta: buildListMeta(query, total),
     });
   }

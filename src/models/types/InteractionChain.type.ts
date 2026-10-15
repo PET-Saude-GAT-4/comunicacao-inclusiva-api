@@ -38,12 +38,14 @@ export type InteractionChainRepositoryUpdateInput = {
 export type InteractionChainOutput = {
   id: number;
   uuid: string;
-  trigger: ChainTrigger;
+  // The board's title or the phrase's description, whichever the trigger is.
+  trigger: ChainTrigger & { title: string };
   // Flattened from whichever trigger is set, so the authorization guards read
   // the same fields whatever the arc points at.
   triggerAuthorUuid: string | null;
   triggerPublishedAt: Date | null;
   responseBoardUuid: string;
+  responseBoardTitle: string;
   rank: number;
   label: string | null;
   createdAt: Date;

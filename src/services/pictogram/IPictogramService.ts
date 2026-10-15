@@ -1,5 +1,6 @@
 import type {
   PictogramInput,
+  PictogramListOutput,
   PictogramOutput,
 } from "@/models/types/Pictogram.type.js";
 import type { IService } from "@/services/IService.js";
@@ -10,7 +11,7 @@ interface IPictogramService extends IService<PictogramOutput> {
 
   findAll(): Promise<PictogramOutput[]>;
 
-  findPage(query: ListQuery): Promise<Page<PictogramOutput>>;
+  findPage(query: ListQuery): Promise<Page<PictogramListOutput>>;
 
   findByUuid(uuid: string): Promise<PictogramOutput | null>;
 
