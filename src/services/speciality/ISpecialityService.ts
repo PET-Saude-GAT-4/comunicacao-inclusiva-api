@@ -3,10 +3,12 @@ import type {
   SpecialityOutput,
   SpecialityUpdate,
 } from "@/models/types/Speciality.type.js";
+import type { ListQuery, Page } from "@/utils/pagination.js";
 
 import type { IService } from "../IService.js";
 
 interface ISpecialityService extends IService<SpecialityOutput> {
+  findPage(query: ListQuery): Promise<Page<SpecialityOutput>>;
   create(data: SpecialityInput): Promise<SpecialityOutput>;
   update(id: number, data: SpecialityUpdate): Promise<SpecialityOutput>;
   findAllByProfessionCode(professionCode: string): Promise<SpecialityOutput[]>;

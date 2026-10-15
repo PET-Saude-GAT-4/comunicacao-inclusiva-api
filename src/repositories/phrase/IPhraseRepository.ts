@@ -4,13 +4,17 @@ import type {
   PhraseRepositoryUpdateInput,
 } from "@/models/types/Phrase.type.js";
 import type { IRepository } from "@/repositories/IRepository.js";
+import type { ListQuery, Page } from "@/utils/pagination.js";
 
 interface IPhraseRepository extends IRepository<PhraseOutput> {
   create(data: PhraseRepositoryInput): Promise<PhraseOutput>;
 
   update(id: number, data: PhraseRepositoryUpdateInput): Promise<PhraseOutput>;
 
-  findAll(filter?: { authorUuid?: string }): Promise<PhraseOutput[]>;
+  findPage(
+    query: ListQuery,
+    filter?: { authorUuid?: string },
+  ): Promise<Page<PhraseOutput>>;
 
   findByUuid(uuid: string): Promise<PhraseOutput | null>;
 

@@ -7,12 +7,20 @@ import type {
 import { prisma } from "@/prisma.js";
 import type { BoardRow } from "@/repositories/board/BoardMapper.js";
 import { boardInclude, mapBoardRow } from "@/repositories/board/BoardMapper.js";
+import { matchingIds, type SearchSource } from "@/repositories/search.js";
+import { type ListQuery, type Page, pageArgs } from "@/utils/pagination.js";
 
 import type { ITriageStepRepository } from "./ITriageStepRepository.js";
 
 const include = {
   board: { include: boardInclude },
 } as const;
+
+const search: SearchSource = {
+  from: Prisma.sql`"TriageStep" ts JOIN "Board" b ON b."id" = ts."boardId"`,
+  id: Prisma.sql`ts."id"`,
+  columns: [Prisma.sql`b."title"`],
+};
 
 class TriageStepRepository implements ITriageStepRepository {
   private _map(data: {
@@ -87,6 +95,22 @@ class TriageStepRepository implements ITriageStepRepository {
     });
 
     return results.map((r) => this._map(r));
+  }
+
+  async findPage(query: ListQuery): Promise<Page<TriageStepOutput>> {
+    const where = { id: await matchingIds(query.q, search) };
+
+    const [total, results] = await prisma.$transaction([
+      prisma.triageStep.count({ where }),
+      prisma.triageStep.findMany({
+        where,
+        orderBy: { level: "asc" },
+        ...pageArgs(query),
+        include,
+      }),
+    ]);
+
+    return { items: results.map((r) => this._map(r)), total };
   }
 
   async findById(id: number): Promise<TriageStepOutput | null> {

@@ -10,6 +10,7 @@ import type {
 import type { IProfessionRepository } from "@/repositories/profession/IProfessionRepository.js";
 import ProfessionRepository from "@/repositories/profession/ProfessionRepository.js";
 import { normalize } from "@/utils/normalize.js";
+import type { ListQuery, Page } from "@/utils/pagination.js";
 
 import type { IProfessionService } from "./IProfessionService.js";
 
@@ -95,6 +96,10 @@ class ProfessionService implements IProfessionService {
 
   async delete(id: number): Promise<void> {
     await this._professionRepository.delete(id);
+  }
+
+  async findPage(query: ListQuery): Promise<Page<ProfessionOutput>> {
+    return this._professionRepository.findPage(query);
   }
 
   async findById(id: number): Promise<ProfessionOutput | null> {

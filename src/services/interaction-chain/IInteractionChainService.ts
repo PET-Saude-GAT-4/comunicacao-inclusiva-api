@@ -5,6 +5,7 @@ import type {
   InteractionChainUpdateInput,
 } from "@/models/types/InteractionChain.type.js";
 import type { AuthenticatedUser } from "@/types/user.js";
+import type { ListQuery, Page } from "@/utils/pagination.js";
 
 interface IInteractionChainService {
   create(
@@ -20,7 +21,10 @@ interface IInteractionChainService {
 
   delete(uuid: string, user: AuthenticatedUser): Promise<void>;
 
-  findAll(user: AuthenticatedUser): Promise<InteractionChainOutput[]>;
+  findPage(
+    user: AuthenticatedUser,
+    query: ListQuery,
+  ): Promise<Page<InteractionChainOutput>>;
 
   findByUuid(
     uuid: string,

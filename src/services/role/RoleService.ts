@@ -3,6 +3,7 @@ import { NotFoundError } from "@/errors/NotFoundError.js";
 import type { RoleInput, RoleOutput } from "@/models/types/Role.type.js";
 import type { IRoleRepository } from "@/repositories/role/IRoleRepository.js";
 import RoleRepository from "@/repositories/role/RoleRepository.js";
+import type { ListQuery, Page } from "@/utils/pagination.js";
 
 import type { IRoleService } from "./IRoleService.js";
 
@@ -27,8 +28,8 @@ class RoleService implements IRoleService {
     return this._roleRepository.findById(id);
   }
 
-  async findAll(): Promise<RoleOutput[]> {
-    return this._roleRepository.findAll();
+  async findPage(query: ListQuery): Promise<Page<RoleOutput>> {
+    return this._roleRepository.findPage(query);
   }
 
   async update(id: number, data: RoleInput): Promise<RoleOutput> {

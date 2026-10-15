@@ -1,11 +1,20 @@
+import { Prisma } from "@/generated/prisma/client.js";
 import type {
   UserInput,
   UserOutput,
   UserUpdateInput,
 } from "@/models/types/User.type.js";
 import { prisma } from "@/prisma.js";
+import { matchingIds, type SearchSource } from "@/repositories/search.js";
+import { type ListQuery, type Page, pageArgs } from "@/utils/pagination.js";
 
 import type { IUserRepository } from "./IUserRepository.js";
+
+const search: SearchSource = {
+  from: Prisma.sql`"User"`,
+  id: Prisma.sql`"User"."id"`,
+  columns: [Prisma.sql`"User"."email"`],
+};
 
 class UserRepository implements IUserRepository {
   // Repo specific methods
@@ -30,9 +39,20 @@ class UserRepository implements IUserRepository {
     };
   }
 
-  async findAll(): Promise<UserOutput[]> {
-    const users = await prisma.user.findMany({ include: { role: true } });
-    return users.map((user) => ({
+  async findPage(query: ListQuery): Promise<Page<UserOutput>> {
+    const where = { id: await matchingIds(query.q, search) };
+
+    const [total, users] = await prisma.$transaction([
+      prisma.user.count({ where }),
+      prisma.user.findMany({
+        where,
+        orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+        ...pageArgs(query),
+        include: { role: true },
+      }),
+    ]);
+
+    const items = users.map((user) => ({
       id: user.id,
       uuid: user.uuid,
       email: user.email,
@@ -41,6 +61,8 @@ class UserRepository implements IUserRepository {
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
     }));
+
+    return { items, total };
   }
 
   async existsById(id: number): Promise<boolean> {

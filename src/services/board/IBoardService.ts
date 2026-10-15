@@ -9,6 +9,7 @@ import type {
   BoardTermOutput,
 } from "@/models/types/BoardTerm.type.js";
 import type { AuthenticatedUser } from "@/types/user.js";
+import type { ListQuery, Page } from "@/utils/pagination.js";
 
 interface IBoardService {
   create(data: BoardInput): Promise<BoardOutput>;
@@ -19,7 +20,11 @@ interface IBoardService {
     user: AuthenticatedUser,
   ): Promise<BoardOutput>;
 
-  findAll(user: AuthenticatedUser, filter?: BoardFilter): Promise<BoardOutput[]>;
+  findPage(
+    user: AuthenticatedUser,
+    query: ListQuery,
+    filter?: BoardFilter,
+  ): Promise<Page<BoardOutput>>;
 
   findById(id: number): Promise<BoardOutput | null>;
 

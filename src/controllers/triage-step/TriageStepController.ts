@@ -9,6 +9,7 @@ import {
 } from "@/models/types/TriageStep.type.js";
 import type { ITriageStepService } from "@/services/triage-step/ITriageStepService.js";
 import TriageStepService from "@/services/triage-step/TriageStepService.js";
+import { buildListMeta, parseListQuery } from "@/utils/pagination.js";
 
 import type { ITriageStepController } from "./ITriageStepController.js";
 
@@ -80,10 +81,12 @@ class TriageStepController implements ITriageStepController {
   }
 
   async findAll(req: Request, res: Response): Promise<void> {
-    const triageSteps = await this._triageStepService.findAll();
+    const query = parseListQuery(req.query);
+    const { items, total } = await this._triageStepService.findPage(query);
 
     res.status(200).json({
-      triageSteps: triageSteps.map((ts) => toTriageStepResponse(ts)),
+      triageSteps: items.map((ts) => toTriageStepResponse(ts)),
+      meta: buildListMeta(query, total),
     });
   }
 

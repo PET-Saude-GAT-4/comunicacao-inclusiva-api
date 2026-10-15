@@ -11,10 +11,18 @@ import type {
 } from "@/models/types/BoardTerm.type.js";
 import { prisma } from "@/prisma.js";
 import { boardInclude, mapBoardRow } from "@/repositories/board/BoardMapper.js";
+import { matchingIds, type SearchSource } from "@/repositories/search.js";
 import { mapTermRow, termInclude } from "@/repositories/term/TermMapper.js";
 import { isEmpty } from "@/utils/object.js";
+import { type ListQuery, type Page, pageArgs } from "@/utils/pagination.js";
 
 import type { IBoardRepository } from "./IBoardRepository.js";
+
+const search: SearchSource = {
+  from: Prisma.sql`"Board"`,
+  id: Prisma.sql`"Board"."id"`,
+  columns: [Prisma.sql`"Board"."title"`],
+};
 
 class BoardRepository implements IBoardRepository {
   // Every pointer edit reads Board.first and a predecessor's next, then rewrites
@@ -63,23 +71,28 @@ class BoardRepository implements IBoardRepository {
     return mapBoardRow(result);
   }
 
-  async findAll(
+  async findPage(
+    query: ListQuery,
     filter?: { authorUuid?: string } & BoardFilter,
-  ): Promise<BoardOutput[]> {
-    const results = await prisma.board.findMany({
-      where: {
-        author:
-          filter?.authorUuid != null
-            ? { uuid: filter.authorUuid }
-            : Prisma.skip,
-        type: filter?.type ?? Prisma.skip,
-      },
-      orderBy: {
-        createdAt: "desc",
-      },
-      include: boardInclude,
-    });
-    return results.map((r) => mapBoardRow(r));
+  ): Promise<Page<BoardOutput>> {
+    const where = {
+      author:
+        filter?.authorUuid != null ? { uuid: filter.authorUuid } : Prisma.skip,
+      type: filter?.type ?? Prisma.skip,
+      id: await matchingIds(query.q, search),
+    };
+
+    const [total, results] = await prisma.$transaction([
+      prisma.board.count({ where }),
+      prisma.board.findMany({
+        where,
+        orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+        ...pageArgs(query),
+        include: boardInclude,
+      }),
+    ]);
+
+    return { items: results.map((r) => mapBoardRow(r)), total };
   }
 
   async findById(id: number): Promise<BoardOutput | null> {

@@ -3,9 +3,14 @@ import type {
   PictogramOutput,
 } from "@/models/types/Pictogram.type.js";
 import type { IService } from "@/services/IService.js";
+import type { ListQuery, Page } from "@/utils/pagination.js";
 
 interface IPictogramService extends IService<PictogramOutput> {
   create(data: PictogramInput): Promise<PictogramOutput>;
+
+  findAll(): Promise<PictogramOutput[]>;
+
+  findPage(query: ListQuery): Promise<Page<PictogramOutput>>;
 
   findByUuid(uuid: string): Promise<PictogramOutput | null>;
 

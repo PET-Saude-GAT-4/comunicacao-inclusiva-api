@@ -5,13 +5,15 @@ import type {
   InteractionChainRepositoryUpdateInput,
   TriggerRef,
 } from "@/models/types/InteractionChain.type.js";
+import type { ListQuery, Page } from "@/utils/pagination.js";
 
 import type { IRepository } from "../IRepository.js";
 
 export interface IInteractionChainRepository extends IRepository<InteractionChainOutput> {
-  findAll(filter?: {
-    triggerAuthorUuid?: string;
-  }): Promise<InteractionChainOutput[]>;
+  findPage(
+    query: ListQuery,
+    filter?: { triggerAuthorUuid?: string },
+  ): Promise<Page<InteractionChainOutput>>;
 
   create(
     data: InteractionChainRepositoryInput,

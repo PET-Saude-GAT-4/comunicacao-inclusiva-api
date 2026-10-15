@@ -7,7 +7,7 @@ const pictogramController: IPictogramController = new PictogramController();
 
 const router = express.Router();
 
-router.get("/", pictogramController.findAll.bind(pictogramController));
+router.get("/", pictogramController.findAllPublic.bind(pictogramController));
 
 router.get("/:uuid", pictogramController.findById!.bind(pictogramController));
 

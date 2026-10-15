@@ -5,6 +5,7 @@ import { NotFoundError } from "@/errors/NotFoundError.js";
 import type { RoleInput } from "@/models/types/Role.type.js";
 import type { IRoleService } from "@/services/role/IRoleService.js";
 import RoleService from "@/services/role/RoleService.js";
+import { buildListMeta, parseListQuery } from "@/utils/pagination.js";
 
 import type { IRoleController } from "./IRoleController.js";
 
@@ -42,8 +43,9 @@ class RoleController implements IRoleController {
   }
 
   async findAll(req: Request, res: Response): Promise<void> {
-    const roles = await this._roleService.findAll();
-    res.status(200).json({ roles: roles });
+    const query = parseListQuery(req.query);
+    const { items, total } = await this._roleService.findPage(query);
+    res.status(200).json({ roles: items, meta: buildListMeta(query, total) });
   }
 
   async update(req: Request, res: Response): Promise<void> {

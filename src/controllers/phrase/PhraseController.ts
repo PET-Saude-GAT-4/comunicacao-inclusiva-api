@@ -7,6 +7,7 @@ import { NotFoundError } from "@/errors/NotFoundError.js";
 import type { PhraseOutput } from "@/models/types/Phrase.type.js";
 import type { IPhraseService } from "@/services/phrase/IPhraseService.js";
 import PhraseService from "@/services/phrase/PhraseService.js";
+import { buildListMeta, parseListQuery } from "@/utils/pagination.js";
 
 import type { IPhraseController } from "./IPhraseController.js";
 
@@ -113,11 +114,16 @@ class PhraseController implements IPhraseController {
   }
 
   async findAll(req: Request, res: Response): Promise<void> {
-    const phrases = await this._phraseService.findAll(req.user!);
+    const query = parseListQuery(req.query);
+    const { items, total } = await this._phraseService.findPage(
+      req.user!,
+      query,
+    );
 
-    res
-      .status(200)
-      .json({ phrases: phrases.map((phrase) => this._toResponse(phrase)) });
+    res.status(200).json({
+      phrases: items.map((phrase) => this._toResponse(phrase)),
+      meta: buildListMeta(query, total),
+    });
   }
 
   async findByUuid(req: Request, res: Response): Promise<void> {

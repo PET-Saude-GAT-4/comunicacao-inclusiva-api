@@ -7,7 +7,9 @@ import type {
   TriggerRef,
 } from "@/models/types/InteractionChain.type.js";
 import { prisma } from "@/prisma.js";
+import { matchingIds, type SearchSource } from "@/repositories/search.js";
 import { isEmpty } from "@/utils/object.js";
+import { type ListQuery, type Page, pageArgs } from "@/utils/pagination.js";
 
 import type { IInteractionChainRepository } from "./IInteractionChainRepository.js";
 
@@ -44,6 +46,22 @@ type TriggerRow = {
   publishedAt: Date | null;
   author: { uuid: string } | null;
 } | null;
+
+// The trigger is either a board or a phrase, so both are LEFT JOINed and only
+// one of their columns is non-null for a given chain.
+const search: SearchSource = {
+  from: Prisma.sql`"InteractionChain" ic
+    LEFT JOIN "Board" tb ON tb."id" = ic."triggerBoardId"
+    LEFT JOIN "Phrase" tp ON tp."id" = ic."triggerPhraseId"
+    JOIN "Board" rb ON rb."id" = ic."responseBoardId"`,
+  id: Prisma.sql`ic."id"`,
+  columns: [
+    Prisma.sql`ic."label"`,
+    Prisma.sql`tb."title"`,
+    Prisma.sql`tp."description"`,
+    Prisma.sql`rb."title"`,
+  ],
+};
 
 class InteractionChainRepository implements IInteractionChainRepository {
   private _map(data: {
@@ -239,26 +257,34 @@ class InteractionChainRepository implements IInteractionChainRepository {
     return this._map(result);
   }
 
-  async findAll(filter?: {
-    triggerAuthorUuid?: string;
-  }): Promise<InteractionChainOutput[]> {
+  async findPage(
+    query: ListQuery,
+    filter?: { triggerAuthorUuid?: string },
+  ): Promise<Page<InteractionChainOutput>> {
     const authorUuid = filter?.triggerAuthorUuid;
 
-    const results = await prisma.interactionChain.findMany({
-      where:
+    const where = {
+      OR:
         authorUuid != null
-          ? {
-              OR: [
-                { triggerBoard: { author: { uuid: authorUuid } } },
-                { triggerPhrase: { author: { uuid: authorUuid } } },
-              ],
-            }
+          ? [
+              { triggerBoard: { author: { uuid: authorUuid } } },
+              { triggerPhrase: { author: { uuid: authorUuid } } },
+            ]
           : Prisma.skip,
-      orderBy: [{ rank: "asc" }, { id: "asc" }],
-      include,
-    });
+      id: await matchingIds(query.q, search),
+    };
 
-    return results.map((r) => this._map(r));
+    const [total, results] = await prisma.$transaction([
+      prisma.interactionChain.count({ where }),
+      prisma.interactionChain.findMany({
+        where,
+        orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+        ...pageArgs(query),
+        include,
+      }),
+    ]);
+
+    return { items: results.map((r) => this._map(r)), total };
   }
 
   async findById(id: number): Promise<InteractionChainOutput | null> {

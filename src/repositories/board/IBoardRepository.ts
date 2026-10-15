@@ -9,11 +9,13 @@ import type {
   BoardTermRepositoryInput,
 } from "@/models/types/BoardTerm.type.js";
 import type { IRepository } from "@/repositories/IRepository.js";
+import type { ListQuery, Page } from "@/utils/pagination.js";
 
 interface IBoardRepository extends IRepository<BoardOutput> {
-  findAll(
+  findPage(
+    query: ListQuery,
     filter?: { authorUuid?: string } & BoardFilter,
-  ): Promise<BoardOutput[]>;
+  ): Promise<Page<BoardOutput>>;
 
   create(data: BoardRepositoryInput): Promise<BoardOutput>;
 

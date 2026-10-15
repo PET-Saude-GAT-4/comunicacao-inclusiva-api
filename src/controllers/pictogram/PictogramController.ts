@@ -4,6 +4,7 @@ import { BadRequestError } from "@/errors/BadRequestError.js";
 import { NotFoundError } from "@/errors/NotFoundError.js";
 import type { IPictogramService } from "@/services/pictogram/IPictogramService.js";
 import PictogramService from "@/services/pictogram/PictogramService.js";
+import { buildListMeta, parseListQuery } from "@/utils/pagination.js";
 
 import type { IPictogramController } from "./IPictogramController.js";
 import { toPictogramResponse } from "./PictogramResponse.js";
@@ -43,6 +44,18 @@ class PictogramController implements IPictogramController {
   }
 
   async findAll(req: Request, res: Response): Promise<void> {
+    const query = parseListQuery(req.query);
+    const { items, total } = await this._pictogramService.findPage(query);
+
+    res.status(200).json({
+      pictograms: items.map((p) => toPictogramResponse(p)),
+      meta: buildListMeta(query, total),
+    });
+  }
+
+  // The app downloads the public list whole for offline use, so it ignores
+  // page, pageSize and q.
+  async findAllPublic(req: Request, res: Response): Promise<void> {
     const pictograms = await this._pictogramService.findAll();
 
     res.status(200).json({

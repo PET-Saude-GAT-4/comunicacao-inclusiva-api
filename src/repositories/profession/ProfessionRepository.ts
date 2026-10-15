@@ -1,12 +1,20 @@
-import type { Prisma } from "@/generated/prisma/client.js";
+import { Prisma } from "@/generated/prisma/client.js";
 import type {
   ProfessionInput,
   ProfessionOutput,
   ProfessionUpdate,
 } from "@/models/types/Profession.type.js";
 import { prisma } from "@/prisma.js";
+import { matchingIds, type SearchSource } from "@/repositories/search.js";
+import { type ListQuery, type Page, pageArgs } from "@/utils/pagination.js";
 
 import type { IProfessionRepository } from "./IProfessionRepository.js";
+
+const search: SearchSource = {
+  from: Prisma.sql`"Profession"`,
+  id: Prisma.sql`"Profession"."id"`,
+  columns: [Prisma.sql`"Profession"."name"`, Prisma.sql`"Profession"."code"`],
+};
 
 class ProfessionRepository implements IProfessionRepository {
   async create(profession: ProfessionInput): Promise<ProfessionOutput> {
@@ -74,6 +82,31 @@ class ProfessionRepository implements IProfessionRepository {
     await prisma.profession.deleteMany({
       where: { id },
     });
+  }
+
+  async findPage(query: ListQuery): Promise<Page<ProfessionOutput>> {
+    const where = { id: await matchingIds(query.q, search) };
+
+    const [total, data] = await prisma.$transaction([
+      prisma.profession.count({ where }),
+      prisma.profession.findMany({
+        where,
+        orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+        ...pageArgs(query),
+      }),
+    ]);
+
+    const items = data.map((profession) => {
+      return {
+        id: profession.id,
+        name: profession.name,
+        code: profession.code,
+        createdAt: profession.createdAt,
+        updatedAt: profession.updatedAt,
+      };
+    });
+
+    return { items, total };
   }
 
   async findById(id: number): Promise<ProfessionOutput | null> {

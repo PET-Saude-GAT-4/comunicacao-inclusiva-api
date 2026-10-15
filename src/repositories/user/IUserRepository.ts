@@ -3,10 +3,12 @@ import type {
   UserOutput,
   UserUpdateInput,
 } from "@/models/types/User.type.js";
+import type { ListQuery, Page } from "@/utils/pagination.js";
 
 import type { IRepository } from "../IRepository.js";
 
 interface IUserRepository extends IRepository<UserOutput> {
+  findPage(query: ListQuery): Promise<Page<UserOutput>>;
   findByEmail(email: string): Promise<UserOutput | null>;
   findByUuid(uuid: string): Promise<UserOutput | null>;
   findPasswordHashByEmail(email: string): Promise<string | null>;

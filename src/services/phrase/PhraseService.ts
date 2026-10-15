@@ -14,6 +14,7 @@ import PhraseRepository from "@/repositories/phrase/PhraseRepository.js";
 import type { ITermRepository } from "@/repositories/term/ITermRepository.js";
 import TermRepository from "@/repositories/term/TermRepository.js";
 import type { AuthenticatedUser } from "@/types/user.js";
+import type { ListQuery, Page } from "@/utils/pagination.js";
 
 import type { IPhraseService } from "./IPhraseService.js";
 
@@ -111,9 +112,13 @@ class PhraseService implements IPhraseService {
     });
   }
 
-  async findAll(user: AuthenticatedUser): Promise<PhraseOutput[]> {
-    return this._phraseRepository.findAll(
-      user.role === "admin" ? { authorUuid: user.uuid } : undefined,
+  async findPage(
+    user: AuthenticatedUser,
+    query: ListQuery,
+  ): Promise<Page<PhraseOutput>> {
+    return this._phraseRepository.findPage(
+      query,
+      user.role === RoleEnum.ADMIN ? { authorUuid: user.uuid } : undefined,
     );
   }
 

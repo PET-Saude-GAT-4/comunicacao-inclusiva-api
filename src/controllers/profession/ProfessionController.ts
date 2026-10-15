@@ -3,6 +3,7 @@ import type { Request, Response } from "express";
 import { NotFoundError } from "@/errors/NotFoundError.js";
 import type { IProfessionService } from "@/services/profession/IProfessionService.js";
 import ProfessionService from "@/services/profession/ProfessionService.js";
+import { buildListMeta, parseListQuery } from "@/utils/pagination.js";
 
 import type { IProfessionController } from "./IProfessionController.js";
 
@@ -36,7 +37,17 @@ class ProfessionController implements IProfessionController {
   }
 
   async findAll(req: Request, res: Response): Promise<void> {
-    const professions = await this._professionService.findAll!();
+    const query = parseListQuery(req.query);
+    const { items, total } = await this._professionService.findPage(query);
+    res
+      .status(200)
+      .json({ professions: items, meta: buildListMeta(query, total) });
+  }
+
+  // The app downloads the public list whole for offline use, so it ignores
+  // page, pageSize and q.
+  async findAllPublic(req: Request, res: Response): Promise<void> {
+    const professions = await this._professionService.findAll();
     res.status(200).json({ professions: professions });
   }
 

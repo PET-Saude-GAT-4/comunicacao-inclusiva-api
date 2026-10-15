@@ -22,6 +22,7 @@ import TermRepository from "@/repositories/term/TermRepository.js";
 import type { ITriageStepRepository } from "@/repositories/triage-step/ITriageStepRepository.js";
 import TriageStepRepository from "@/repositories/triage-step/TriageStepRepository.js";
 import type { AuthenticatedUser } from "@/types/user.js";
+import type { ListQuery, Page } from "@/utils/pagination.js";
 
 import type { IBoardService } from "./IBoardService.js";
 
@@ -126,11 +127,12 @@ class BoardService implements IBoardService {
     });
   }
 
-  async findAll(
+  async findPage(
     user: AuthenticatedUser,
+    query: ListQuery,
     filter?: BoardFilter,
-  ): Promise<BoardOutput[]> {
-    return this._boardRepository.findAll({
+  ): Promise<Page<BoardOutput>> {
+    return this._boardRepository.findPage(query, {
       ...(user.role === RoleEnum.ADMIN && { authorUuid: user.uuid }),
       type: filter?.type,
     });

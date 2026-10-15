@@ -8,6 +8,7 @@ import { BOARD_TYPES, type BoardType } from "@/models/types/Board.type.js";
 import type { BoardTermOutput } from "@/models/types/BoardTerm.type.js";
 import BoardService from "@/services/board/BoardService.js";
 import type { IBoardService } from "@/services/board/IBoardService.js";
+import { buildListMeta, parseListQuery } from "@/utils/pagination.js";
 
 import type { IBoardController } from "./IBoardController.js";
 
@@ -91,11 +92,15 @@ class BoardController implements IBoardController {
   }
 
   async findAll(req: Request, res: Response): Promise<void> {
-    const boards = await this._boardService.findAll(req.user!, {
-      type: this._parseType(req.query.type),
-    });
+    const query = parseListQuery(req.query);
+    const { items, total } = await this._boardService.findPage(
+      req.user!,
+      query,
+      { type: this._parseType(req.query.type) },
+    );
     res.status(200).json({
-      boards: boards.map((b) => toBoardResponse(b)),
+      boards: items.map((b) => toBoardResponse(b)),
+      meta: buildListMeta(query, total),
     });
   }
 

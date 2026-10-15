@@ -11,6 +11,7 @@ import ProfessionRepository from "@/repositories/profession/ProfessionRepository
 import type { ISpecialityRepository } from "@/repositories/speciality/ISpecialityRepository.js";
 import SpecialityRepository from "@/repositories/speciality/SpecialityRepository.js";
 import { normalize } from "@/utils/normalize.js";
+import type { ListQuery, Page } from "@/utils/pagination.js";
 
 import type { ISpecialityService } from "./ISpecialityService.js";
 
@@ -115,12 +116,12 @@ class SpecialityService implements ISpecialityService {
     return await this._specialityRepository.update(id, updateData);
   }
 
-  async findAll(): Promise<SpecialityOutput[]> {
-    return this._specialityRepository.findAll();
-  }
-
   async delete(id: number): Promise<void> {
     await this._specialityRepository.delete(id);
+  }
+
+  async findPage(query: ListQuery): Promise<Page<SpecialityOutput>> {
+    return this._specialityRepository.findPage(query);
   }
 
   async findById(id: number): Promise<SpecialityOutput | null> {
