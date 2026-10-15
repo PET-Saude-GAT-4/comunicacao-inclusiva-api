@@ -5,15 +5,20 @@ import type {
   ProfessionUpdate,
 } from "@/models/types/Profession.type.js";
 import { prisma } from "@/prisma.js";
-import { matchingIds, type SearchSource } from "@/repositories/search.js";
-import { type ListQuery, type Page, pageArgs } from "@/utils/pagination.js";
+import {
+  findInOrder,
+  type ListSource,
+  pageIds,
+} from "@/repositories/search.js";
+import type { ListQuery, Page } from "@/utils/pagination.js";
 
 import type { IProfessionRepository } from "./IProfessionRepository.js";
 
-const search: SearchSource = {
+const source: ListSource = {
   from: Prisma.sql`"Profession"`,
   id: Prisma.sql`"Profession"."id"`,
   columns: [Prisma.sql`"Profession"."name"`, Prisma.sql`"Profession"."code"`],
+  orderBy: Prisma.sql`"Profession"."createdAt" DESC, "Profession"."id" DESC`,
 };
 
 class ProfessionRepository implements IProfessionRepository {
@@ -85,16 +90,12 @@ class ProfessionRepository implements IProfessionRepository {
   }
 
   async findPage(query: ListQuery): Promise<Page<ProfessionOutput>> {
-    const where = { id: await matchingIds(query.q, search) };
-
-    const [total, data] = await prisma.$transaction([
-      prisma.profession.count({ where }),
+    const { ids, total } = await pageIds(query, source);
+    const data = await findInOrder(ids, (chunk) =>
       prisma.profession.findMany({
-        where,
-        orderBy: [{ createdAt: "desc" }, { id: "desc" }],
-        ...pageArgs(query),
+        where: { id: { in: chunk } },
       }),
-    ]);
+    );
 
     const items = data.map((profession) => {
       return {

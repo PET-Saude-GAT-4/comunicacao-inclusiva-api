@@ -1,4 +1,7 @@
-import type { PictogramOutput } from "@/models/types/Pictogram.type.js";
+import type {
+  PictogramListOutput,
+  PictogramOutput,
+} from "@/models/types/Pictogram.type.js";
 import { buildFileUrl } from "@/utils/file.js";
 
 export function toPictogramResponse(pictogram: PictogramOutput) {
@@ -9,4 +12,8 @@ export function toPictogramResponse(pictogram: PictogramOutput) {
     createdAt: pictogram.createdAt,
     updatedAt: pictogram.updatedAt,
   };
+}
+
+export function toPictogramListResponse(pictogram: PictogramListOutput) {
+  return { ...toPictogramResponse(pictogram), terms: pictogram.terms };
 }

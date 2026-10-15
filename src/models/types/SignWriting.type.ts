@@ -19,3 +19,9 @@ export type SignWritingOutput = {
   createdAt: Date;
   updatedAt: Date;
 };
+
+// The authenticated list also names the terms that use each item, so the
+// dashboard does not have to download every term to show them.
+export type SignWritingListOutput = SignWritingOutput & {
+  terms: { uuid: string; description: string }[];
+};

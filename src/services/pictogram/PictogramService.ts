@@ -2,6 +2,7 @@ import { BadRequestError } from "@/errors/BadRequestError.js";
 import { NotFoundError } from "@/errors/NotFoundError.js";
 import type {
   PictogramInput,
+  PictogramListOutput,
   PictogramOutput,
 } from "@/models/types/Pictogram.type.js";
 import { prisma } from "@/prisma.js";
@@ -55,7 +56,7 @@ class PictogramService implements IPictogramService {
     return this._pictogramRepository.findAll();
   }
 
-  async findPage(query: ListQuery): Promise<Page<PictogramOutput>> {
+  async findPage(query: ListQuery): Promise<Page<PictogramListOutput>> {
     return this._pictogramRepository.findPage(query);
   }
 

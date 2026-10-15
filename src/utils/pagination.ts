@@ -59,15 +59,6 @@ export function parseListQuery(query: unknown): ListQuery {
   };
 }
 
-export function pageArgs(query: ListQuery): { skip?: number; take?: number } {
-  if (query.page === undefined) return {};
-
-  return {
-    skip: (query.page - 1) * query.pageSize,
-    take: query.pageSize,
-  };
-}
-
 export function buildListMeta(query: ListQuery, total: number): ListMeta {
   if (query.page === undefined) {
     return { total, page: 1, pageSize: total, pageCount: total > 0 ? 1 : 0 };

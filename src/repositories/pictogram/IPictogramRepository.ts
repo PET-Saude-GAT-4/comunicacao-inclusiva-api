@@ -1,4 +1,5 @@
 import type {
+  PictogramListOutput,
   PictogramOutput,
   PictogramRepositoryInput,
 } from "@/models/types/Pictogram.type.js";
@@ -10,7 +11,7 @@ interface IPictogramRepository extends IRepository<PictogramOutput> {
 
   findAll(): Promise<PictogramOutput[]>;
 
-  findPage(query: ListQuery): Promise<Page<PictogramOutput>>;
+  findPage(query: ListQuery): Promise<Page<PictogramListOutput>>;
 
   findByUuid(uuid: string): Promise<PictogramOutput | null>;
 

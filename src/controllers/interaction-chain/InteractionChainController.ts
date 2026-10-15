@@ -31,6 +31,7 @@ class InteractionChainController implements IInteractionChainController {
       uuid: interactionChain.uuid,
       trigger: interactionChain.trigger,
       responseBoardUuid: interactionChain.responseBoardUuid,
+      responseBoardTitle: interactionChain.responseBoardTitle,
       rank: interactionChain.rank,
       label: interactionChain.label,
       createdAt: interactionChain.createdAt,

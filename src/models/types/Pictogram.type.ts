@@ -19,3 +19,9 @@ export type PictogramOutput = {
   createdAt: Date;
   updatedAt: Date;
 };
+
+// The authenticated list also names the terms that use each item, so the
+// dashboard does not have to download every term to show them.
+export type PictogramListOutput = PictogramOutput & {
+  terms: { uuid: string; description: string }[];
+};

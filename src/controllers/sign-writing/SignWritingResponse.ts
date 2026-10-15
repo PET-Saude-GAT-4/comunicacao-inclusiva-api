@@ -1,4 +1,7 @@
-import type { SignWritingOutput } from "@/models/types/SignWriting.type.js";
+import type {
+  SignWritingListOutput,
+  SignWritingOutput,
+} from "@/models/types/SignWriting.type.js";
 import { buildFileUrl } from "@/utils/file.js";
 
 export function toSignWritingResponse(signWriting: SignWritingOutput) {
@@ -9,4 +12,8 @@ export function toSignWritingResponse(signWriting: SignWritingOutput) {
     createdAt: signWriting.createdAt,
     updatedAt: signWriting.updatedAt,
   };
+}
+
+export function toSignWritingListResponse(signWriting: SignWritingListOutput) {
+  return { ...toSignWritingResponse(signWriting), terms: signWriting.terms };
 }

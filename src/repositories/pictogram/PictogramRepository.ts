@@ -1,19 +1,29 @@
 import { Prisma } from "@/generated/prisma/client.js";
 import type {
+  PictogramListOutput,
   PictogramOutput,
   PictogramRepositoryInput,
 } from "@/models/types/Pictogram.type.js";
 import { prisma } from "@/prisma.js";
-import { mapPictogramRow } from "@/repositories/pictogram/PictogramMapper.js";
-import { matchingIds, type SearchSource } from "@/repositories/search.js";
-import { type ListQuery, type Page, pageArgs } from "@/utils/pagination.js";
+import {
+  mapPictogramListRow,
+  mapPictogramRow,
+  pictogramListInclude,
+} from "@/repositories/pictogram/PictogramMapper.js";
+import {
+  findInOrder,
+  type ListSource,
+  pageIds,
+} from "@/repositories/search.js";
+import type { ListQuery, Page } from "@/utils/pagination.js";
 
 import type { IPictogramRepository } from "./IPictogramRepository.js";
 
-const search: SearchSource = {
+const source: ListSource = {
   from: Prisma.sql`"Pictogram"`,
   id: Prisma.sql`"Pictogram"."id"`,
   columns: [Prisma.sql`"Pictogram"."description"`],
+  orderBy: Prisma.sql`"Pictogram"."createdAt" DESC, "Pictogram"."id" DESC`,
 };
 
 class PictogramRepository implements IPictogramRepository {
@@ -37,20 +47,16 @@ class PictogramRepository implements IPictogramRepository {
     return results.map((r) => mapPictogramRow(r));
   }
 
-  async findPage(query: ListQuery): Promise<Page<PictogramOutput>> {
-    const where = { id: await matchingIds(query.q, search) };
-
-    const [total, results] = await prisma.$transaction([
-      prisma.pictogram.count({ where }),
+  async findPage(query: ListQuery): Promise<Page<PictogramListOutput>> {
+    const { ids, total } = await pageIds(query, source);
+    const results = await findInOrder(ids, (chunk) =>
       prisma.pictogram.findMany({
-        where,
-        orderBy: [{ createdAt: "desc" }, { id: "desc" }],
-        ...pageArgs(query),
-        include: { storedFile: true },
+        where: { id: { in: chunk } },
+        include: pictogramListInclude,
       }),
-    ]);
+    );
 
-    return { items: results.map((r) => mapPictogramRow(r)), total };
+    return { items: results.map((r) => mapPictogramListRow(r)), total };
   }
 
   async findById(id: number): Promise<PictogramOutput | null> {
