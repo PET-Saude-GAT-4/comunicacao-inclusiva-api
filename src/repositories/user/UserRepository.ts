@@ -5,15 +5,20 @@ import type {
   UserUpdateInput,
 } from "@/models/types/User.type.js";
 import { prisma } from "@/prisma.js";
-import { matchingIds, type SearchSource } from "@/repositories/search.js";
-import { type ListQuery, type Page, pageArgs } from "@/utils/pagination.js";
+import {
+  findInOrder,
+  type ListSource,
+  pageIds,
+} from "@/repositories/search.js";
+import type { ListQuery, Page } from "@/utils/pagination.js";
 
 import type { IUserRepository } from "./IUserRepository.js";
 
-const search: SearchSource = {
+const source: ListSource = {
   from: Prisma.sql`"User"`,
   id: Prisma.sql`"User"."id"`,
   columns: [Prisma.sql`"User"."email"`],
+  orderBy: Prisma.sql`"User"."createdAt" DESC, "User"."id" DESC`,
 };
 
 class UserRepository implements IUserRepository {
@@ -40,17 +45,13 @@ class UserRepository implements IUserRepository {
   }
 
   async findPage(query: ListQuery): Promise<Page<UserOutput>> {
-    const where = { id: await matchingIds(query.q, search) };
-
-    const [total, users] = await prisma.$transaction([
-      prisma.user.count({ where }),
+    const { ids, total } = await pageIds(query, source);
+    const users = await findInOrder(ids, (chunk) =>
       prisma.user.findMany({
-        where,
-        orderBy: [{ createdAt: "desc" }, { id: "desc" }],
-        ...pageArgs(query),
+        where: { id: { in: chunk } },
         include: { role: true },
       }),
-    ]);
+    );
 
     const items = users.map((user) => ({
       id: user.id,

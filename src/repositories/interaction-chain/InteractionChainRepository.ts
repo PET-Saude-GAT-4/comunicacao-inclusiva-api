@@ -7,9 +7,13 @@ import type {
   TriggerRef,
 } from "@/models/types/InteractionChain.type.js";
 import { prisma } from "@/prisma.js";
-import { matchingIds, type SearchSource } from "@/repositories/search.js";
+import {
+  findInOrder,
+  type ListSource,
+  pageIds,
+} from "@/repositories/search.js";
 import { isEmpty } from "@/utils/object.js";
-import { type ListQuery, type Page, pageArgs } from "@/utils/pagination.js";
+import type { ListQuery, Page } from "@/utils/pagination.js";
 
 import type { IInteractionChainRepository } from "./IInteractionChainRepository.js";
 
@@ -49,7 +53,7 @@ type TriggerRow = {
 
 // The trigger is either a board or a phrase, so both are LEFT JOINed and only
 // one of their columns is non-null for a given chain.
-const search: SearchSource = {
+const source: ListSource = {
   from: Prisma.sql`"InteractionChain" ic
     LEFT JOIN "Board" tb ON tb."id" = ic."triggerBoardId"
     LEFT JOIN "Phrase" tp ON tp."id" = ic."triggerPhraseId"
@@ -61,6 +65,7 @@ const search: SearchSource = {
     Prisma.sql`tp."description"`,
     Prisma.sql`rb."title"`,
   ],
+  orderBy: Prisma.sql`ic."createdAt" DESC, ic."id" DESC`,
 };
 
 class InteractionChainRepository implements IInteractionChainRepository {
@@ -263,26 +268,23 @@ class InteractionChainRepository implements IInteractionChainRepository {
   ): Promise<Page<InteractionChainOutput>> {
     const authorUuid = filter?.triggerAuthorUuid;
 
-    const where = {
-      OR:
-        authorUuid != null
-          ? [
-              { triggerBoard: { author: { uuid: authorUuid } } },
-              { triggerPhrase: { author: { uuid: authorUuid } } },
-            ]
-          : Prisma.skip,
-      id: await matchingIds(query.q, search),
-    };
+    const filters: Prisma.Sql[] = [];
 
-    const [total, results] = await prisma.$transaction([
-      prisma.interactionChain.count({ where }),
+    if (authorUuid != null) {
+      // An unknown uuid yields NULL, which matches no chain.
+      const authorId = Prisma.sql`(SELECT "id" FROM "User" WHERE "uuid" = ${authorUuid})`;
+      filters.push(
+        Prisma.sql`(tb."authorId" = ${authorId} OR tp."authorId" = ${authorId})`,
+      );
+    }
+
+    const { ids, total } = await pageIds(query, source, filters);
+    const results = await findInOrder(ids, (chunk) =>
       prisma.interactionChain.findMany({
-        where,
-        orderBy: [{ createdAt: "desc" }, { id: "desc" }],
-        ...pageArgs(query),
+        where: { id: { in: chunk } },
         include,
       }),
-    ]);
+    );
 
     return { items: results.map((r) => this._map(r)), total };
   }

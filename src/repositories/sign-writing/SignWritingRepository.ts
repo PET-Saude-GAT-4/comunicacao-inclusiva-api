@@ -4,16 +4,21 @@ import type {
   SignWritingRepositoryInput,
 } from "@/models/types/SignWriting.type.js";
 import { prisma } from "@/prisma.js";
-import { matchingIds, type SearchSource } from "@/repositories/search.js";
+import {
+  findInOrder,
+  type ListSource,
+  pageIds,
+} from "@/repositories/search.js";
 import { mapSignWritingRow } from "@/repositories/sign-writing/SignWritingMapper.js";
-import { type ListQuery, type Page, pageArgs } from "@/utils/pagination.js";
+import type { ListQuery, Page } from "@/utils/pagination.js";
 
 import type { ISignWritingRepository } from "./ISignWritingRepository.js";
 
-const search: SearchSource = {
+const source: ListSource = {
   from: Prisma.sql`"SignWriting"`,
   id: Prisma.sql`"SignWriting"."id"`,
   columns: [Prisma.sql`"SignWriting"."description"`],
+  orderBy: Prisma.sql`"SignWriting"."createdAt" DESC, "SignWriting"."id" DESC`,
 };
 
 class SignWritingRepository implements ISignWritingRepository {
@@ -38,17 +43,13 @@ class SignWritingRepository implements ISignWritingRepository {
   }
 
   async findPage(query: ListQuery): Promise<Page<SignWritingOutput>> {
-    const where = { id: await matchingIds(query.q, search) };
-
-    const [total, results] = await prisma.$transaction([
-      prisma.signWriting.count({ where }),
+    const { ids, total } = await pageIds(query, source);
+    const results = await findInOrder(ids, (chunk) =>
       prisma.signWriting.findMany({
-        where,
-        orderBy: [{ createdAt: "desc" }, { id: "desc" }],
-        ...pageArgs(query),
+        where: { id: { in: chunk } },
         include: { storedFile: true },
       }),
-    ]);
+    );
 
     return { items: results.map((r) => mapSignWritingRow(r)), total };
   }

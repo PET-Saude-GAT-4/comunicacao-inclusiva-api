@@ -5,15 +5,20 @@ import type {
 } from "@/models/types/Pictogram.type.js";
 import { prisma } from "@/prisma.js";
 import { mapPictogramRow } from "@/repositories/pictogram/PictogramMapper.js";
-import { matchingIds, type SearchSource } from "@/repositories/search.js";
-import { type ListQuery, type Page, pageArgs } from "@/utils/pagination.js";
+import {
+  findInOrder,
+  type ListSource,
+  pageIds,
+} from "@/repositories/search.js";
+import type { ListQuery, Page } from "@/utils/pagination.js";
 
 import type { IPictogramRepository } from "./IPictogramRepository.js";
 
-const search: SearchSource = {
+const source: ListSource = {
   from: Prisma.sql`"Pictogram"`,
   id: Prisma.sql`"Pictogram"."id"`,
   columns: [Prisma.sql`"Pictogram"."description"`],
+  orderBy: Prisma.sql`"Pictogram"."createdAt" DESC, "Pictogram"."id" DESC`,
 };
 
 class PictogramRepository implements IPictogramRepository {
@@ -38,17 +43,13 @@ class PictogramRepository implements IPictogramRepository {
   }
 
   async findPage(query: ListQuery): Promise<Page<PictogramOutput>> {
-    const where = { id: await matchingIds(query.q, search) };
-
-    const [total, results] = await prisma.$transaction([
-      prisma.pictogram.count({ where }),
+    const { ids, total } = await pageIds(query, source);
+    const results = await findInOrder(ids, (chunk) =>
       prisma.pictogram.findMany({
-        where,
-        orderBy: [{ createdAt: "desc" }, { id: "desc" }],
-        ...pageArgs(query),
+        where: { id: { in: chunk } },
         include: { storedFile: true },
       }),
-    ]);
+    );
 
     return { items: results.map((r) => mapPictogramRow(r)), total };
   }

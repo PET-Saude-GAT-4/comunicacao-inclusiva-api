@@ -7,8 +7,12 @@ import type {
 import { prisma } from "@/prisma.js";
 import type { BoardRow } from "@/repositories/board/BoardMapper.js";
 import { boardInclude, mapBoardRow } from "@/repositories/board/BoardMapper.js";
-import { matchingIds, type SearchSource } from "@/repositories/search.js";
-import { type ListQuery, type Page, pageArgs } from "@/utils/pagination.js";
+import {
+  findInOrder,
+  type ListSource,
+  pageIds,
+} from "@/repositories/search.js";
+import type { ListQuery, Page } from "@/utils/pagination.js";
 
 import type { ITriageStepRepository } from "./ITriageStepRepository.js";
 
@@ -16,10 +20,11 @@ const include = {
   board: { include: boardInclude },
 } as const;
 
-const search: SearchSource = {
+const source: ListSource = {
   from: Prisma.sql`"TriageStep" ts JOIN "Board" b ON b."id" = ts."boardId"`,
   id: Prisma.sql`ts."id"`,
   columns: [Prisma.sql`b."title"`],
+  orderBy: Prisma.sql`ts."level" ASC`,
 };
 
 class TriageStepRepository implements ITriageStepRepository {
@@ -98,17 +103,13 @@ class TriageStepRepository implements ITriageStepRepository {
   }
 
   async findPage(query: ListQuery): Promise<Page<TriageStepOutput>> {
-    const where = { id: await matchingIds(query.q, search) };
-
-    const [total, results] = await prisma.$transaction([
-      prisma.triageStep.count({ where }),
+    const { ids, total } = await pageIds(query, source);
+    const results = await findInOrder(ids, (chunk) =>
       prisma.triageStep.findMany({
-        where,
-        orderBy: { level: "asc" },
-        ...pageArgs(query),
+        where: { id: { in: chunk } },
         include,
       }),
-    ]);
+    );
 
     return { items: results.map((r) => this._map(r)), total };
   }

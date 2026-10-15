@@ -5,15 +5,20 @@ import type {
   SpecialityUpdate,
 } from "@/models/types/Speciality.type.js";
 import { prisma } from "@/prisma.js";
-import { matchingIds, type SearchSource } from "@/repositories/search.js";
-import { type ListQuery, type Page, pageArgs } from "@/utils/pagination.js";
+import {
+  findInOrder,
+  type ListSource,
+  pageIds,
+} from "@/repositories/search.js";
+import type { ListQuery, Page } from "@/utils/pagination.js";
 
 import type { ISpecialityRepository } from "./ISpecialityRepository.js";
 
-const search: SearchSource = {
+const source: ListSource = {
   from: Prisma.sql`"Speciality"`,
   id: Prisma.sql`"Speciality"."id"`,
   columns: [Prisma.sql`"Speciality"."name"`, Prisma.sql`"Speciality"."code"`],
+  orderBy: Prisma.sql`"Speciality"."createdAt" DESC, "Speciality"."id" DESC`,
 };
 
 class SpecialityRepository implements ISpecialityRepository {
@@ -39,16 +44,12 @@ class SpecialityRepository implements ISpecialityRepository {
   }
 
   async findPage(query: ListQuery): Promise<Page<SpecialityOutput>> {
-    const where = { id: await matchingIds(query.q, search) };
-
-    const [total, data] = await prisma.$transaction([
-      prisma.speciality.count({ where }),
+    const { ids, total } = await pageIds(query, source);
+    const data = await findInOrder(ids, (chunk) =>
       prisma.speciality.findMany({
-        where,
-        orderBy: [{ createdAt: "desc" }, { id: "desc" }],
-        ...pageArgs(query),
+        where: { id: { in: chunk } },
       }),
-    ]);
+    );
 
     const items = data.map((speciality) => {
       return {
