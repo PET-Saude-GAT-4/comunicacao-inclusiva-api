@@ -1,4 +1,5 @@
 import type {
+  SignWritingListOutput,
   SignWritingOutput,
   SignWritingRepositoryInput,
 } from "@/models/types/SignWriting.type.js";
@@ -10,7 +11,7 @@ interface ISignWritingRepository extends IRepository<SignWritingOutput> {
 
   findAll(): Promise<SignWritingOutput[]>;
 
-  findPage(query: ListQuery): Promise<Page<SignWritingOutput>>;
+  findPage(query: ListQuery): Promise<Page<SignWritingListOutput>>;
 
   findByUuid(uuid: string): Promise<SignWritingOutput | null>;
 

@@ -7,7 +7,10 @@ import SignWritingService from "@/services/sign-writing/SignWritingService.js";
 import { buildListMeta, parseListQuery } from "@/utils/pagination.js";
 
 import type { ISignWritingController } from "./ISignWritingController.js";
-import { toSignWritingResponse } from "./SignWritingResponse.js";
+import {
+  toSignWritingListResponse,
+  toSignWritingResponse,
+} from "./SignWritingResponse.js";
 
 type Props = {
   signWritingService?: ISignWritingService;
@@ -49,7 +52,7 @@ class SignWritingController implements ISignWritingController {
     const { items, total } = await this._signWritingService.findPage(query);
 
     res.status(200).json({
-      signWritings: items.map((s) => toSignWritingResponse(s)),
+      signWritings: items.map((s) => toSignWritingListResponse(s)),
       meta: buildListMeta(query, total),
     });
   }

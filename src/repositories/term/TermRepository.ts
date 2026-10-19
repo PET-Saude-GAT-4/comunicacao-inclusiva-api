@@ -4,19 +4,24 @@ import type {
   TermRepositoryInput,
 } from "@/models/types/Term.type.js";
 import { prisma } from "@/prisma.js";
-import { matchingIds, type SearchSource } from "@/repositories/search.js";
+import {
+  findInOrder,
+  type ListSource,
+  pageIds,
+} from "@/repositories/search.js";
 import {
   mapTermRow,
   termInclude as include,
 } from "@/repositories/term/TermMapper.js";
-import { type ListQuery, type Page, pageArgs } from "@/utils/pagination.js";
+import type { ListQuery, Page } from "@/utils/pagination.js";
 
 import type { ITermRepository } from "./ITermRepository.js";
 
-const search: SearchSource = {
+const source: ListSource = {
   from: Prisma.sql`"Term"`,
   id: Prisma.sql`"Term"."id"`,
   columns: [Prisma.sql`"Term"."description"`],
+  orderBy: Prisma.sql`"Term"."createdAt" DESC, "Term"."id" DESC`,
 };
 
 class TermRepository implements ITermRepository {
@@ -34,17 +39,13 @@ class TermRepository implements ITermRepository {
   }
 
   async findPage(query: ListQuery): Promise<Page<TermOutput>> {
-    const where = { id: await matchingIds(query.q, search) };
-
-    const [total, results] = await prisma.$transaction([
-      prisma.term.count({ where }),
+    const { ids, total } = await pageIds(query, source);
+    const results = await findInOrder(ids, (chunk) =>
       prisma.term.findMany({
-        where,
-        orderBy: [{ createdAt: "desc" }, { id: "desc" }],
-        ...pageArgs(query),
+        where: { id: { in: chunk } },
         include,
       }),
-    ]);
+    );
 
     return { items: results.map((r) => mapTermRow(r)), total };
   }

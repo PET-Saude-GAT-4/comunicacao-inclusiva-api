@@ -5,11 +5,15 @@ import type {
   PhraseRepositoryUpdateInput,
 } from "@/models/types/Phrase.type.js";
 import { prisma } from "@/prisma.js";
-import { matchingIds, type SearchSource } from "@/repositories/search.js";
+import {
+  findInOrder,
+  type ListSource,
+  pageIds,
+} from "@/repositories/search.js";
 import type { TermRow } from "@/repositories/term/TermMapper.js";
 import { mapTermRow, termInclude } from "@/repositories/term/TermMapper.js";
 import { isEmpty } from "@/utils/object.js";
-import { type ListQuery, type Page, pageArgs } from "@/utils/pagination.js";
+import type { ListQuery, Page } from "@/utils/pagination.js";
 
 import type { IPhraseRepository } from "./IPhraseRepository.js";
 
@@ -21,10 +25,11 @@ const include = {
   },
 } as const;
 
-const search: SearchSource = {
+const source: ListSource = {
   from: Prisma.sql`"Phrase"`,
   id: Prisma.sql`"Phrase"."id"`,
   columns: [Prisma.sql`"Phrase"."description"`],
+  orderBy: Prisma.sql`"Phrase"."createdAt" DESC, "Phrase"."id" DESC`,
 };
 
 class PhraseRepository implements IPhraseRepository {
@@ -115,21 +120,21 @@ class PhraseRepository implements IPhraseRepository {
     query: ListQuery,
     filter?: { authorUuid?: string },
   ): Promise<Page<PhraseOutput>> {
-    const where = {
-      author:
-        filter?.authorUuid != null ? { uuid: filter.authorUuid } : Prisma.skip,
-      id: await matchingIds(query.q, search),
-    };
+    // An unknown uuid yields NULL, which matches no phrase.
+    const filters =
+      filter?.authorUuid != null
+        ? [
+            Prisma.sql`"Phrase"."authorId" = (SELECT "id" FROM "User" WHERE "uuid" = ${filter.authorUuid})`,
+          ]
+        : [];
 
-    const [total, results] = await prisma.$transaction([
-      prisma.phrase.count({ where }),
+    const { ids, total } = await pageIds(query, source, filters);
+    const results = await findInOrder(ids, (chunk) =>
       prisma.phrase.findMany({
-        where,
-        orderBy: [{ createdAt: "desc" }, { id: "desc" }],
-        ...pageArgs(query),
+        where: { id: { in: chunk } },
         include,
       }),
-    ]);
+    );
 
     return { items: results.map((r) => this._map(r)), total };
   }

@@ -1,6 +1,7 @@
 import { NotFoundError } from "@/errors/NotFoundError.js";
 import type {
   SignWritingInput,
+  SignWritingListOutput,
   SignWritingOutput,
 } from "@/models/types/SignWriting.type.js";
 import type { ISignWritingRepository } from "@/repositories/sign-writing/ISignWritingRepository.js";
@@ -58,7 +59,7 @@ class SignWritingService implements ISignWritingService {
     return this._signWritingRepository.findAll();
   }
 
-  async findPage(query: ListQuery): Promise<Page<SignWritingOutput>> {
+  async findPage(query: ListQuery): Promise<Page<SignWritingListOutput>> {
     return this._signWritingRepository.findPage(query);
   }
 

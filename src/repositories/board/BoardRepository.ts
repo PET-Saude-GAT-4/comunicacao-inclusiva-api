@@ -11,17 +11,22 @@ import type {
 } from "@/models/types/BoardTerm.type.js";
 import { prisma } from "@/prisma.js";
 import { boardInclude, mapBoardRow } from "@/repositories/board/BoardMapper.js";
-import { matchingIds, type SearchSource } from "@/repositories/search.js";
+import {
+  findInOrder,
+  type ListSource,
+  pageIds,
+} from "@/repositories/search.js";
 import { mapTermRow, termInclude } from "@/repositories/term/TermMapper.js";
 import { isEmpty } from "@/utils/object.js";
-import { type ListQuery, type Page, pageArgs } from "@/utils/pagination.js";
+import type { ListQuery, Page } from "@/utils/pagination.js";
 
 import type { IBoardRepository } from "./IBoardRepository.js";
 
-const search: SearchSource = {
+const source: ListSource = {
   from: Prisma.sql`"Board"`,
   id: Prisma.sql`"Board"."id"`,
   columns: [Prisma.sql`"Board"."title"`],
+  orderBy: Prisma.sql`"Board"."createdAt" DESC, "Board"."id" DESC`,
 };
 
 class BoardRepository implements IBoardRepository {
@@ -75,22 +80,26 @@ class BoardRepository implements IBoardRepository {
     query: ListQuery,
     filter?: { authorUuid?: string } & BoardFilter,
   ): Promise<Page<BoardOutput>> {
-    const where = {
-      author:
-        filter?.authorUuid != null ? { uuid: filter.authorUuid } : Prisma.skip,
-      type: filter?.type ?? Prisma.skip,
-      id: await matchingIds(query.q, search),
-    };
+    const filters: Prisma.Sql[] = [];
 
-    const [total, results] = await prisma.$transaction([
-      prisma.board.count({ where }),
+    if (filter?.authorUuid != null) {
+      // An unknown uuid yields NULL, which matches no board.
+      filters.push(
+        Prisma.sql`"Board"."authorId" = (SELECT "id" FROM "User" WHERE "uuid" = ${filter.authorUuid})`,
+      );
+    }
+
+    if (filter?.type != null) {
+      filters.push(Prisma.sql`"Board"."type" = ${filter.type}::"BoardType"`);
+    }
+
+    const { ids, total } = await pageIds(query, source, filters);
+    const results = await findInOrder(ids, (chunk) =>
       prisma.board.findMany({
-        where,
-        orderBy: [{ createdAt: "desc" }, { id: "desc" }],
-        ...pageArgs(query),
+        where: { id: { in: chunk } },
         include: boardInclude,
       }),
-    ]);
+    );
 
     return { items: results.map((r) => mapBoardRow(r)), total };
   }

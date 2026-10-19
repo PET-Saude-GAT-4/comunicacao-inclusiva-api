@@ -1,19 +1,29 @@
 import { Prisma } from "@/generated/prisma/client.js";
 import type {
+  SignWritingListOutput,
   SignWritingOutput,
   SignWritingRepositoryInput,
 } from "@/models/types/SignWriting.type.js";
 import { prisma } from "@/prisma.js";
-import { matchingIds, type SearchSource } from "@/repositories/search.js";
-import { mapSignWritingRow } from "@/repositories/sign-writing/SignWritingMapper.js";
-import { type ListQuery, type Page, pageArgs } from "@/utils/pagination.js";
+import {
+  findInOrder,
+  type ListSource,
+  pageIds,
+} from "@/repositories/search.js";
+import {
+  mapSignWritingListRow,
+  mapSignWritingRow,
+  signWritingListInclude,
+} from "@/repositories/sign-writing/SignWritingMapper.js";
+import type { ListQuery, Page } from "@/utils/pagination.js";
 
 import type { ISignWritingRepository } from "./ISignWritingRepository.js";
 
-const search: SearchSource = {
+const source: ListSource = {
   from: Prisma.sql`"SignWriting"`,
   id: Prisma.sql`"SignWriting"."id"`,
   columns: [Prisma.sql`"SignWriting"."description"`],
+  orderBy: Prisma.sql`"SignWriting"."createdAt" DESC, "SignWriting"."id" DESC`,
 };
 
 class SignWritingRepository implements ISignWritingRepository {
@@ -37,20 +47,16 @@ class SignWritingRepository implements ISignWritingRepository {
     return results.map((r) => mapSignWritingRow(r));
   }
 
-  async findPage(query: ListQuery): Promise<Page<SignWritingOutput>> {
-    const where = { id: await matchingIds(query.q, search) };
-
-    const [total, results] = await prisma.$transaction([
-      prisma.signWriting.count({ where }),
+  async findPage(query: ListQuery): Promise<Page<SignWritingListOutput>> {
+    const { ids, total } = await pageIds(query, source);
+    const results = await findInOrder(ids, (chunk) =>
       prisma.signWriting.findMany({
-        where,
-        orderBy: [{ createdAt: "desc" }, { id: "desc" }],
-        ...pageArgs(query),
-        include: { storedFile: true },
+        where: { id: { in: chunk } },
+        include: signWritingListInclude,
       }),
-    ]);
+    );
 
-    return { items: results.map((r) => mapSignWritingRow(r)), total };
+    return { items: results.map((r) => mapSignWritingListRow(r)), total };
   }
 
   async findById(id: number): Promise<SignWritingOutput | null> {
