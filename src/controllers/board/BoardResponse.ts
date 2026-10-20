@@ -1,5 +1,8 @@
 import { toPictogramResponse } from "@/controllers/pictogram/PictogramResponse.js";
-import type { BoardOutput } from "@/models/types/Board.type.js";
+import type {
+  BoardOutput,
+  BoardWithAuthorOutput,
+} from "@/models/types/Board.type.js";
 
 /// Shared so the phrase's next-boards endpoint answers in the same shape as the
 /// board's, which is what lets the app reuse one adapter for both.
@@ -15,4 +18,8 @@ export function toBoardResponse(board: BoardOutput) {
     createdAt: board.createdAt,
     updatedAt: board.updatedAt,
   };
+}
+
+export function toBoardWithAuthorResponse(board: BoardWithAuthorOutput) {
+  return { ...toBoardResponse(board), author: board.author };
 }

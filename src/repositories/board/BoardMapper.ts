@@ -1,4 +1,8 @@
-import type { BoardOutput, BoardType } from "@/models/types/Board.type.js";
+import type {
+  BoardOutput,
+  BoardType,
+  BoardWithAuthorOutput,
+} from "@/models/types/Board.type.js";
 import type { PictogramRow } from "@/repositories/pictogram/PictogramMapper.js";
 import { mapPictogramRow } from "@/repositories/pictogram/PictogramMapper.js";
 
@@ -38,5 +42,16 @@ export function mapBoardRow(row: BoardRow): BoardOutput {
   };
 }
 
-export { boardInclude };
+const boardWithAuthorInclude = {
+  ...boardInclude,
+  author: { select: { uuid: true, email: true } },
+} as const;
+
+export function mapBoardWithAuthorRow(
+  row: BoardRow & { author: { uuid: string; email: string } | null },
+): BoardWithAuthorOutput {
+  return { ...mapBoardRow(row), author: row.author };
+}
+
+export { boardInclude, boardWithAuthorInclude };
 export type { BoardRow };

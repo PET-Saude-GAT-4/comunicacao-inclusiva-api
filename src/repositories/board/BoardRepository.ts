@@ -4,13 +4,19 @@ import type {
   BoardOutput,
   BoardRepositoryInput,
   BoardRepositoryUpdateInput,
+  BoardWithAuthorOutput,
 } from "@/models/types/Board.type.js";
 import type {
   BoardTermOutput,
   BoardTermRepositoryInput,
 } from "@/models/types/BoardTerm.type.js";
 import { prisma } from "@/prisma.js";
-import { boardInclude, mapBoardRow } from "@/repositories/board/BoardMapper.js";
+import {
+  boardInclude,
+  boardWithAuthorInclude,
+  mapBoardRow,
+  mapBoardWithAuthorRow,
+} from "@/repositories/board/BoardMapper.js";
 import {
   findInOrder,
   type ListSource,
@@ -79,7 +85,7 @@ class BoardRepository implements IBoardRepository {
   async findPage(
     query: ListQuery,
     filter?: { authorUuid?: string } & BoardFilter,
-  ): Promise<Page<BoardOutput>> {
+  ): Promise<Page<BoardWithAuthorOutput>> {
     const filters: Prisma.Sql[] = [];
 
     if (filter?.authorUuid != null) {
@@ -97,11 +103,11 @@ class BoardRepository implements IBoardRepository {
     const results = await findInOrder(ids, (rowIds) =>
       prisma.board.findMany({
         where: { id: { in: rowIds } },
-        include: boardInclude,
+        include: boardWithAuthorInclude,
       }),
     );
 
-    return { items: results.map((r) => mapBoardRow(r)), total };
+    return { items: results.map((r) => mapBoardWithAuthorRow(r)), total };
   }
 
   async findById(id: number): Promise<BoardOutput | null> {
@@ -118,6 +124,16 @@ class BoardRepository implements IBoardRepository {
       include: boardInclude,
     });
     return result ? mapBoardRow(result) : null;
+  }
+
+  async findByUuidWithAuthor(
+    uuid: string,
+  ): Promise<BoardWithAuthorOutput | null> {
+    const result = await prisma.board.findUnique({
+      where: { uuid },
+      include: boardWithAuthorInclude,
+    });
+    return result ? mapBoardWithAuthorRow(result) : null;
   }
 
   async findAllPublished(filter?: BoardFilter): Promise<BoardOutput[]> {

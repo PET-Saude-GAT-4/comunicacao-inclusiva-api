@@ -7,6 +7,7 @@ import type {
   BoardInput,
   BoardOutput,
   BoardUpdateInput,
+  BoardWithAuthorOutput,
 } from "@/models/types/Board.type.js";
 import type {
   BoardTermInput,
@@ -131,7 +132,7 @@ class BoardService implements IBoardService {
     user: AuthenticatedUser,
     query: ListQuery,
     filter?: BoardFilter,
-  ): Promise<Page<BoardOutput>> {
+  ): Promise<Page<BoardWithAuthorOutput>> {
     return this._boardRepository.findPage(query, {
       ...(user.role === RoleEnum.ADMIN && { authorUuid: user.uuid }),
       type: filter?.type,
@@ -149,6 +150,19 @@ class BoardService implements IBoardService {
     const board = await this._boardRepository.findByUuid(uuid);
 
     if (board && user) {
+      this._assertCanRead(board, user);
+    }
+
+    return board;
+  }
+
+  async findByUuidWithAuthor(
+    uuid: string,
+    user: AuthenticatedUser,
+  ): Promise<BoardWithAuthorOutput | null> {
+    const board = await this._boardRepository.findByUuidWithAuthor(uuid);
+
+    if (board) {
       this._assertCanRead(board, user);
     }
 

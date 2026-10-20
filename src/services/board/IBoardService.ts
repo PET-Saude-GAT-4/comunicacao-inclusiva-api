@@ -3,6 +3,7 @@ import type {
   BoardInput,
   BoardOutput,
   BoardUpdateInput,
+  BoardWithAuthorOutput,
 } from "@/models/types/Board.type.js";
 import type {
   BoardTermInput,
@@ -24,7 +25,7 @@ interface IBoardService {
     user: AuthenticatedUser,
     query: ListQuery,
     filter?: BoardFilter,
-  ): Promise<Page<BoardOutput>>;
+  ): Promise<Page<BoardWithAuthorOutput>>;
 
   findById(id: number): Promise<BoardOutput | null>;
 
@@ -32,6 +33,11 @@ interface IBoardService {
     uuid: string,
     user?: AuthenticatedUser,
   ): Promise<BoardOutput | null>;
+
+  findByUuidWithAuthor(
+    uuid: string,
+    user: AuthenticatedUser,
+  ): Promise<BoardWithAuthorOutput | null>;
 
   findAllPublished(filter?: BoardFilter): Promise<BoardOutput[]>;
 

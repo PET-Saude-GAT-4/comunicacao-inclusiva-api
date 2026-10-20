@@ -1,6 +1,9 @@
 import type { Request, Response } from "express";
 
-import { toBoardResponse } from "@/controllers/board/BoardResponse.js";
+import {
+  toBoardResponse,
+  toBoardWithAuthorResponse,
+} from "@/controllers/board/BoardResponse.js";
 import { toPlacementResponse } from "@/controllers/term/TermResponse.js";
 import { BadRequestError } from "@/errors/BadRequestError.js";
 import { NotFoundError } from "@/errors/NotFoundError.js";
@@ -99,7 +102,7 @@ class BoardController implements IBoardController {
       { type: this._parseType(req.query.type) },
     );
     res.status(200).json({
-      boards: items.map((b) => toBoardResponse(b)),
+      boards: items.map((b) => toBoardWithAuthorResponse(b)),
       meta: buildListMeta(query, total),
     });
   }
@@ -174,13 +177,16 @@ class BoardController implements IBoardController {
   async findByUuid(req: Request, res: Response): Promise<void> {
     const uuid = req.params.uuid as string;
 
-    const board = await this._boardService.findByUuid(uuid, req.user!);
+    const board = await this._boardService.findByUuidWithAuthor(
+      uuid,
+      req.user!,
+    );
 
     if (!board) {
       throw new NotFoundError("Board not found");
     }
 
-    res.status(200).json({ board: toBoardResponse(board) });
+    res.status(200).json({ board: toBoardWithAuthorResponse(board) });
   }
 
   async delete(req: Request, res: Response): Promise<void> {
