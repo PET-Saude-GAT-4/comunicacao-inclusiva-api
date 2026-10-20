@@ -47,3 +47,9 @@ export type BoardOutput = {
   createdAt: Date;
   updatedAt: Date;
 };
+
+// Only the authenticated list and detail name the author: the email must not
+// reach /public/boards.
+export type BoardWithAuthorOutput = BoardOutput & {
+  author: { uuid: string; email: string } | null;
+};

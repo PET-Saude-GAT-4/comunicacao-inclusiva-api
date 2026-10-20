@@ -91,9 +91,9 @@ class ProfessionRepository implements IProfessionRepository {
 
   async findPage(query: ListQuery): Promise<Page<ProfessionOutput>> {
     const { ids, total } = await pageIds(query, source);
-    const data = await findInOrder(ids, (chunk) =>
+    const data = await findInOrder(ids, (rowIds) =>
       prisma.profession.findMany({
-        where: { id: { in: chunk } },
+        where: { id: { in: rowIds } },
       }),
     );
 

@@ -45,9 +45,9 @@ class SpecialityRepository implements ISpecialityRepository {
 
   async findPage(query: ListQuery): Promise<Page<SpecialityOutput>> {
     const { ids, total } = await pageIds(query, source);
-    const data = await findInOrder(ids, (chunk) =>
+    const data = await findInOrder(ids, (rowIds) =>
       prisma.speciality.findMany({
-        where: { id: { in: chunk } },
+        where: { id: { in: rowIds } },
       }),
     );
 

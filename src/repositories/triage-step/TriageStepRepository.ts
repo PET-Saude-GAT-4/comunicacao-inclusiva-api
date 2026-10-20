@@ -104,9 +104,9 @@ class TriageStepRepository implements ITriageStepRepository {
 
   async findPage(query: ListQuery): Promise<Page<TriageStepOutput>> {
     const { ids, total } = await pageIds(query, source);
-    const results = await findInOrder(ids, (chunk) =>
+    const results = await findInOrder(ids, (rowIds) =>
       prisma.triageStep.findMany({
-        where: { id: { in: chunk } },
+        where: { id: { in: rowIds } },
         include,
       }),
     );

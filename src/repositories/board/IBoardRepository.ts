@@ -3,6 +3,7 @@ import type {
   BoardOutput,
   BoardRepositoryInput,
   BoardRepositoryUpdateInput,
+  BoardWithAuthorOutput,
 } from "@/models/types/Board.type.js";
 import type {
   BoardTermOutput,
@@ -15,13 +16,15 @@ interface IBoardRepository extends IRepository<BoardOutput> {
   findPage(
     query: ListQuery,
     filter?: { authorUuid?: string } & BoardFilter,
-  ): Promise<Page<BoardOutput>>;
+  ): Promise<Page<BoardWithAuthorOutput>>;
 
   create(data: BoardRepositoryInput): Promise<BoardOutput>;
 
   update(id: number, data: BoardRepositoryUpdateInput): Promise<BoardOutput>;
 
   findByUuid(uuid: string): Promise<BoardOutput | null>;
+
+  findByUuidWithAuthor(uuid: string): Promise<BoardWithAuthorOutput | null>;
 
   findAllPublished(filter?: BoardFilter): Promise<BoardOutput[]>;
 

@@ -283,9 +283,9 @@ class InteractionChainRepository implements IInteractionChainRepository {
     }
 
     const { ids, total } = await pageIds(query, source, filters);
-    const results = await findInOrder(ids, (chunk) =>
+    const results = await findInOrder(ids, (rowIds) =>
       prisma.interactionChain.findMany({
-        where: { id: { in: chunk } },
+        where: { id: { in: rowIds } },
         include,
       }),
     );
