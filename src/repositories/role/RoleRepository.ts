@@ -39,9 +39,9 @@ class RoleRepository implements IRoleRepository {
 
   async findPage(query: ListQuery): Promise<Page<RoleOutput>> {
     const { ids, total } = await pageIds(query, source);
-    const roles = await findInOrder(ids, (chunk) =>
+    const roles = await findInOrder(ids, (rowIds) =>
       prisma.role.findMany({
-        where: { id: { in: chunk } },
+        where: { id: { in: rowIds } },
       }),
     );
 

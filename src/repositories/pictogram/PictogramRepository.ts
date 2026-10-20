@@ -49,9 +49,9 @@ class PictogramRepository implements IPictogramRepository {
 
   async findPage(query: ListQuery): Promise<Page<PictogramListOutput>> {
     const { ids, total } = await pageIds(query, source);
-    const results = await findInOrder(ids, (chunk) =>
+    const results = await findInOrder(ids, (rowIds) =>
       prisma.pictogram.findMany({
-        where: { id: { in: chunk } },
+        where: { id: { in: rowIds } },
         include: pictogramListInclude,
       }),
     );

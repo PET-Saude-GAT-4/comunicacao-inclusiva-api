@@ -11,7 +11,9 @@ const MAX_PAGE_SIZE = 100;
 const emptyAsAbsent = (value: unknown) => (value === "" ? undefined : value);
 
 const listQuerySchema = z.object({
-  page: z.preprocess(emptyAsAbsent, z.coerce.number().int().min(1).optional()),
+  // A client that omits page gets the first one, never the whole table: the
+  // uploads behind these lists only grow.
+  page: z.preprocess(emptyAsAbsent, z.coerce.number().int().min(1).default(1)),
   pageSize: z.preprocess(
     emptyAsAbsent,
     z.coerce
@@ -24,11 +26,8 @@ const listQuerySchema = z.object({
   q: z.string().trim().optional(),
 });
 
-// Pagination is opt-in: without a page the list comes back whole, so pickers
-// that need every item keep working. pageSize alone is still validated but
-// has no effect.
 export type ListQuery = {
-  page: number | undefined;
+  page: number;
   pageSize: number;
   q: string | undefined;
 };
@@ -60,10 +59,6 @@ export function parseListQuery(query: unknown): ListQuery {
 }
 
 export function buildListMeta(query: ListQuery, total: number): ListMeta {
-  if (query.page === undefined) {
-    return { total, page: 1, pageSize: total, pageCount: total > 0 ? 1 : 0 };
-  }
-
   return {
     total,
     page: query.page,

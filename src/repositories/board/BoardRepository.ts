@@ -94,9 +94,9 @@ class BoardRepository implements IBoardRepository {
     }
 
     const { ids, total } = await pageIds(query, source, filters);
-    const results = await findInOrder(ids, (chunk) =>
+    const results = await findInOrder(ids, (rowIds) =>
       prisma.board.findMany({
-        where: { id: { in: chunk } },
+        where: { id: { in: rowIds } },
         include: boardInclude,
       }),
     );

@@ -40,9 +40,9 @@ class TermRepository implements ITermRepository {
 
   async findPage(query: ListQuery): Promise<Page<TermOutput>> {
     const { ids, total } = await pageIds(query, source);
-    const results = await findInOrder(ids, (chunk) =>
+    const results = await findInOrder(ids, (rowIds) =>
       prisma.term.findMany({
-        where: { id: { in: chunk } },
+        where: { id: { in: rowIds } },
         include,
       }),
     );

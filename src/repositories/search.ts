@@ -12,10 +12,6 @@ export type ListSource = {
   orderBy: Prisma.Sql;
 };
 
-// Well under Postgres' 32,767 bind parameters, leaving room for the ones an
-// include adds when Prisma loads the relations of the same ids.
-const ID_CHUNK_SIZE = 10_000;
-
 function toContainsPattern(q: string): string {
   // Backslash is Postgres' default LIKE escape, so "%" and "_" typed by the
   // user match themselves instead of acting as wildcards.
@@ -46,9 +42,8 @@ export async function pageIds(
   const where =
     conditions.length > 0 ? Prisma.join(conditions, " AND ") : Prisma.sql`TRUE`;
 
-  // A NULL limit means no limit, which is the unpaginated list.
-  const take = query.page === undefined ? null : query.pageSize;
-  const skip = query.page === undefined ? 0 : (query.page - 1) * query.pageSize;
+  const take = query.pageSize;
+  const skip = (query.page - 1) * query.pageSize;
 
   // The window count rides along with the page, so the common case is one
   // statement whose sort Postgres can stop at the page's end. bigint because
@@ -77,19 +72,12 @@ export async function pageIds(
 }
 
 // Loads rows by id and returns them in the order of `ids`, which findMany does
-// not keep. A page always fits in one chunk; more only happen when a large
-// list is requested without a page.
+// not keep.
 export async function findInOrder<T extends { id: number }>(
   ids: number[],
-  fetch: (chunk: number[]) => Promise<T[]>,
+  fetch: (ids: number[]) => Promise<T[]>,
 ): Promise<T[]> {
-  const byId = new Map<number, T>();
-
-  for (let i = 0; i < ids.length; i += ID_CHUNK_SIZE) {
-    for (const row of await fetch(ids.slice(i, i + ID_CHUNK_SIZE))) {
-      byId.set(row.id, row);
-    }
-  }
+  const byId = new Map((await fetch(ids)).map((row) => [row.id, row]));
 
   // A row deleted between the two queries is skipped rather than returned as
   // undefined.

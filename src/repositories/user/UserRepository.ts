@@ -46,9 +46,9 @@ class UserRepository implements IUserRepository {
 
   async findPage(query: ListQuery): Promise<Page<UserOutput>> {
     const { ids, total } = await pageIds(query, source);
-    const users = await findInOrder(ids, (chunk) =>
+    const users = await findInOrder(ids, (rowIds) =>
       prisma.user.findMany({
-        where: { id: { in: chunk } },
+        where: { id: { in: rowIds } },
         include: { role: true },
       }),
     );
