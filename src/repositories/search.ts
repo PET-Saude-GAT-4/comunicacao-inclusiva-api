@@ -72,7 +72,9 @@ export async function pageIds(
 }
 
 // Loads rows by id and returns them in the order of `ids`, which findMany does
-// not keep.
+// not keep. Meant for the ids of one page from pageIds: they all go into a
+// single IN list, which stays far below Postgres' bind-parameter limit only
+// because pageSize is capped.
 export async function findInOrder<T extends { id: number }>(
   ids: number[],
   fetch: (ids: number[]) => Promise<T[]>,
