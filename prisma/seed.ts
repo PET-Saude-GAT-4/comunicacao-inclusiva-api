@@ -5,6 +5,7 @@ import { seedBoards } from "./seeds/03-boards.js";
 import { seedPhrases } from "./seeds/04-phrases.js";
 import { seedInteractionChains } from "./seeds/05-interaction-chains.js";
 import { seedTriageSteps } from "./seeds/06-triage-steps.js";
+import { seedProfessions } from "./seeds/07-professions.js";
 
 async function main() {
   await seedRolesAndUsers(prisma);
@@ -13,6 +14,7 @@ async function main() {
   await seedPhrases(prisma);
   await seedInteractionChains(prisma);
   await seedTriageSteps(prisma);
+  await seedProfessions(prisma);
 
   console.log("Seed completed successfully");
 }
