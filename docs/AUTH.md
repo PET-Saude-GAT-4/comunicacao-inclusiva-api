@@ -20,8 +20,10 @@ Two layers enforce this:
 `POST /auth/login` with `{ email, password }`:
 
 - **200** `{ token, user }` for valid credentials.
-- **401** `Invalid credentials` for an unknown email, a wrong password, or an account without a password. The three are indistinguishable on purpose.
-- **403** for an account that exists but has not accepted its invitation (`AccountNotConfirmedError`).
+- **401** `Invalid credentials` for an unknown email, a wrong password, or an account without a password, with the same body for all three.
+- **403** for an account that exists but has not accepted its invitation (`AccountNotConfirmedError`), whatever the password sent.
+
+Login does not fully hide which emails have accounts: the 403 marks pending accounts without a password, and an unknown email is answered faster because it skips the bcrypt comparison.
 
 The token is a JWT signed with `JWT_SECRET` (HS256), valid for `JWT_EXPIRES_IN` (default `1d`), carrying `{ id, uuid, email, role, confirmed }`. Clients send it as `Authorization: Bearer <token>`. There is no refresh token or server-side revocation: a token stays valid until it expires, even if the user's role changes.
 
@@ -34,14 +36,14 @@ The token is a JWT signed with `JWT_SECRET` (HS256), valid for `JWT_EXPIRES_IN` 
 1. An admin creates a user (`POST /users`) with an email and a role. The account has no password and `confirmedAt` is null.
 2. `InvitationService.sendInvitation` retires any earlier invitation for that user, stores a new random token valid for `INVITATION_EXPIRES_HOURS` (default 168, one week) and emails a link to `FRONTEND_BASE_URL/invitation/accept?token=…`.
 3. `POST /invitations/accept` with `{ token, password }` checks the token (it must exist, be an invitation, be unused and unexpired), validates the password (at least `MIN_PASSWORD_LENGTH` characters, default 8), and in one transaction marks the token used, stores the bcrypt hash and sets `confirmedAt`. Any failure answers 400; a refused password leaves the invitation usable.
-4. `POST /invitations/resend` with `{ email }` sends a fresh invitation when the email belongs to an unconfirmed account. It answers the same 200 for confirmed and unknown emails, so it cannot be used to find out which addresses have accounts.
+4. `POST /invitations/resend` with `{ email }` sends a fresh invitation, retiring the previous one, when the email belongs to an unconfirmed account. It answers the same 200 for confirmed and unknown emails. It has no cooldown: each call sends another email.
 
 ## Password reset
 
 1. `POST /auth/password-reset` with `{ email }` always answers the same 200 message. Behind it:
    - unknown email → nothing happens;
-   - a reset was requested less than 2 minutes ago → nothing happens (cooldown against mail flooding);
-   - unconfirmed account → the invitation is re-sent instead, since there is no password to reset;
+   - a reset was requested less than 2 minutes ago → nothing happens (cooldown against repeated reset emails);
+   - unconfirmed account → the invitation is re-sent instead, since there is no password to reset. The cooldown only counts reset tokens, so this path re-sends on every request;
    - otherwise → earlier reset tokens are retired and a new one, valid for **15 minutes**, is emailed as a link to `FRONTEND_BASE_URL/reset-password?token=…`.
 2. `POST /auth/password-reset/confirm` with `{ token, password }` sets the new password and marks the token used. A wrong, expired, already used or non-reset token, or a token whose account is unconfirmed, answers 400 `Invalid or expired password reset token`.
 
