@@ -7,14 +7,9 @@ import app from "@/app.js";
 
 import { createToken, createUser, prisma } from "../support/db.js";
 import { outbox } from "../support/nodemailer.js";
+import { login, tokenFromLastMail } from "../support/requests.js";
 
 const PASSWORD = "correct-horse";
-
-function tokenFromLastMail(): string {
-  const token = outbox.at(-1)?.html.match(/token=([a-f0-9]+)/)?.[1];
-  if (!token) throw new Error("No token found in the last captured email");
-  return token;
-}
 
 describe("POST /auth/login", () => {
   it("returns a token and the user for valid credentials", async () => {
@@ -104,12 +99,6 @@ describe("POST /auth/password-reset", () => {
 });
 
 describe("POST /auth/password-reset/confirm", () => {
-  async function login(password: string) {
-    return request(app)
-      .post("/auth/login")
-      .send({ email: "ana@test.local", password });
-  }
-
   it("changes the password with the token from the reset email", async () => {
     await createUser({ email: "ana@test.local", password: PASSWORD });
     await request(app)
@@ -121,8 +110,10 @@ describe("POST /auth/password-reset/confirm", () => {
       .send({ token: tokenFromLastMail(), password: "brand-new-password" });
 
     expect(res.status).toBe(200);
-    expect((await login("brand-new-password")).status).toBe(200);
-    expect((await login(PASSWORD)).status).toBe(401);
+    expect((await login("ana@test.local", "brand-new-password")).status).toBe(
+      200,
+    );
+    expect((await login("ana@test.local", PASSWORD)).status).toBe(401);
   });
 
   it("rejects a token that was never issued", async () => {
@@ -133,7 +124,7 @@ describe("POST /auth/password-reset/confirm", () => {
       .send({ token: "f".repeat(64), password: "brand-new-password" });
 
     expect(res.status).toBe(400);
-    expect((await login(PASSWORD)).status).toBe(200);
+    expect((await login("ana@test.local", PASSWORD)).status).toBe(200);
   });
 
   it("rejects an expired token", async () => {
@@ -152,7 +143,7 @@ describe("POST /auth/password-reset/confirm", () => {
       .send({ token, password: "brand-new-password" });
 
     expect(res.status).toBe(400);
-    expect((await login(PASSWORD)).status).toBe(200);
+    expect((await login("ana@test.local", PASSWORD)).status).toBe(200);
   });
 
   it("rejects a token that was already used", async () => {
@@ -170,7 +161,9 @@ describe("POST /auth/password-reset/confirm", () => {
       .send({ token, password: "another-password" });
 
     expect(res.status).toBe(400);
-    expect((await login("brand-new-password")).status).toBe(200);
+    expect((await login("ana@test.local", "brand-new-password")).status).toBe(
+      200,
+    );
   });
 
   it("rejects an invitation token used as a reset token", async () => {
@@ -195,7 +188,7 @@ describe("POST /auth/password-reset/confirm", () => {
       .send({ token, password: "brand-new-password" });
 
     expect(res.status).toBe(400);
-    expect((await login(PASSWORD)).status).toBe(200);
+    expect((await login("ana@test.local", PASSWORD)).status).toBe(200);
   });
 
   it("leaves the token usable when the new password is too short", async () => {

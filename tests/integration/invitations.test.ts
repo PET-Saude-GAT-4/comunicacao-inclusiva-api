@@ -5,12 +5,9 @@ import app from "@/app.js";
 
 import { createToken, createUser, prisma } from "../support/db.js";
 import { outbox } from "../support/nodemailer.js";
+import { login, tokenFromLastMail } from "../support/requests.js";
 
 const NEW_PASSWORD = "chosen-password";
-
-async function login(email: string, password: string) {
-  return request(app).post("/auth/login").send({ email, password });
-}
 
 describe("POST /invitations/accept", () => {
   it("confirms the account and sets the password", async () => {
@@ -149,8 +146,7 @@ describe("POST /invitations/resend", () => {
     expect(res.status).toBe(200);
     expect(outbox).toHaveLength(1);
     expect(outbox[0]?.to).toBe("bia@test.local");
-    const newToken = outbox[0]?.html.match(/token=([a-f0-9]+)/)?.[1];
-    expect(newToken).toBeDefined();
+    const newToken = tokenFromLastMail();
     expect(newToken).not.toBe(oldToken);
 
     const withOld = await request(app)
