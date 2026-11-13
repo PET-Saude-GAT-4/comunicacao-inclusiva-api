@@ -1,3 +1,5 @@
+import crypto from "node:crypto";
+
 import { describe, expect, it } from "@jest/globals";
 import request from "supertest";
 
@@ -176,13 +178,24 @@ describe("POST /auth/password-reset/confirm", () => {
       email: "ana@test.local",
       password: PASSWORD,
     });
-    const token = await createToken({ userId: user.id, purpose: "INVITATION" });
+    // Stored hashed, the way reset tokens are, so the lookup finds the row and
+    // only the purpose check can turn it away.
+    const token = "a".repeat(64);
+    await prisma.userToken.create({
+      data: {
+        token: crypto.createHash("sha256").update(token).digest("hex"),
+        userId: user.id,
+        purpose: "INVITATION",
+        expiresAt: new Date(Date.now() + 60 * 60 * 1000),
+      },
+    });
 
     const res = await request(app)
       .post("/auth/password-reset/confirm")
       .send({ token, password: "brand-new-password" });
 
     expect(res.status).toBe(400);
+    expect((await login(PASSWORD)).status).toBe(200);
   });
 
   it("leaves the token usable when the new password is too short", async () => {
