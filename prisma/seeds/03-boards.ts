@@ -78,6 +78,9 @@ const BOARD_DEFS: BoardDef[] = [
     title: "Sintomas Gerais",
     representativeFileUuid: "99b570da-8f1f-409a-9dc9-c8914a2cd900", // malaise
     pictogramFileUuids: [
+      // "Estou com dor de cabeça" is head + malaise, so malaise has to be
+      // tappable outside the emergency boards for that phrase to be composed.
+      "99b570da-8f1f-409a-9dc9-c8914a2cd900", // malaise
       "4bdec2c8-170b-4f5b-85a0-7adc4c311c1e", // nausea
       "a36ab6c8-3da5-46c2-8390-9f73675b8e5b", // dizziness
       "75cb847b-9c76-45cb-9f70-5d0a2f72398f", // shortness-of-breath
