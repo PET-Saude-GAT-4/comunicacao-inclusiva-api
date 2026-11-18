@@ -129,7 +129,7 @@ class AuthService implements IAuthService {
     const subject = "Recuperação de Senha";
     const html = `
       <p>Olá,</p>
-      <p>Recebemos uma solicitação para redefinir a senha da sua conta na plataforma <strong>Comunicação Inclusiva</strong>.</p>
+      <p>Recebemos uma solicitação para redefinir a senha da sua conta na plataforma <strong>SAP — Suporte Assistivo ao Paciente</strong>.</p>
       <p>Para redefinir sua senha, clique no botão abaixo:</p>
       <p><a href="${resetLink}" style="background-color: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block;">Redefinir Senha</a></p>
       <p>Ou copie e cole a URL no seu navegador:</p>
