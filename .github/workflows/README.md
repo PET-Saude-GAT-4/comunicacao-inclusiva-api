@@ -2,7 +2,9 @@
 
 Read it when a check failed on your pull request, or before changing what CI runs.
 
-[`ci.yml`](ci.yml) runs on every pull request into `main` or `develop`. A new push to the same pull request cancels the run still in flight. The workflow only reads the repository (`contents: read`).
+[`ci.yml`](ci.yml) runs on every pull request into `main` or `develop`, and again on every push to them, on the commit that landed. A new push to the same pull request cancels the run still in flight; a run on `main` or `develop` is never cancelled, so every merge keeps its own result. The workflow only reads the repository (`contents: read`).
+
+The push run exists because branch protection does not require a pull request to be up to date with its base: two pull requests that each passed against an older `develop` can merge and break it together. When that happens, the merge commit turns red and GitHub notifies whoever merged; there is no other alert.
 
 ## Jobs
 

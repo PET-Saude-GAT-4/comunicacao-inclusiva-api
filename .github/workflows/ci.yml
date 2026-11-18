@@ -3,10 +3,20 @@ name: CI
 on:
   pull_request:
     branches: [main, develop]
+  # Branch protection does not require a pull request to be up to date, so two
+  # that each passed against an older base can still break it once merged. The
+  # run on the merged commit is what catches that.
+  push:
+    branches: [main, develop]
 
+# A new push to a pull request replaces its run, so pull request runs share a
+# group per ref. Runs on main and develop are grouped by commit and never
+# cancelled, so every merge keeps its own result: a single shared group with
+# cancel-in-progress off is not enough, as GitHub still drops a queued run when
+# a newer one arrives.
 concurrency:
-  group: ci-${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  group: ci-${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.ref || github.sha }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 permissions:
   contents: read
