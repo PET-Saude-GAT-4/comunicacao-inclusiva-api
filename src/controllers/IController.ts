@@ -1,6 +1,6 @@
 import type { Request, Response } from "express";
 
-interface IController<T> {
+interface IController {
   findById?(req: Request, res: Response): Promise<void>;
   findAll(req: Request, res: Response): Promise<void>;
   create(req: Request, res: Response): Promise<void>;

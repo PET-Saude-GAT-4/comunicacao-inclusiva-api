@@ -1,7 +1,5 @@
-import type { RoleOutput } from "@/models/types/Role.type.js";
-
 import type { IController } from "../IController.js";
 
-interface IRoleController extends IController<RoleOutput> {}
+interface IRoleController extends IController {}
 
 export type { IRoleController };

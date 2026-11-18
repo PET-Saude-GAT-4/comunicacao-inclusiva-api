@@ -16,7 +16,10 @@
     "build": "prisma generate && tsc && tsc-alias",
     "start": "node dist/server.js",
     "dev": "npx prisma generate && tsc --noEmit && tsx watch src/server.ts",
-    "lint": "eslint 'src/**/*.ts'",
+    "lint": "eslint '*.{js,ts}' 'src/**/*.ts' 'tests/**/*.ts' 'prisma/**/*.ts' --max-warnings 0",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "typecheck": "tsc --noEmit -p tsconfig.test.json && tsc --noEmit -p prisma/tsconfig.json",
     "test": "NODE_OPTIONS=--experimental-vm-modules jest -c jest.unit.config.js",
     "test:integration": "NODE_OPTIONS=--experimental-vm-modules jest -c jest.integration.config.js --runInBand",
     "test:all": "yarn test && yarn test:integration"

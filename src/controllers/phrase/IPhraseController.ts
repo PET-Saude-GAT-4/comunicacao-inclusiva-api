@@ -1,9 +1,8 @@
 import type { Request, Response } from "express";
 
 import type { IController } from "@/controllers/IController.js";
-import type { PhraseOutput } from "@/models/types/Phrase.type.js";
 
-interface IPhraseController extends IController<PhraseOutput> {
+interface IPhraseController extends IController {
   findByUuid(req: Request, res: Response): Promise<void>;
 
   findAllPublished(req: Request, res: Response): Promise<void>;

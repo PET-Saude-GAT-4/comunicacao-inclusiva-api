@@ -52,7 +52,10 @@ The API answers on <http://localhost:8080>. Log in with `POST /auth/login` as `a
 | `yarn dev`                 | Generates the Prisma client, type-checks and runs the API with hot reload. The dev container runs it. |
 | `yarn build`               | Generates the Prisma client and compiles to `dist/`.                                                  |
 | `yarn start`               | Runs the compiled API from `dist/`.                                                                   |
-| `yarn lint`                | Runs ESLint on `src/`.                                                                                |
+| `yarn lint`                | Runs ESLint on `src/`, `tests/`, `prisma/` and the root config files; warnings fail it too.           |
+| `yarn format`              | Formats every file with Prettier.                                                                     |
+| `yarn format:check`        | Lists the files Prettier would change, without changing them.                                         |
+| `yarn typecheck`           | Type-checks `src/`, `tests/` and `prisma/` without emitting.                                          |
 | `yarn test`                | Runs the unit tests.                                                                                  |
 | `yarn test:integration`    | Runs the integration tests against the database in `.env.test`.                                       |
 | `yarn test:all`            | Runs both test suites.                                                                                |
@@ -96,3 +99,4 @@ docs/                   architecture, auth, database, glossary
 - Branch from `develop` and open the pull request into `develop`; `main` receives releases.
 - Write commits as [Conventional Commits](https://www.conventionalcommits.org/) (`feat:`, `fix:`, `docs:`, `test:`…).
 - Write code, comments and docs in English.
+- Every pull request into `develop` or `main` must pass lint, format, type check, unit and integration tests and the build before it can be merged. See [the CI README](.github/workflows/README.md) to reproduce a failing check locally.

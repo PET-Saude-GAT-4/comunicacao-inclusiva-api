@@ -14,7 +14,9 @@ yarn prisma:seed                 # runs inside the api_dev container
 
 | Command                                                                        | Use it to                                                                               |
 | ------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------- |
-| `yarn lint`                                                                    | Run ESLint                                                                              |
+| `yarn lint`                                                                    | Run ESLint (fails on warnings)                                                          |
+| `yarn format` / `yarn format:check`                                            | Format with Prettier / check without writing                                            |
+| `yarn typecheck`                                                               | Type-check `src/`, `tests/` and `prisma/`                                               |
 | `yarn test`                                                                    | Run the unit tests (no database needed)                                                 |
 | `yarn test:integration`                                                        | Run the integration tests (dev PostgreSQL and `.env.test`)                              |
 | `yarn test:all`                                                                | Run both suites                                                                         |
@@ -50,7 +52,9 @@ Every TypeScript file must pass ESLint and follow the Prettier style in `.pretti
 
 1. Run `npx eslint --fix` on the changed files.
 2. Run `npx prettier --write` on the changed files.
-3. Do not leave code that ESLint still reports, including the TypeScript-specific rules and the import order (`simple-import-sort`).
+3. Do not leave code that ESLint still reports, including the TypeScript-specific rules and the import order (`simple-import-sort`): CI fails on warnings too.
+
+Before opening a pull request, run what CI runs: `yarn lint`, `yarn format:check`, `yarn typecheck`, `yarn test`, `yarn test:integration` and `yarn build`. [.github/workflows/README.md](.github/workflows/README.md) explains each check.
 
 ## Where to look next
 

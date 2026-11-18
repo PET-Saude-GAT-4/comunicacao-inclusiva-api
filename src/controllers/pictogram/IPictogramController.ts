@@ -1,9 +1,8 @@
 import type { Request, Response } from "express";
 
 import type { IController } from "@/controllers/IController.js";
-import type { PictogramOutput } from "@/models/types/Pictogram.type.js";
 
-interface IPictogramController extends IController<PictogramOutput> {
+interface IPictogramController extends IController {
   findAllPublic(req: Request, res: Response): Promise<void>;
 }
 
