@@ -23,13 +23,20 @@ Every job starts with [`.github/actions/setup`](../actions/setup/action.yml): No
 
 The six jobs are **required status checks** on `main` and `develop`: a pull request cannot be merged until all of them pass. The protection matches them by job name, so renaming a job means updating the branch protection in the same change.
 
-## Pinned actions
+## Pinned actions and images
 
 Every external action is referenced by a full commit SHA, with its version as a comment: `uses: actions/checkout@<40-character sha> # v4.4.0`. A tag such as `@v4` can be moved to another commit by whoever controls the action's repository, which would change the code every required check runs without a change here. Local actions (`uses: ./.github/actions/setup`) need no pin.
 
 [Dependabot](../dependabot.yml) keeps the pins current: once a week it opens a `ci:` pull request into `develop` for each action with a new release, bumping the SHA and the comment together, and that pull request goes through the same checks as any other. It reads `.github/workflows` and the composite action in `.github/actions/setup`; a new composite action needs its folder added to `directories` there.
 
 The repository requires pinning (Settings → Actions → General → _Require actions to be pinned to a full-length commit SHA_), so a run that uses an action by tag fails. To add an action, look up the commit of its latest release and write it the same way, with the comment.
+
+The container images follow the same rule, pinned by digest with the tag kept for readability: `postgres:16@sha256:<64 hex chars>` for the `integration` service, and `node:22-alpine@sha256:<64 hex chars>` in every `FROM` of the [`Dockerfile`](../../Dockerfile). The digest is the multi-arch index, so the same pin works on any platform. Who bumps each one:
+
+- **`Dockerfile`**: Dependabot's `docker` entry opens a weekly `ci:` pull request when `node:22-alpine` gets a new build. It never proposes another Node major, which has to change together with `.nvmrc`, by hand.
+- **The `postgres` service in `ci.yml`**: by hand. Dependabot does not read container images in workflow files, so the digest only changes when PostgreSQL is upgraded here (and in `docker-compose.yml`, which stays on tags because it only runs the local stack).
+
+To look up a digest, run `docker buildx imagetools inspect postgres:16` and copy the `Digest:` at the top.
 
 ## Details that look like mistakes
 
