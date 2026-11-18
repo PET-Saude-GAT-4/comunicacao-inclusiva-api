@@ -10,12 +10,13 @@ on:
     branches: [main, develop]
 
 # A new push to a pull request replaces its run, so pull request runs share a
-# group per ref. Runs on main and develop are grouped by commit and never
-# cancelled, so every merge keeps its own result: a single shared group with
-# cancel-in-progress off is not enough, as GitHub still drops a queued run when
-# a newer one arrives.
+# group per ref. Runs on main and develop are grouped by branch and commit and
+# never cancelled, so every merge keeps its own result: a single shared group
+# with cancel-in-progress off is not enough, as GitHub still drops a queued run
+# when a newer one arrives. The branch is part of the key because the same
+# commit can land on both, as when develop is fast-forwarded into main.
 concurrency:
-  group: ci-${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.ref || github.sha }}
+  group: ci-${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.ref || format('{0}-{1}', github.ref, github.sha) }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 permissions:
