@@ -48,7 +48,20 @@ export default defineConfig([
           argsIgnorePattern: "^_",
         },
       ],
-      "simple-import-sort/imports": "warn",
+      "simple-import-sort/imports": [
+        "warn",
+        {
+          // The default groups, except that @test/ joins the internal @/
+          // imports instead of sorting as a scoped npm package.
+          groups: [
+            ["^\\u0000"],
+            ["^node:"],
+            ["^@?\\w"],
+            ["^@/", "^@test/", "^"],
+            ["^\\."],
+          ],
+        },
+      ],
       "simple-import-sort/exports": "warn",
       "@typescript-eslint/no-empty-object-type": "off",
     },

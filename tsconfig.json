@@ -39,5 +39,6 @@
       "@/*": ["./src/*"]
     }
   },
-  "include": ["src/**/*", "src/prisma.ts"]
+  "include": ["src/**/*", "src/prisma.ts"],
+  "exclude": ["src/**/__tests__/**"]
 }

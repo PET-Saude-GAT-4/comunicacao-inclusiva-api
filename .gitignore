@@ -36,6 +36,7 @@ node_modules/
 .env
 .env.*
 !.env.example
+!.env.test.example
 
 # Stores VSCode versions used for testing VSCode extensions
 .vscode-test
