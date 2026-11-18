@@ -5,9 +5,9 @@ import request from "supertest";
 
 import app from "@/app.js";
 
-import { createToken, createUser, prisma } from "../support/db.js";
-import { outbox } from "../support/nodemailer.js";
-import { login, tokenFromLastMail } from "../support/requests.js";
+import { outbox } from "../mocks/nodemailer.js";
+import { createToken, createUser, prisma } from "./helpers/db.js";
+import { login, tokenFromLastMail } from "./helpers/requests.js";
 
 const PASSWORD = "correct-horse";
 

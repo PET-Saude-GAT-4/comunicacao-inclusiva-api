@@ -3,7 +3,6 @@ import { beforeEach, describe, expect, it } from "@jest/globals";
 import { env } from "@/config/env.js";
 import { BadRequestError } from "@/errors/BadRequestError.js";
 import InvitationService from "@/services/invitation/InvitationService.js";
-
 import {
   asUserRepository,
   asUserTokenRepository,
@@ -13,7 +12,7 @@ import {
   passwordServiceDouble,
   userRepositoryDouble,
   userTokenRepositoryDouble,
-} from "./doubles.js";
+} from "@test/unit/doubles.js";
 
 let users: ReturnType<typeof userRepositoryDouble>;
 let tokens: ReturnType<typeof userTokenRepositoryDouble>;

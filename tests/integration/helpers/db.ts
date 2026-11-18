@@ -7,7 +7,7 @@ import { RoleEnum, type RoleName } from "@/models/types/Role.type.js";
 import type { TokenPurpose } from "@/models/types/UserToken.type.js";
 import { prisma } from "@/prisma.js";
 
-import { assertTestDatabase } from "./test-env.js";
+import { assertTestDatabase } from "../setup/test-env.js";
 
 export { prisma };
 

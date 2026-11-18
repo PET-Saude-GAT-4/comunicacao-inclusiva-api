@@ -2,8 +2,8 @@ import { afterAll, beforeAll, beforeEach, jest } from "@jest/globals";
 
 import { ErrorBase } from "@/errors/base.error.js";
 
-import { prisma, resetDatabase } from "./db.js";
-import { outbox } from "./nodemailer.js";
+import { outbox } from "../../mocks/nodemailer.js";
+import { prisma, resetDatabase } from "../helpers/db.js";
 
 beforeAll(() => {
   // ErrorHandlerMiddleware logs every error, including the 4xx responses these

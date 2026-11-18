@@ -8,8 +8,9 @@ export default {
   },
   moduleNameMapper: {
     // Every suite gets the capturing fake, so no test can reach a real SMTP server.
-    "^nodemailer$": "<rootDir>/tests/support/nodemailer.ts",
+    "^nodemailer$": "<rootDir>/tests/mocks/nodemailer.ts",
     "^@/(.*)\\.js$": "<rootDir>/src/$1",
+    "^@test/(.*)\\.js$": "<rootDir>/tests/$1",
     // NodeNext imports carry a .js extension that points at the .ts source.
     "^(\\.{1,2}/.*)\\.js$": "$1",
   },

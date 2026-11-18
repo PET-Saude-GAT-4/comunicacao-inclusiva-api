@@ -9,7 +9,6 @@ import { AccountNotConfirmedError } from "@/errors/AccountNotConfirmedError.js";
 import { BadRequestError } from "@/errors/BadRequestError.js";
 import { UnauthorizedError } from "@/errors/UnauthorizedError.js";
 import AuthService from "@/services/auth/AuthService.js";
-
 import {
   asUserRepository,
   asUserTokenRepository,
@@ -20,7 +19,7 @@ import {
   passwordServiceDouble,
   userRepositoryDouble,
   userTokenRepositoryDouble,
-} from "./doubles.js";
+} from "@test/unit/doubles.js";
 
 const sha256 = (value: string) =>
   crypto.createHash("sha256").update(value).digest("hex");

@@ -2,7 +2,7 @@ import request from "supertest";
 
 import app from "@/app.js";
 
-import { outbox } from "./nodemailer.js";
+import { outbox } from "../../mocks/nodemailer.js";
 
 export function login(email: string, password: string) {
   return request(app).post("/auth/login").send({ email, password });

@@ -29,7 +29,7 @@ constructor(props?: Props) {
 }
 ```
 
-There is no container: routers instantiate controllers, controllers instantiate services, and so on. Tests replace a dependency by passing it in `props` (see `tests/unit/services`).
+There is no container: routers instantiate controllers, controllers instantiate services, and so on. Tests replace a dependency by passing it in `props` (see `src/services/auth/__tests__`).
 
 ### Routers
 
@@ -94,10 +94,22 @@ Jest runs two suites, both in ESM mode (`NODE_OPTIONS=--experimental-vm-modules`
 
 | Command | Suite | Needs |
 |---|---|---|
-| `yarn test` | `tests/unit` — services with their dependencies passed in as doubles | nothing |
+| `yarn test` | `src/**/__tests__` — services with their dependencies passed in as doubles | nothing |
 | `yarn test:integration` | `tests/integration` — HTTP requests with supertest against `src/app.ts` | Postgres and a `.env.test` |
 | `yarn test:all` | both | as above |
 
 - `jest.base.config.js` holds what both suites share; `jest.unit.config.js` and `jest.integration.config.js` add their own setup.
-- **No email leaves the tests.** Both suites map `nodemailer` to `tests/support/nodemailer.ts`, which pushes every message into an in-memory `outbox` that tests read to get invitation and reset links.
-- **Integration database.** Copy `.env.test.example` to `.env.test`. Before the suite, `tests/support/global-setup.ts` runs `prisma migrate deploy` against its `DATABASE_URL`, creating the database if needed. Before each test every table is truncated (`tests/support/db.ts`), so tests create what they need with the factories there. The database name must end in `_test`; the suite refuses to run otherwise, so it can never truncate the dev database.
+- **Where a test goes.** A rule inside a service, middleware or util is a unit test, in a `__tests__` folder beside the file it covers and named after it (`src/services/auth/__tests__/AuthService.test.ts`). Behaviour that crosses HTTP or the database is an integration test, in `tests/integration`, one file per resource. The build excludes `__tests__`, so tests never reach `dist`.
+- **Support code** lives under `tests/`, imported from `src` through the `@test/` alias:
+
+  ```
+  tests/
+  ├── mocks/nodemailer.ts      replaces nodemailer in both suites
+  ├── unit/                    unit support only: env placeholders and service doubles
+  └── integration/
+      ├── setup/               global setup, .env.test loading, per-test hooks
+      ├── helpers/             database factories and request helpers
+      └── *.test.ts
+  ```
+- **No email leaves the tests.** Both suites map `nodemailer` to `tests/mocks/nodemailer.ts`, which pushes every message into an in-memory `outbox` that tests read to get invitation and reset links.
+- **Integration database.** Copy `.env.test.example` to `.env.test`. Before the suite, `tests/integration/setup/global-setup.ts` runs `prisma migrate deploy` against its `DATABASE_URL`, creating the database if needed. Before each test every table is truncated (`tests/integration/helpers/db.ts`), so tests create what they need with the factories there. The database name must end in `_test`; the suite refuses to run otherwise, so it can never truncate the dev database.
