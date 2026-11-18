@@ -64,15 +64,15 @@ The Prisma client is generated into `src/generated/prisma` (ignored by git) by `
 
 Every expected failure is an error class in `src/errors` that extends `ErrorBase` with an HTTP status:
 
-| Class | Status |
-|---|---|
-| `BadRequestError` | 400 |
-| `UnauthorizedError` | 401 |
-| `ForbiddenError` | 403 |
-| `AccountNotConfirmedError` | 403 |
-| `NotFoundError` | 404 |
-| `ConflictError` | 409 |
-| `InternalServerError` | 500 |
+| Class                      | Status |
+| -------------------------- | ------ |
+| `BadRequestError`          | 400    |
+| `UnauthorizedError`        | 401    |
+| `ForbiddenError`           | 403    |
+| `AccountNotConfirmedError` | 403    |
+| `NotFoundError`            | 404    |
+| `ConflictError`            | 409    |
+| `InternalServerError`      | 500    |
 
 Express 5 forwards errors thrown in async handlers, so controllers and services just `throw`. `ErrorHandlerMiddleware` logs the error and, for an `ErrorBase`, answers `{ status, message }` with its status; anything else becomes a generic 500. Unknown paths reach `RouterNotFoundMiddleware` first.
 
@@ -92,11 +92,11 @@ Pictograms and SignWriting images are uploaded as `multipart/form-data`.
 
 Jest runs two suites, both in ESM mode (`NODE_OPTIONS=--experimental-vm-modules`) through ts-jest:
 
-| Command | Suite | Needs |
-|---|---|---|
-| `yarn test` | `src/**/__tests__` — services with their dependencies passed in as doubles | nothing |
-| `yarn test:integration` | `tests/integration` — HTTP requests with supertest against `src/app.ts` | Postgres and a `.env.test` |
-| `yarn test:all` | both | as above |
+| Command                 | Suite                                                                      | Needs                      |
+| ----------------------- | -------------------------------------------------------------------------- | -------------------------- |
+| `yarn test`             | `src/**/__tests__` — services with their dependencies passed in as doubles | nothing                    |
+| `yarn test:integration` | `tests/integration` — HTTP requests with supertest against `src/app.ts`    | Postgres and a `.env.test` |
+| `yarn test:all`         | both                                                                       | as above                   |
 
 - `jest.base.config.js` holds what both suites share; `jest.unit.config.js` and `jest.integration.config.js` add their own setup.
 - **Where a test goes.** A rule inside a service, middleware or util is a unit test, in a `__tests__` folder beside the file it covers and named after it (`src/services/auth/__tests__/AuthService.test.ts`). Behaviour that crosses HTTP or the database is an integration test, in `tests/integration`, one file per resource. The build excludes `__tests__`, so tests never reach `dist`.
@@ -111,5 +111,6 @@ Jest runs two suites, both in ESM mode (`NODE_OPTIONS=--experimental-vm-modules`
       ├── helpers/             database factories and request helpers
       └── *.test.ts
   ```
+
 - **No email leaves the tests.** Both suites map `nodemailer` to `tests/mocks/nodemailer.ts`, which pushes every message into an in-memory `outbox` that tests read to get invitation and reset links.
 - **Integration database.** Copy `.env.test.example` to `.env.test`. Before the suite, `tests/integration/setup/global-setup.ts` runs `prisma migrate deploy` against its `DATABASE_URL`, creating the database if needed. Before each test every table is truncated (`tests/integration/helpers/db.ts`), so tests create what they need with the factories there. The database name must end in `_test`; the suite refuses to run otherwise, so it can never truncate the dev database.

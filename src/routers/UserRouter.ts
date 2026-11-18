@@ -15,7 +15,7 @@ const router = express.Router();
 router.post(
   "/",
   authMiddleware.auth([RoleEnum.SUPER_ADMIN, RoleEnum.ADMIN]),
-  (req: Request, res: Response) => userController.create(req, res), 
+  (req: Request, res: Response) => userController.create(req, res),
 );
 
 router.get(

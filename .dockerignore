@@ -15,7 +15,6 @@ src/generated
 # Repository, tooling and Docker metadata
 .git
 .claude
-.agents
 Dockerfile
 docker-compose.yml
 .dockerignore

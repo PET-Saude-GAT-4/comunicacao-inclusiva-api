@@ -24,4 +24,4 @@ class PasswordService implements IPasswordService {
   }
 }
 
-export default PasswordService
+export default PasswordService;

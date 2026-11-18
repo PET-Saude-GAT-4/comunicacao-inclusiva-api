@@ -45,15 +45,15 @@ yarn prisma:seed               # prisma db seed inside the api_dev container
 
 `prisma/seed.ts` runs the files in `prisma/seeds` in order. Each seed upserts by a natural key (a role name, a board title, a level), so running it again converges instead of duplicating:
 
-| File | Loads |
-|---|---|
-| `01-roles-users.ts` | The three roles and the `admin@admin.admin` super admin, with the password from `ADMIN_PASSWORD`. |
-| `02-terms.ts` | Pictograms, SignWriting images and terms from `prisma/assets/boards`, copying the files into `FILE_STORAGE_DIR`. |
-| `03-boards.ts` | The starter boards and their terms. |
-| `04-phrases.ts` | Ready-made phrases. |
-| `05-interaction-chains.ts` | Board and phrase recommendations between the seeded boards. |
-| `06-triage-steps.ts` | The Quick Emergency levels that have boards (levels 4 and 5 stay empty). |
-| `07-professions.ts` | The professions and specialities the app needs to start a consultation. |
+| File                       | Loads                                                                                                            |
+| -------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| `01-roles-users.ts`        | The three roles and the `admin@admin.admin` super admin, with the password from `ADMIN_PASSWORD`.                |
+| `02-terms.ts`              | Pictograms, SignWriting images and terms from `prisma/assets/boards`, copying the files into `FILE_STORAGE_DIR`. |
+| `03-boards.ts`             | The starter boards and their terms.                                                                              |
+| `04-phrases.ts`            | Ready-made phrases.                                                                                              |
+| `05-interaction-chains.ts` | Board and phrase recommendations between the seeded boards.                                                      |
+| `06-triage-steps.ts`       | The Quick Emergency levels that have boards (levels 4 and 5 stay empty).                                         |
+| `07-professions.ts`        | The professions and specialities the app needs to start a consultation.                                          |
 
 ## Test database
 

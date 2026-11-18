@@ -1,9 +1,8 @@
 import type { Request, Response } from "express";
 
 import type { IController } from "@/controllers/IController.js";
-import type { BoardOutput } from "@/models/types/Board.type.js";
 
-interface IBoardController extends IController<BoardOutput> {
+interface IBoardController extends IController {
   findByUuid(req: Request, res: Response): Promise<void>;
 
   findAllPublished(req: Request, res: Response): Promise<void>;

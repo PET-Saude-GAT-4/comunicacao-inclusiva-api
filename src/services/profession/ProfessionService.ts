@@ -1,7 +1,6 @@
 import { BadRequestError } from "@/errors/BadRequestError.js";
 import { ConflictError } from "@/errors/ConflictError.js";
 import { NotFoundError } from "@/errors/NotFoundError.js";
-import type { ProfessionUpdateInput } from "@/generated/prisma/models.js";
 import type {
   ProfessionInput,
   ProfessionOutput,

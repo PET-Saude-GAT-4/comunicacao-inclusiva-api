@@ -4,11 +4,11 @@ Users are staff who curate content in the dashboard. Nobody signs up: an admin c
 
 ## Roles
 
-| Role | Can |
-|---|---|
-| `viewer` | Read pictograms, SignWriting and terms. |
-| `admin` | Everything a viewer can, plus manage content (boards, phrases, terms, files, interaction chains, professions), read triage steps and roles, and manage `admin` and `viewer` users. |
-| `super_admin` | Everything, including managing other super admins, roles and triage steps. |
+| Role          | Can                                                                                                                                                                                |
+| ------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `viewer`      | Read pictograms, SignWriting and terms.                                                                                                                                            |
+| `admin`       | Everything a viewer can, plus manage content (boards, phrases, terms, files, interaction chains, professions), read triage steps and roles, and manage `admin` and `viewer` users. |
+| `super_admin` | Everything, including managing other super admins, roles and triage steps.                                                                                                         |
 
 Two layers enforce this:
 
@@ -53,17 +53,17 @@ Reset tokens are stored as a SHA-256 hash, so a database leak does not expose wo
 
 `public` needs no token; `all` needs any valid token of a confirmed account.
 
-| Route | Access |
-|---|---|
-| `POST /auth/login`, `POST /auth/password-reset`, `POST /auth/password-reset/confirm` | public |
-| `POST /invitations/accept`, `POST /invitations/resend` | public |
-| `GET /auth/check-token` | all |
-| `GET /files/:uuid` and everything under `/public` | public |
-| `GET /pictograms`, `/sign-writings`, `/terms` (list and `/:uuid`) | viewer, admin, super_admin |
-| `POST`, `DELETE` on `/pictograms`, `/sign-writings`, `/terms` | admin, super_admin |
-| All of `/boards`, `/phrases`, `/interaction-chains`, `/professions`, `/specialities` | admin, super_admin |
-| All of `/users` (further limited by `canManageRole`) | admin, super_admin |
-| `GET /roles`, `GET /roles/:id`, `GET /triage-steps`, `GET /triage-steps/:uuid` | admin, super_admin |
-| `POST`, `PATCH`, `DELETE` on `/roles` and `/triage-steps` | super_admin |
+| Route                                                                                | Access                     |
+| ------------------------------------------------------------------------------------ | -------------------------- |
+| `POST /auth/login`, `POST /auth/password-reset`, `POST /auth/password-reset/confirm` | public                     |
+| `POST /invitations/accept`, `POST /invitations/resend`                               | public                     |
+| `GET /auth/check-token`                                                              | all                        |
+| `GET /files/:uuid` and everything under `/public`                                    | public                     |
+| `GET /pictograms`, `/sign-writings`, `/terms` (list and `/:uuid`)                    | viewer, admin, super_admin |
+| `POST`, `DELETE` on `/pictograms`, `/sign-writings`, `/terms`                        | admin, super_admin         |
+| All of `/boards`, `/phrases`, `/interaction-chains`, `/professions`, `/specialities` | admin, super_admin         |
+| All of `/users` (further limited by `canManageRole`)                                 | admin, super_admin         |
+| `GET /roles`, `GET /roles/:id`, `GET /triage-steps`, `GET /triage-steps/:uuid`       | admin, super_admin         |
+| `POST`, `PATCH`, `DELETE` on `/roles` and `/triage-steps`                            | super_admin                |
 
 The routers in `src/routers` are the source of truth; update this table when a route's roles change.

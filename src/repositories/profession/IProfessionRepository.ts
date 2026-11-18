@@ -1,4 +1,3 @@
-import type { Profession } from "@/models/Profession.js";
 import type {
   ProfessionInput,
   ProfessionOutput,
