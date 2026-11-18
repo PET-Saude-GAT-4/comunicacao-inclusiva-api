@@ -23,6 +23,14 @@ Every job starts with [`.github/actions/setup`](../actions/setup/action.yml): No
 
 The six jobs are **required status checks** on `main` and `develop`: a pull request cannot be merged until all of them pass. The protection matches them by job name, so renaming a job means updating the branch protection in the same change.
 
+## Pinned actions
+
+Every external action is referenced by a full commit SHA, with its version as a comment: `uses: actions/checkout@<40-character sha> # v4.4.0`. A tag such as `@v4` can be moved to another commit by whoever controls the action's repository, which would change the code every required check runs without a change here. Local actions (`uses: ./.github/actions/setup`) need no pin.
+
+[Dependabot](../dependabot.yml) keeps the pins current: once a week it opens a `ci:` pull request into `develop` for each action with a new release, bumping the SHA and the comment together, and that pull request goes through the same checks as any other. It reads `.github/workflows` and the composite action in `.github/actions/setup`; a new composite action needs its folder added to `directories` there.
+
+The repository requires pinning (Settings → Actions → General → _Require actions to be pinned to a full-length commit SHA_), so a run that uses an action by tag fails. To add an action, look up the commit of its latest release and write it the same way, with the comment.
+
 ## Details that look like mistakes
 
 - **Lint warnings fail the `lint` job.** The rules are `warn` so editors do not paint unfinished code red, but `--max-warnings 0` keeps them out of `develop`. `npx eslint --fix` fixes import order.
