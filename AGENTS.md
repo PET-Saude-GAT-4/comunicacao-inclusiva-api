@@ -1,6 +1,6 @@
 # AGENTS.md
 
-The backend of Comunicação Inclusiva: Express 5, TypeScript (ES modules), PostgreSQL through Prisma 7. [README.md](README.md) covers what it is and how a person sets it up; this file holds what you need to change it without breaking its conventions.
+The backend of SAP (Suporte Assistivo ao Paciente): Express 5, TypeScript (ES modules), PostgreSQL through Prisma 7. [README.md](README.md) covers what it is and how a person sets it up; this file holds what you need to change it without breaking its conventions.
 
 ## Setup and commands
 

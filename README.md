@@ -1,6 +1,6 @@
-# Comunicação Inclusiva API
+# SAP — Suporte Assistivo ao Paciente (API)
 
-The backend of Comunicação Inclusiva. It serves the **dashboard**, where staff curate pictograms, SignWriting images, boards and phrases, and the **app**, which reads the published content without logging in. It is an Express 5 application in TypeScript, backed by PostgreSQL through Prisma 7.
+The backend of SAP (Suporte Assistivo ao Paciente). It serves the **dashboard**, where staff curate pictograms, SignWriting images, boards and phrases, and the **app**, which reads the published content without logging in. It is an Express 5 application in TypeScript, backed by PostgreSQL through Prisma 7.
 
 ## Requirements
 
