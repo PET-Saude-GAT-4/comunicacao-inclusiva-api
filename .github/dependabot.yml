@@ -1,7 +1,8 @@
 version: 2
 updates:
-  # Only the actions: npm updates are out of scope for now. Dependabot does not
-  # look inside a composite action unless its folder is listed.
+  # Only the actions and the Dockerfile images: npm updates are out of scope for
+  # now. Dependabot does not look inside a composite action unless its folder is
+  # listed.
   - package-ecosystem: github-actions
     directories:
       - /
@@ -11,3 +12,16 @@ updates:
     target-branch: develop
     commit-message:
       prefix: ci
+
+  - package-ecosystem: docker
+    directory: /
+    schedule:
+      interval: weekly
+    target-branch: develop
+    commit-message:
+      prefix: ci
+    ignore:
+      # The image must run the same Node major as .nvmrc and CI; a major
+      # upgrade changes all three together, by hand.
+      - dependency-name: node
+        update-types: ["version-update:semver-major"]
