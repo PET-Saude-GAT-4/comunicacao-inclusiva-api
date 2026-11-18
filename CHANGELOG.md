@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Changed
+
+- The invitation and password reset emails name the platform "SAP — Suporte Assistivo ao Paciente" instead of "Comunicação Inclusiva".
+
 ## [0.1.0]
 
 The first tagged release, summarising what the API offers today.

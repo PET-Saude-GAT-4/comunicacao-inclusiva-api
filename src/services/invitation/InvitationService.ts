@@ -58,7 +58,7 @@ class InvitationService implements IInvitationService {
     const subject = "Convite para ativação de conta";
     const html = `
       <p>Olá,</p>
-      <p>Você foi convidado para criar uma conta na plataforma <strong>Comunicação Inclusiva</strong>.</p>
+      <p>Você foi convidado para criar uma conta na plataforma <strong>SAP — Suporte Assistivo ao Paciente</strong>.</p>
       <p>Para ativar sua conta e definir sua senha, acesse o convite abaixo:</p>
       <p><a href="${convite}" style="background-color: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block;">Ativar Conta</a></p>
       <p>Ou copie e cole a URL no seu navegador:</p>

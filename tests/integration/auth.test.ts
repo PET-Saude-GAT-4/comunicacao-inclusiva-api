@@ -96,6 +96,19 @@ describe("POST /auth/password-reset", () => {
     expect(outbox).toHaveLength(1);
     expect(outbox[0]?.to).toBe("ana@test.local");
   });
+
+  it("names the platform SAP in the reset email", async () => {
+    await createUser({ email: "ana@test.local", password: PASSWORD });
+
+    await request(app)
+      .post("/auth/password-reset")
+      .send({ email: "ana@test.local" });
+
+    expect(outbox.at(-1)?.html).toContain(
+      "SAP — Suporte Assistivo ao Paciente",
+    );
+    expect(outbox.at(-1)?.html).not.toMatch(/Comunicação Inclusiva/i);
+  });
 });
 
 describe("POST /auth/password-reset/confirm", () => {

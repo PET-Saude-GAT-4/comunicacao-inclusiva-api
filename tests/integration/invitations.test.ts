@@ -181,6 +181,19 @@ describe("POST /invitations/resend", () => {
     expect(outbox.map((mail) => mail.to)).toEqual(["bia@test.local"]);
   });
 
+  it("names the platform SAP in the invitation email", async () => {
+    await createUser({ email: "bia@test.local", confirmed: false });
+
+    await request(app)
+      .post("/invitations/resend")
+      .send({ email: "bia@test.local" });
+
+    expect(outbox.at(-1)?.html).toContain(
+      "SAP — Suporte Assistivo ao Paciente",
+    );
+    expect(outbox.at(-1)?.html).not.toMatch(/Comunicação Inclusiva/i);
+  });
+
   it("requires an email", async () => {
     const res = await request(app).post("/invitations/resend").send({});
 
