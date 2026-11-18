@@ -2,47 +2,22 @@
 
 PostgreSQL 16, accessed through Prisma 7 with the `pg` driver adapter (`src/prisma.ts`). The schema is `prisma/schema.prisma`; migrations are in `prisma/migrations`; the seed is `prisma/seed.ts`.
 
-Terms used here are defined in [GLOSSARY.md](GLOSSARY.md).
-
 ## Entities
 
-```
-Role 1─* User 1─* UserToken
-            │
-            ├─* StoredFile 1─1 Pictogram ─┐
-            │              1─1 SignWriting ┤
-            │                              └─* Term (one pictogram + one SignWriting)
-            │                                    │
-            ├─* Board (author) ─* BoardTerm ─────┤   linked list, ordered by `next`
-            │     │                              │
-            │     └─0..1 TriageStep              │
-            └─* Phrase (author) ─* PhraseTerm ───┘   ordered by `order`
+`prisma/schema.prisma` is the source of truth for entities, fields and relations; what each one means is in [GLOSSARY.md](GLOSSARY.md). This section covers only what the schema does not show at a glance.
 
-InteractionChain: (Board | Phrase) trigger → Board response, ranked
-Profession 1─* Speciality
-```
+- **IDs** — every content table has an integer `id` for joins and a `uuid` exposed to clients; the API addresses content by UUID.
+- **Board terms are a linked list** — `Board.first` points at the first `BoardTerm` and each `BoardTerm.next` at the following one. Composite foreign keys on `(boardId, id)` keep every pointer inside the same board, and a term appears at most once per board.
+- **Phrase terms** are ordered by `PhraseTerm.order` instead.
+- **Publishing** — boards and phrases reach the app only while `publishedAt` is set. A phrase's `listedInLibrary` decides separately whether it shows in the app's library, so an unlisted phrase can still trigger board recommendations.
+- **Tokens** — `UserToken` holds invitation and password reset tokens, deleted with their user. How they are stored and checked is in [AUTH.md](AUTH.md).
 
-Every content table has an integer `id` for joins and a `uuid` exposed to clients; the API addresses content by UUID.
+### Rules written in SQL
 
-### Users and access
+Prisma cannot express these, so they live in hand-edited migrations. The comments on the models in `schema.prisma` point to them; read them before changing those tables.
 
-- **Role** — `super_admin`, `admin` or `viewer` (`RoleEnum` in `src/models/types/Role.type.ts`).
-- **User** — email, role, optional `passwordHash` (empty until the invitation is accepted) and `confirmedAt` (null until then).
-- **UserToken** — single-use tokens for invitations and password resets, with `purpose`, `expiresAt` and `usedAt`. Deleted with their user. See [AUTH.md](AUTH.md).
-
-### Content
-
-- **StoredFile** — metadata of an uploaded file; the bytes live under `FILE_STORAGE_DIR`.
-- **Pictogram** and **SignWriting** — an image (one `StoredFile` each) with a description.
-- **Term** — the unit of communication: one pictogram plus one SignWriting. The pair is unique.
-- **Board** — a titled, ordered set of terms with a representative pictogram, an optional author and a `type` (`common` or `emergency`). It reaches the app only while `publishedAt` is set.
-  - Its terms are a **linked list**: `Board.first` points at the first `BoardTerm` and each `BoardTerm.next` at the following one. Composite foreign keys on `(boardId, id)` keep every pointer inside the same board, and a term appears at most once per board.
-- **Phrase** — an ordered sequence of terms (`PhraseTerm.order`) with an optional author. `publishedAt` decides whether it reaches devices; `listedInLibrary` decides whether it shows in the app's library, so an unlisted phrase can still trigger board recommendations.
-- **InteractionChain** — "after this, suggest that": a trigger (exactly one of a board or a phrase) and a response board, with a `rank` to order the suggestions. The "exactly one trigger" rule is a CHECK constraint written by hand in `migrations/20260918120000_add_phrase_trigger_and_listed_in_library`.
-- **TriageStep** — one of the five Quick Emergency levels (1 to 5), each holding one `emergency` board. The level range, the board type and the deferrable uniqueness of `level` (so two boards can swap levels in one transaction) are enforced by SQL written by hand in `migrations/20261004120000_add_triage_step`. A board cannot be deleted or retyped while it is a step.
-- **Profession** and **Speciality** — what a health professional selects in the app before a consultation. Both have a stable `code` the app refers to offline.
-
-Some rules live only in SQL, because Prisma cannot express them; the comments on the models in `schema.prisma` point to the migration that holds each one. Read them before changing those tables.
+- **InteractionChain** — a trigger is exactly one of a board or a phrase (CHECK constraint in `migrations/20260918120000_add_phrase_trigger_and_listed_in_library`).
+- **TriageStep** — the level is 1 to 5, the board must be `emergency`, and the uniqueness of `level` is deferrable so two boards can swap levels in one transaction (`migrations/20261004120000_add_triage_step`). A board cannot be deleted or retyped while it is a step.
 
 ## Migrations
 
