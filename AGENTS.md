@@ -45,6 +45,7 @@ Router → controller → service → repository → Prisma. [docs/ARCHITECTURE.
 - **Where a test goes.** A rule inside a service, middleware or util is a unit test in a `__tests__` folder beside the file, named after it. Behaviour that crosses HTTP or the database is an integration test in `tests/integration`, one file per resource. Integration tests truncate every table before each test, so each creates its own data with the factories in `tests/integration/helpers`, and finds records by id, never by position in a list.
 - **The integration database name must end in `_test`**; the suite refuses to run otherwise. Never point `.env.test` at the dev database.
 - **English only** — code, comments, docs, commit messages.
+- **Each page under `docs/` answers one "Read it when".** Whoever opens a page, a person or an agent, is after one answer and has to read the whole page to find it, so a page that answers two questions makes every reader pay for both, and it grows with every feature. When an edit makes a page answer a second question, or brings it to about 400 lines, split the page you are editing by topic in the same pull request and add the new page to the table below. Pages the pull request does not touch stay as they are. The line is the topic, not a count, which is why CI checks nothing.
 
 ## Formatting and lint
 
@@ -58,7 +59,12 @@ Before opening a pull request, run what CI runs: `yarn lint`, `yarn format:check
 
 ## Where to look next
 
-- [docs/AUTH.md](docs/AUTH.md) — roles, login, invitations, password reset, and which role may call each route.
-- [docs/DATABASE.md](docs/DATABASE.md) — entities, rules enforced in SQL, migrations, seeds, the test database.
-- [docs/GLOSSARY.md](docs/GLOSSARY.md) — the domain vocabulary; use these names in code.
-- [CHANGELOG.md](CHANGELOG.md) — add a line under `[Unreleased]` when a change is visible to the dashboard or the app.
+| Page                                                       | Read it when                                                                                   |
+| ---------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| [README.md](README.md)                                     | Setting the project up from scratch.                                                           |
+| [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)               | Adding an endpoint or a layer, or touching validation, errors, files, email or the test setup. |
+| [docs/AUTH.md](docs/AUTH.md)                               | Touching login, roles, invitations, password reset, or which role may call a route.            |
+| [docs/DATABASE.md](docs/DATABASE.md)                       | Changing the schema, writing a migration or a seed, or the test database misbehaves.           |
+| [docs/GLOSSARY.md](docs/GLOSSARY.md)                       | A domain word is unfamiliar or two of them look alike; use these names in code.                |
+| [.github/workflows/README.md](.github/workflows/README.md) | CI fails and the job log is not enough.                                                        |
+| [CHANGELOG.md](CHANGELOG.md)                               | A change is visible to the dashboard or the app: add a line under `[Unreleased]`.              |
